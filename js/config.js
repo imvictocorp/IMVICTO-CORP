@@ -10,12 +10,19 @@ const IMVICTO_USERS = [
     nombre: "ANGEL",
     correo: "angel@imvicto.com",
     clave: "12345",
-    rol: "admin"
+    rol: "chayanne16"
   },
-  {
+    {
     nombre: "MATHIAS",
+            alias: ["MATHI"],
     correo: "mathias@imvicto.com",
-    clave: "mathiasrc",
+    clave: "mathiasr",
+    rol: "vendedor"
+  },
+     {
+    nombre: "MIGUEL",
+    correo: "miguel@imvicto.com",
+    clave: "miguelv",
     rol: "vendedor"
   }
 ];
