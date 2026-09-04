@@ -1,0 +1,576 @@
+.seller-shell {
+  background:
+    radial-gradient(circle at 70% 0%, rgba(202, 162, 74, 0.18), transparent 28%),
+    radial-gradient(circle at 90% 40%, rgba(29, 95, 159, 0.14), transparent 28%),
+    linear-gradient(135deg, #eef3f9 0%, #e7edf6 100%);
+}
+
+.seller-sidebar {
+  background:
+    linear-gradient(180deg, rgba(202, 162, 74, 0.18), transparent 22%),
+    linear-gradient(180deg, #05070a 0%, #0b1118 46%, #0d2944 100%);
+}
+
+.seller-brand img {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.seller-side-card {
+  padding: 18px;
+  border: 1px solid rgba(202, 162, 74, 0.35);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(202, 162, 74, 0.16), rgba(29, 95, 159, 0.12));
+}
+
+.seller-side-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: #ffe4a3;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.seller-side-card strong {
+  display: block;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.seller-main {
+  padding: 30px 36px;
+}
+
+.seller-page {
+  display: grid;
+  gap: 24px;
+}
+
+.seller-hero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.seller-hero-copy {
+  flex: 1;
+  min-height: 150px;
+  padding: 30px;
+  border-radius: 32px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(5, 7, 10, 0.96), rgba(13, 41, 68, 0.96)),
+    #071426;
+  box-shadow: 0 22px 54px rgba(7, 20, 38, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+
+.seller-hero-copy::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 230px;
+  height: 230px;
+  border-radius: 999px;
+  background: rgba(202, 162, 74, 0.16);
+}
+
+.eyebrow {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px;
+  color: #f4cf7a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.seller-hero-copy h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 46px;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.seller-hero-copy p {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin: 12px 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.seller-hero-stats {
+  width: min(430px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.seller-hero-stats article {
+  padding: 22px;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(13, 41, 68, 0.12);
+  box-shadow: 0 18px 42px rgba(7, 20, 38, 0.10);
+  position: relative;
+  overflow: hidden;
+}
+
+.seller-hero-stats article::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, var(--gold), var(--blue));
+}
+
+.seller-hero-stats span {
+  display: block;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.seller-hero-stats strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 36px;
+  color: var(--navy);
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: minmax(460px, 1fr) minmax(420px, 0.95fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.bonus-showcase {
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 20px;
+  align-items: center;
+  padding: 30px;
+  border-radius: 34px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 75% 20%, rgba(202, 162, 74, 0.18), transparent 32%),
+    linear-gradient(135deg, #05070a 0%, #071426 45%, #0d2944 100%);
+  box-shadow: 0 26px 70px rgba(7, 20, 38, 0.22);
+  border: 1px solid rgba(202, 162, 74, 0.22);
+}
+
+.bonus-copy span {
+  width: fit-content;
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #ffe4a3;
+  background: rgba(202, 162, 74, 0.15);
+  border: 1px solid rgba(202, 162, 74, 0.48);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bonus-copy h2 {
+  margin: 18px 0 12px;
+  font-size: 42px;
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.bonus-copy p {
+  margin: 0;
+  max-width: 320px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.bonus-image-wrap {
+  height: 100%;
+  min-height: 500px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.bonus-image-wrap img {
+  width: 100%;
+  height: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 24px;
+  background: #000000;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+}
+
+.quick-panel,
+.seller-panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(13, 41, 68, 0.12);
+  border-radius: 34px;
+  box-shadow: 0 22px 54px rgba(7, 20, 38, 0.10);
+}
+
+.quick-panel {
+  padding: 28px;
+}
+
+.quick-header {
+  margin-bottom: 20px;
+}
+
+.quick-header span {
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.quick-header h2 {
+  margin: 8px 0 8px;
+  color: var(--navy);
+  font-size: 32px;
+  letter-spacing: -0.05em;
+}
+
+.quick-header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.quick-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.quick-form .wide {
+  grid-column: 1 / -1;
+}
+
+.quick-form button {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(520px, 1.25fr) minmax(360px, 0.75fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.seller-panel {
+  padding: 26px;
+}
+
+.seller-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.seller-panel-head h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.seller-panel-head p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.calendar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-actions strong {
+  min-width: 165px;
+  text-align: center;
+  color: var(--navy);
+  text-transform: capitalize;
+}
+
+.seller-weekdays,
+.seller-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 9px;
+}
+
+.seller-weekdays {
+  margin-bottom: 9px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.seller-calendar-grid {
+  min-height: 430px;
+}
+
+.seller-day {
+  min-height: 78px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #ffffff;
+}
+
+.seller-day.empty {
+  border: 0;
+  background: transparent;
+}
+
+.seller-day.today {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 2px rgba(29, 95, 159, 0.16);
+}
+
+.seller-day.has-events {
+  background: linear-gradient(180deg, #ffffff, #fff8df);
+}
+
+.seller-day-number {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.seller-day-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.demo-dot {
+  background: var(--blue);
+}
+
+.mantenimiento-dot {
+  background: var(--gold);
+}
+
+.seller-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.seller-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.vertical-agenda {
+  display: grid;
+  gap: 24px;
+}
+
+.agenda-block {
+  min-height: 260px;
+}
+
+.agenda-list {
+  display: grid;
+  gap: 12px;
+}
+
+.agenda-list:empty::before {
+  content: "No hay registros para mostrar.";
+  display: block;
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  background: #f8fafc;
+}
+
+.agenda-card {
+  padding: 15px;
+  border: 1px solid rgba(13, 41, 68, 0.10);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+}
+
+.agenda-card.demo {
+  border-left: 5px solid var(--blue);
+}
+
+.agenda-card.mantenimiento {
+  border-left: 5px solid var(--gold);
+}
+
+.agenda-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agenda-top strong {
+  color: var(--navy);
+}
+
+.agenda-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.agenda-address {
+  margin-top: 8px;
+  color: #344054;
+  font-size: 13px;
+}
+
+.agenda-badge {
+  width: fit-content;
+  height: fit-content;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.agenda-badge.demo {
+  background: var(--blue-soft);
+  color: var(--navy);
+}
+
+.agenda-badge.mantenimiento {
+  background: var(--gold-soft);
+  color: #755400;
+}
+
+.agenda-card p {
+  margin: 10px 0 0;
+}
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 99;
+  padding: 15px 18px;
+  border-radius: 16px;
+  color: #ffffff;
+  background: var(--navy);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.22);
+  font-weight: 900;
+}
+
+@media (max-width: 1480px) {
+  .landing-grid,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bonus-showcase {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+
+  .vertical-agenda {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 980px) {
+  .seller-main {
+    padding: 22px;
+  }
+
+  .seller-hero {
+    flex-direction: column;
+  }
+
+  .seller-hero-stats {
+    width: 100%;
+  }
+
+  .bonus-showcase,
+  .quick-form,
+  .vertical-agenda {
+    grid-template-columns: 1fr;
+  }
+
+  .bonus-image-wrap {
+    min-height: 360px;
+  }
+
+  .seller-panel-head,
+  .agenda-top {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .seller-hero-copy h1 {
+    font-size: 38px;
+  }
+
+  .bonus-copy h2 {
+    font-size: 34px;
+  }
+
+  .seller-hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-calendar-grid {
+    min-height: auto;
+  }
+
+  .seller-day {
+    min-height: 58px;
+    border-radius: 14px;
+  }
+}

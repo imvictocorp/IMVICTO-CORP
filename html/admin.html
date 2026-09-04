@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>IMVICTO CORP | Admin</title>
+
+  <link rel="icon" type="image/png" href="../img/logo-nofond.png" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+
+<body data-roles="admin">
+  <div class="app-shell admin-shell">
+    <aside class="sidebar admin-sidebar">
+      <div class="sidebar-brand">
+        <img src="../img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+        <div>
+          <strong>IMVICTO CORP</strong>
+          <span>Vista administrador</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-view="inicio">Inicio</button>
+        <button class="nav-btn" data-view="ventas">Ventas</button>
+        <a class="nav-link" href="./seguimiento.html">Seguimiento</a>
+        <button class="nav-btn" data-view="cuotas">Cuotas</button>
+        <button class="nav-btn" data-view="clientes">Ingresar Clientes</button>
+        <button class="nav-btn" data-view="usuarios">Usuarios</button>
+        <button class="nav-btn" data-view="excel">Importar</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span id="sessionLabel" class="small"></span>
+        <button id="logoutBtn" class="btn ghost full">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main admin-main">
+      <header class="admin-topbar">
+        <div>
+          <p class="eyebrow">Panel administrativo</p>
+          <h1 id="viewTitle">Inicio</h1>
+          <p id="viewSubtitle">Control general de clientes, ventas, cuotas y reportes.</p>
+        </div>
+
+        <button id="refreshBtn" class="btn secondary">Actualizar</button>
+      </header>
+
+      <!-- INICIO -->
+      <section id="inicio" class="view active">
+        <div class="admin-stats">
+          <article class="admin-stat">
+            <span>Clientes</span>
+            <strong id="statClientes">0</strong>
+          </article>
+
+          <article class="admin-stat">
+            <span>Ventas</span>
+            <strong id="statVentas">0</strong>
+          </article>
+
+          <article class="admin-stat danger">
+            <span>Cuotas vencidas</span>
+            <strong id="statVencidas">0</strong>
+          </article>
+
+          <article class="admin-stat money">
+            <span>Pendiente por cobrar</span>
+            <strong id="statPendiente">S/ 0.00</strong>
+          </article>
+        </div>
+
+        <div class="admin-grid section-space">
+          <section class="admin-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h3>Cuotas próximas</h3>
+                <p>Vencen hoy o dentro de los próximos 14 días.</p>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Cuota</th>
+                    <th>Monto</th>
+                    <th>Vence</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="homeCuotasBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="admin-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h3>Seguimiento comercial</h3>
+                <p>Demos y mantenimientos agendados por vendedores.</p>
+              </div>
+              <a href="./seguimiento.html" class="btn primary">Ver seguimiento</a>
+            </div>
+
+            <div class="mini-follow">
+              <article>
+                <span>Demos</span>
+                <strong id="statDemos">0</strong>
+              </article>
+
+              <article>
+                <span>Mantenimientos</span>
+                <strong id="statMantenimientos">0</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- CLIENTES -->
+      <section id="clientes" class="view">
+        <div class="admin-grid">
+          <form id="clienteForm" class="admin-panel form-grid">
+            <div class="admin-panel-head wide">
+              <div>
+                <h3 id="clienteFormTitle">Nuevo cliente</h3>
+                <p>Registro y edición de base de clientes.</p>
+              </div>
+            </div>
+
+            <label>Año
+              <input name="anio" type="number" required />
+            </label>
+
+            <label>Nombres
+              <input name="nombres" required />
+            </label>
+
+            <label>Apellidos
+              <input name="apellidos" required />
+            </label>
+
+            <label>DNI
+              <input name="dni" required />
+            </label>
+
+            <label>Teléfono
+              <input name="telefono" required />
+            </label>
+
+            <label>Tel. referencia
+              <input name="telefono_referencia" />
+            </label>
+
+            <label>Correo
+              <input name="correo" type="email" />
+            </label>
+
+            <label>Código cliente
+              <input name="codigo_cliente" required />
+            </label>
+
+            <label>Estado civil
+              <select name="estado_civil">
+                <option value="">Seleccionar</option>
+                <option value="SOLTER@">Solter@</option>
+                <option value="CASAD@">Casad@</option>
+                <option value="VIUD@">Viud@</option>
+                <option value="DIVORCIAD@">Divorciad@</option>
+              </select>
+            </label>
+
+            <label>Nivel cliente
+              <select name="nivel_cliente" required>
+                <option value="">Seleccionar</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+                <option>9</option>
+              </select>
+            </label>
+
+            <label class="wide">Dirección
+              <input name="direccion" required />
+            </label>
+
+            <label class="wide">Observaciones
+              <textarea name="observaciones" rows="3"></textarea>
+            </label>
+
+            <div class="form-actions wide">
+              <button id="cancelClienteEdit" type="button" class="btn ghost hidden">Cancelar edición</button>
+              <button type="reset" class="btn ghost">Limpiar</button>
+              <button id="clienteSubmit" type="submit" class="btn primary">Guardar cliente</button>
+            </div>
+          </form>
+
+          <section class="admin-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h3>Base de clientes</h3>
+                <p>Clientes registrados en el sistema.</p>
+              </div>
+              <input id="clienteSearch" class="search" placeholder="Buscar cliente, DNI o teléfono..." />
+            </div>
+
+            <div class="table-wrap tall">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>DNI</th>
+                    <th>Teléfono</th>
+                    <th>Código</th>
+                    <th>Nivel</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="clientesBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- VENTAS -->
+      <section id="ventas" class="view">
+        <section class="admin-panel">
+          <div class="admin-panel-head">
+            <div>
+              <h3>Ventas registradas</h3>
+              <p>Ventas cargadas desde la vista vendedor o registros locales.</p>
+            </div>
+            <input id="ventaSearch" class="search" placeholder="Buscar cliente, orden o mercadería..." />
+          </div>
+
+          <div class="table-wrap tall">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Vendedor</th>
+                  <th>N° orden</th>
+                  <th>Contrato</th>
+                  <th>Mercadería</th>
+                  <th>Monto</th>
+                  <th>Adjuntos</th>
+                </tr>
+              </thead>
+              <tbody id="ventasBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- CUOTAS -->
+      <section id="cuotas" class="view">
+        <section class="admin-panel">
+          <div class="admin-panel-head">
+            <div>
+              <h3>Control de cuotas</h3>
+              <p>Vista agrupada por cliente.</p>
+            </div>
+
+            <div class="admin-filter-row">
+              <select id="cuotaFilter">
+                <option value="todas">Todas</option>
+                <option value="pendiente">Pendientes</option>
+                <option value="vencido">Vencidas</option>
+                <option value="pagado">Pagadas</option>
+              </select>
+
+              <input id="cuotaSearch" class="search" placeholder="Buscar cliente..." />
+            </div>
+          </div>
+
+          <div class="table-wrap tall">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Cuotas</th>
+                  <th>Pendientes</th>
+                  <th>Vencidas</th>
+                  <th>Total pendiente</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody id="cuotasBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- EXCEL -->
+      <section id="excel" class="view">
+        <div class="admin-grid">
+          <section class="admin-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h3>Exportar base completa</h3>
+                <p>Descarga clientes, ventas, cuotas, demos y mantenimientos.</p>
+              </div>
+            </div>
+
+            <button id="exportExcelBtn" class="btn primary">Descargar Excel</button>
+          </section>
+
+          <section class="admin-panel">
+            <div class="admin-panel-head">
+              <div>
+                <h3>Importar clientes</h3>
+                <p>Sube una base simple de clientes desde Excel.</p>
+              </div>
+            </div>
+
+            <input id="importExcelInput" type="file" accept=".xlsx,.xls" />
+            <button id="importClientesBtn" class="btn secondary section-space">Importar clientes</button>
+          </section>
+        </div>
+      </section>
+
+      <!-- USUARIOS -->
+      <section id="usuarios" class="view">
+        <section class="admin-panel">
+          <div class="admin-panel-head">
+            <div>
+              <h3>Usuarios configurados</h3>
+              <p>Se leen desde <strong>WEB/js/config.js</strong>.</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Alias</th>
+                </tr>
+              </thead>
+              <tbody id="usuariosBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <div id="modalRoot" class="hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+
+</html>

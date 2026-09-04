@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>IMVICTO CORP | Login</title>
+
+  <link rel="icon" type="image/png" href="../img/logo-nofond.png" />
+  <link rel="stylesheet" href="../css/login.css" />
+</head>
+
+<body>
+  <main class="login-page">
+    <section class="login-card">
+      <div class="logo-box">
+        <img src="../img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+      </div>
+
+      <h1>IMVICTO CORP</h1>
+
+      <p class="subtitle">
+        Acceso interno para administradores y vendedores.
+      </p>
+
+      <form id="loginForm" class="login-form">
+        <label>
+          Correo
+          <input id="correo" type="email" autocomplete="email" required />
+        </label>
+
+        <label>
+          Contraseña
+          <input id="clave" type="password" autocomplete="current-password" required />
+        </label>
+
+        <button type="submit">
+          Ingresar
+        </button>
+
+        <p id="loginError" class="error-message"></p>
+      </form>
+
+      <p class="note">
+        Sistema privado de IMVICTO CORP.
+      </p>
+    </section>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/login.js"></script>
+</body>
+</html>

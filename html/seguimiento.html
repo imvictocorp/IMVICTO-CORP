@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>IMVICTO CORP | Seguimiento</title>
+
+  <link rel="icon" type="image/png" href="../img/logo-nofond.png" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/seguimiento.css" />
+</head>
+
+<body data-roles="admin">
+  <div class="app-shell follow-shell">
+    <aside class="sidebar follow-sidebar">
+      <div class="sidebar-brand">
+        <img src="../img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+        <div>
+          <strong>IMVICTO CORP</strong>
+          <span>Seguimiento comercial</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-link" href="./admin.html">Admin</a>
+        <button class="nav-btn active" type="button">Seguimiento</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span id="sessionLabel" class="small"></span>
+        <button id="logoutBtn" class="btn ghost full">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main follow-main">
+      <header class="follow-hero">
+        <div>
+          <p class="eyebrow">Panel de seguimiento</p>
+          <h1>Demos y mantenimientos</h1>
+          <p>
+            Controla las gestiones agendadas por vendedores desde Google Forms o desde la vista vendedor.
+          </p>
+        </div>
+
+        <button id="syncFormsBtn" class="btn primary">Sincronizar Google Forms</button>
+      </header>
+
+      <section class="follow-stats">
+        <article>
+          <span>Total demos</span>
+          <strong id="statDemos">0</strong>
+        </article>
+
+        <article>
+          <span>Total mantenimientos</span>
+          <strong id="statMantenimientos">0</strong>
+        </article>
+
+        <article>
+          <span>Hoy</span>
+          <strong id="statHoy">0</strong>
+        </article>
+
+        <article>
+          <span>Próximos 7 días</span>
+          <strong id="statSemana">0</strong>
+        </article>
+      </section>
+
+      <section class="follow-panel">
+        <div class="follow-panel-head">
+          <div>
+            <h3>Filtros</h3>
+            <p>Filtra por vendedor, tipo, fecha o cliente.</p>
+          </div>
+
+          <button id="clearFiltersBtn" class="btn ghost">Limpiar filtros</button>
+        </div>
+
+        <div class="follow-filters">
+          <label>
+            Vendedor
+            <select id="filterVendedor">
+              <option value="">Todos</option>
+            </select>
+          </label>
+
+          <label>
+            Tipo
+            <select id="filterTipo">
+              <option value="">Todos</option>
+              <option value="demo">Demo</option>
+              <option value="mantenimiento">Mantenimiento</option>
+            </select>
+          </label>
+
+          <label>
+            Desde
+            <input id="filterDesde" type="date" />
+          </label>
+
+          <label>
+            Hasta
+            <input id="filterHasta" type="date" />
+          </label>
+
+          <label>
+            Buscar
+            <input id="filterSearch" placeholder="Cliente, dirección, perfil..." />
+          </label>
+        </div>
+      </section>
+
+      <div class="follow-grid section-space">
+        <section class="follow-panel calendar-panel">
+          <div class="follow-panel-head">
+            <div>
+              <h3>Calendario general</h3>
+              <p>Demos y mantenimientos de todos los vendedores.</p>
+            </div>
+
+            <div class="calendar-actions">
+              <button id="calendarPrev" type="button" class="btn ghost mini">‹</button>
+              <strong id="calendarLabel"></strong>
+              <button id="calendarNext" type="button" class="btn ghost mini">›</button>
+            </div>
+          </div>
+
+          <div class="calendar-weekdays follow-weekdays">
+            <span>L</span>
+            <span>M</span>
+            <span>M</span>
+            <span>J</span>
+            <span>V</span>
+            <span>S</span>
+            <span>D</span>
+          </div>
+
+          <div id="calendarGrid" class="follow-calendar-grid"></div>
+
+          <div class="follow-legend">
+            <span><i class="dot demo-dot"></i> Demo</span>
+            <span><i class="dot mantenimiento-dot"></i> Mantenimiento</span>
+          </div>
+        </section>
+
+        <section class="follow-panel">
+          <div class="follow-panel-head">
+            <div>
+              <h3>Resumen por vendedor</h3>
+              <p>Conteo consolidado por responsable.</p>
+            </div>
+          </div>
+
+          <div id="sellerSummary" class="seller-summary"></div>
+        </section>
+      </div>
+
+      <section class="follow-panel section-space">
+        <div class="follow-panel-head">
+          <div>
+            <h3>Gestiones agendadas</h3>
+            <p>Demos y mantenimientos cargados al sistema.</p>
+          </div>
+
+          <button id="exportSeguimientoBtn" class="btn secondary">Exportar seguimiento</button>
+        </div>
+
+        <div id="followList" class="follow-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/seguimiento.js"></script>
+</body>
+</html>

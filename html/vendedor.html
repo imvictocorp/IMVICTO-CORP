@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>IMVICTO CORP | Vendedor</title>
+
+  <link rel="icon" type="image/png" href="../img/logo-nofond.png" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/vendedor.css" />
+</head>
+
+<body data-roles="vendedor,admin">
+  <div class="app-shell seller-shell">
+    <aside class="sidebar seller-sidebar">
+      <div class="sidebar-brand seller-brand">
+        <img src="../img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+        <div>
+          <strong>IMVICTO CORP</strong>
+          <span>Panel vendedor</span>
+        </div>
+      </div>
+
+      <div class="seller-side-card">
+        <span>Gestión comercial</span>
+        <strong>Agenda tus demos y mantenimientos desde Inicio.</strong>
+      </div>
+
+      <div class="sidebar-footer">
+        <span id="sessionLabel" class="small"></span>
+        <button id="logoutBtn" class="btn ghost full">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main seller-main">
+      <section id="inicio" class="seller-page">
+        <header class="seller-hero">
+          <div class="seller-hero-copy">
+            <p class="eyebrow">Panel comercial</p>
+            <h1>Inicio</h1>
+            <p>
+              Revisa tu incentivo vigente, registra gestiones y mira tu calendario comercial.
+            </p>
+          </div>
+
+          <div class="seller-hero-stats">
+            <article>
+              <span>Mis demos</span>
+              <strong id="statMisDemos">0</strong>
+            </article>
+
+            <article>
+              <span>Mantenimientos</span>
+              <strong id="statMisMantenimientos">0</strong>
+            </article>
+          </div>
+        </header>
+
+        <div class="landing-grid">
+          <section class="bonus-showcase">
+            <div class="bonus-copy">
+              <span>Incentivo vigente</span>
+              <h2>Bonos e incentivos</h2>
+              <p>
+                Revisa la campaña activa antes de iniciar gestión.
+              </p>
+            </div>
+
+            <div class="bonus-image-wrap">
+              <img src="../img/bono-incentivo.png" alt="Bono incentivo IMVICTO CORP" />
+            </div>
+          </section>
+
+          <section class="quick-panel">
+            <div class="quick-header">
+              <span>Registro rápido</span>
+              <h2>Finalizar gestión</h2>
+              <p>
+                Agenda una demo o mantenimiento. Al guardar, se cargará automáticamente a tus métricas, listas y
+                calendario.
+              </p>
+            </div>
+
+            <button id="syncFormsBtn" type="button" class="btn secondary full sync-btn">
+              Sincronizar Google Forms
+            </button>
+
+            <form id="quickGestionForm" class="quick-form">
+              <label>
+                Tipo de gestión
+                <select name="tipo" required>
+                  <option value="demo">Demo</option>
+                  <option value="mantenimiento">Mantenimiento</option>
+                </select>
+              </label>
+
+              <label>
+                Cliente existente
+                <select name="cliente_id" id="quickClienteSelect">
+                  <option value="">Registrar manualmente</option>
+                </select>
+              </label>
+
+              <label>
+                Nombre cliente
+                <input name="nombre_cliente" required />
+              </label>
+
+              <label>
+                Teléfono
+                <input name="telefono" />
+              </label>
+
+              <label class="wide">
+                Dirección
+                <input name="direccion" />
+              </label>
+
+              <label>
+                Perfil
+                <input name="perfil" required />
+              </label>
+
+              <label>
+                Fecha
+                <input name="fecha" type="date" required />
+              </label>
+
+              <label>
+                Hora
+                <input name="hora" type="time" />
+              </label>
+
+              <label class="wide">
+                Notas
+                <textarea name="notas" rows="3"></textarea>
+              </label>
+
+              <button type="submit" class="btn primary full">
+                Guardar en mi calendario
+              </button>
+            </form>
+          </section>
+        </div>
+
+        <div class="content-grid">
+          <section class="seller-panel calendar-panel">
+            <div class="seller-panel-head">
+              <div>
+                <h3>Calendario del vendedor</h3>
+                <p>Demos y mantenimientos cargados desde el formulario.</p>
+              </div>
+
+              <div class="calendar-actions">
+                <button id="calendarPrev" type="button" class="btn ghost mini">‹</button>
+                <strong id="calendarLabel"></strong>
+                <button id="calendarNext" type="button" class="btn ghost mini">›</button>
+              </div>
+            </div>
+
+            <div class="calendar-weekdays seller-weekdays">
+              <span>L</span>
+              <span>M</span>
+              <span>M</span>
+              <span>J</span>
+              <span>V</span>
+              <span>S</span>
+              <span>D</span>
+            </div>
+
+            <div id="calendarGrid" class="seller-calendar-grid"></div>
+
+            <div class="seller-legend">
+              <span><i class="dot demo-dot"></i> Demo</span>
+              <span><i class="dot mantenimiento-dot"></i> Mantenimiento</span>
+            </div>
+          </section>
+
+          <aside class="vertical-agenda">
+            <section class="seller-panel agenda-block">
+              <div class="seller-panel-head">
+                <div>
+                  <h3>Mis demos</h3>
+                  <p>Demos agendadas.</p>
+                </div>
+              </div>
+
+              <div id="agendaDemos" class="agenda-list"></div>
+            </section>
+
+            <section class="seller-panel agenda-block">
+              <div class="seller-panel-head">
+                <div>
+                  <h3>Mantenimientos próximos</h3>
+                  <p>Visitas, garantías y mantenimientos.</p>
+                </div>
+              </div>
+
+              <div id="agendaMantenimientos" class="agenda-list"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/vendedor.js"></script>
+</body>
+
+</html>
