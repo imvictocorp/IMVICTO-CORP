@@ -1,17 +1,13 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0; url=./html/login.html" />
   <title>IMVICTO CORP</title>
-  <link rel="icon" type="image/jpeg" href="assets/img/logo-imvicto.jpg" />
 </head>
 <body>
   <script>
-    const session = JSON.parse(localStorage.getItem("imvicto_session") || "null");
-    if (!session) location.replace("login.html");
-    else if (session.role === "admin") location.replace("admin.html");
-    else location.replace("vendedor.html");
+    window.location.href = "./html/login.html";
   </script>
 </body>
 </html>
