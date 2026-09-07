@@ -3,56 +3,74 @@ const loginError = document.getElementById("loginError");
 
 if (!loginForm) {
   console.error("No existe el formulario con id='loginForm'.");
-}
+} else {
+  loginForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-loginForm.addEventListener("submit", function (event) {
-  event.preventDefault();
+    loginError.textContent = "";
 
-  loginError.textContent = "";
+    const correoInput = document.getElementById("correo");
+    const claveInput = document.getElementById("clave");
 
-  const correoInput = document.getElementById("correo");
-  const claveInput = document.getElementById("clave");
+    const correo = correoInput.value.trim().toLowerCase();
+    const clave = claveInput.value;
 
-  if (!correoInput || !claveInput) {
-    loginError.textContent = "Error interno: faltan campos de login.";
-    return;
-  }
+    try {
+      const { data, error } =
+        await window.supabaseClient.auth.signInWithPassword({
+          email: correo,
+          password: clave
+        });
 
-  if (typeof IMVICTO_USERS === "undefined") {
-    loginError.textContent = "Error interno: no se cargó config.js.";
-    console.error("No existe IMVICTO_USERS. Revisa que config.js cargue antes que login.js.");
-    return;
-  }
+      if (error) {
+        console.error("[LOGIN] Error:", error);
+        loginError.textContent = "Correo o contraseña incorrectos.";
+        return;
+      }
 
-  const correo = correoInput.value.trim().toLowerCase();
-  const clave = claveInput.value.trim();
+      const user = data.user;
 
-  const usuario = IMVICTO_USERS.find((user) => {
-    return user.correo.toLowerCase() === correo && user.clave === clave;
+      // Buscar el perfil del usuario
+      const { data: perfil, error: perfilError } =
+        await window.supabaseClient
+          .from("profiles")
+          .select("id, nombre, apellido, email, telefono, empresa, rol")
+          .eq("id", user.id)
+          .single();
+
+      if (perfilError) {
+        console.error("[LOGIN] Error obteniendo perfil:", perfilError);
+        loginError.textContent =
+          "El usuario inició sesión, pero no tiene un perfil configurado.";
+        return;
+      }
+
+      // Guardar información básica para la interfaz
+      sessionStorage.setItem(
+        "imvicto_user",
+        JSON.stringify(perfil)
+      );
+
+      console.log("[LOGIN] Usuario autenticado:", perfil);
+
+      // Redireccionar según el rol
+      if (perfil.rol === "admin") {
+        window.location.href = "./admin.html";
+        return;
+      }
+
+      if (perfil.rol === "vendedor") {
+        window.location.href = "./vendedor.html";
+        return;
+      }
+
+      loginError.textContent =
+        "El usuario no tiene un rol válido.";
+
+    } catch (error) {
+      console.error("[LOGIN] Error inesperado:", error);
+      loginError.textContent =
+        "Ocurrió un error al iniciar sesión.";
+    }
   });
-
-  if (!usuario) {
-    loginError.textContent = "Correo o contraseña incorrectos.";
-    return;
-  }
-
-  sessionStorage.setItem("imvicto_user", JSON.stringify({
-    nombre: usuario.nombre,
-    correo: usuario.correo,
-    rol: usuario.rol
-  }));
-
-  console.log("[LOGIN] Usuario guardado:", usuario);
-
-  if (usuario.rol === "admin") {
-    window.location.href = "./admin.html";
-    return;
-  }
-
-  if (usuario.rol === "vendedor") {
-    window.location.href = "./vendedor.html";
-    return;
-  }
-
-  loginError.textContent = "El usuario no tiene un rol válido.";
-});
+}
