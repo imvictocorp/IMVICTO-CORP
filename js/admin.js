@@ -251,21 +251,20 @@
       return;
     }
 
-    els.ventasBody.innerHTML = ventas.map((venta) => {
-      const docs = Array.isArray(venta.documentos) ? venta.documentos.length : 0;
+els.ventasBody.innerHTML = ventas.map((venta) => {
+  return `
+    <tr>
+      <td>${escapeHtml(venta.cliente_nombre || "")}</td>
+      <td>${escapeHtml(venta.numero_orden || "")}</td>
+      <td>${escapeHtml(venta.numero_cliente || "")}</td>
+      <td>${escapeHtml(venta.estado_pedido || "")}</td>
+      <td>${escapeHtml(venta.tipo_contrato || "")}</td>
+      <td>${escapeHtml(venta.mercaderia || "")}</td>
+      <td>${money(venta.monto_total)}</td>
+    </tr>
+  `;
+}).join("");
 
-      return `
-        <tr>
-          <td>${escapeHtml(venta.cliente_nombre || "")}</td>
-          <td>${escapeHtml(venta.vendedor_nombre || "")}</td>
-          <td>${escapeHtml(venta.numero_orden || "")}</td>
-          <td>${escapeHtml(venta.tipo_contrato || "")}</td>
-          <td>${escapeHtml(venta.mercaderia || "")}</td>
-          <td>${money(venta.monto_total)}</td>
-          <td>${docs} archivo(s)</td>
-        </tr>
-      `;
-    }).join("");
   }
 
   function renderCuotas() {
@@ -537,15 +536,134 @@
     toast(`Clientes importados/actualizados: ${imported}.`);
   }
 
-  function handleDocumentClick(event) {
-    const action = event.target.dataset.action;
-    const id = event.target.dataset.id;
+function handleClienteSubmit(event) {
+  event.preventDefault();
 
-    if (!action || !id) return;
+  const form = event.target;
+  const data = new FormData(form);
 
-    if (action === "edit-client") editClient(id);
-    if (action === "delete-client") deleteClient(id);
+  const cliente = {
+    id: state.editingClientId || makeId(),
+    nombres: upper(data.get("nombres")),
+    apellidos: upper(data.get("apellidos")),
+    dni: clean(data.get("dni")),
+    telefono: clean(data.get("telefono")),
+    correo: clean(data.get("correo")),
+    codigo_cliente: clean(data.get("numero_cliente")),
+    estado_civil: clean(data.get("estado_civil")),
+    nivel_cliente: clean(data.get("nivel_cliente")),
+    direccion: upper(data.get("direccion")),
+    observaciones: clean(data.get("observaciones")),
+    updated_at: new Date().toISOString()
+  };
+
+  const venta = {
+    id: makeId(),
+    cliente_id: cliente.id,
+    cliente_nombre: fullName(cliente),
+    numero_orden: clean(data.get("numero_orden")),
+    numero_cliente: clean(data.get("numero_cliente")),
+    fecha_orden: clean(data.get("fecha_orden")),
+    estado_pedido: clean(data.get("estado_pedido")),
+    correo: clean(data.get("correo")),
+    telefono: clean(data.get("telefono")),
+    dni: clean(data.get("dni")),
+    direccion: upper(data.get("direccion")),
+    mercaderia: upper(data.get("mercaderia")),
+    regalo: upper(data.get("regalo")),
+    estado_civil: clean(data.get("estado_civil")),
+    nivel_cliente: clean(data.get("nivel_cliente")),
+    tipo_contrato: clean(data.get("tipo_contrato")),
+    monto_total: toNumber(data.get("monto_total")),
+    monto_cuota: toNumber(data.get("monto_cuota")),
+    cantidad_cuotas: toInt(data.get("cantidad_cuotas")),
+    fecha_pago: clean(data.get("fecha_pago")),
+    vendedor_nombre: "",
+    documentos: [],
+    created_at: new Date().toISOString()
+  };
+
+  if (state.editingClientId) {
+    state.clientes = state.clientes.map((item) => {
+      return item.id === state.editingClientId ? { ...item, ...cliente } : item;
+    });
+
+    syncClientName(cliente);
+    toast("Cliente actualizado.");
+  } else {
+    cliente.created_at = new Date().toISOString();
+
+    const existingIndex = state.clientes.findIndex((item) => {
+      return item.dni && cliente.dni && item.dni === cliente.dni;
+    });
+
+    if (existingIndex >= 0) {
+      cliente.id = state.clientes[existingIndex].id;
+      venta.cliente_id = cliente.id;
+      venta.cliente_nombre = fullName(cliente);
+
+      state.clientes[existingIndex] = {
+        ...state.clientes[existingIndex],
+        ...cliente
+      };
+    } else {
+      state.clientes.push(cliente);
+    }
+
+    state.ventas.push(venta);
+    generarCuotasDesdeVenta(venta);
+
+    toast("Registro guardado.");
   }
+
+  saveAll();
+  cancelClientEdit();
+  loadAll();
+  renderAll();
+}
+
+
+function generarCuotasDesdeVenta(venta) {
+  /*
+    Limpia cuotas anteriores de esa venta si existieran.
+    Esto evita duplicados si se vuelve a registrar o editar.
+  */
+  state.cuotas = state.cuotas.filter((cuota) => cuota.venta_id !== venta.id);
+
+  /*
+    Si el pedido está en CANCELACIÓN TOTAL, no debe generar cuotas.
+  */
+  if (normalizeText(venta.estado_pedido) === "CANCELACION TOTAL") {
+    return;
+  }
+
+  /*
+    Si no hay datos suficientes para cuotas, no genera.
+  */
+  if (!venta.cantidad_cuotas || !venta.monto_cuota || !venta.fecha_pago) {
+    return;
+  }
+
+  for (let i = 1; i <= venta.cantidad_cuotas; i++) {
+    const fechaVencimiento = addMonthsToDate(venta.fecha_pago, i - 1);
+
+    state.cuotas.push({
+      id: makeId(),
+      venta_id: venta.id,
+      cliente_id: venta.cliente_id,
+      cliente_nombre: venta.cliente_nombre,
+      numero_orden: venta.numero_orden,
+      numero_cliente: venta.numero_cliente,
+      numero_cuota: i,
+      monto: venta.monto_cuota,
+      fecha_vencimiento: fechaVencimiento,
+      estado: "pendiente",
+      estado_pedido: venta.estado_pedido,
+      tipo_contrato: venta.tipo_contrato,
+      created_at: new Date().toISOString()
+    });
+  }
+}
 
   function showConfirm({ title, message, confirmText, onConfirm }) {
     els.modalRoot.classList.remove("hidden");

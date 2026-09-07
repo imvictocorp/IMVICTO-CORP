@@ -218,146 +218,77 @@
         <div class="admin-grid">
 
           <form id="clienteForm" class="admin-panel form-grid">
-
             <div class="admin-panel-head wide">
-
               <div>
-
-                <h3 id="clienteFormTitle">
-                  Nuevo cliente
-                </h3>
-
-                <p>
-                  Registro y edición de base de clientes.
-                </p>
-
+                <h3 id="clienteFormTitle">Nuevo registro</h3>
+                <p>Cliente, pedido, contrato y cuotas.</p>
               </div>
-
             </div>
 
-
             <label>
-              Año
-
-              <input
-                name="anio"
-                type="number"
-                required
-              />
+              Nombres *
+              <input name="nombres" required />
             </label>
 
-
             <label>
-              Nombres
-
-              <input
-                name="nombres"
-                required
-              />
+              Apellidos *
+              <input name="apellidos" required />
             </label>
 
-
             <label>
-              Apellidos
-
-              <input
-                name="apellidos"
-                required
-              />
+              Nº orden
+              <input name="numero_orden" />
             </label>
 
-
             <label>
-              DNI
-
-              <input
-                name="dni"
-                required
-              />
+              Nº cliente
+              <input name="numero_cliente" />
             </label>
 
-
             <label>
-              Teléfono
-
-              <input
-                name="telefono"
-                required
-              />
+              Fecha de la orden
+              <input name="fecha_orden" type="date" />
             </label>
 
-
             <label>
-              Tel. referencia
-
-              <input
-                name="telefono_referencia"
-              />
+              Estado del pedido *
+              <select name="estado_pedido" required>
+                <option value="">Seleccionar</option>
+                <option value="ACTUAL">Actual</option>
+                <option value="CANCELACIÓN TOTAL">Cancelación total</option>
+              </select>
             </label>
-
 
             <label>
               Correo
-
-              <input
-                name="correo"
-                type="email"
-              />
+              <input name="correo" type="email" />
             </label>
-
 
             <label>
-              Código cliente
-
-              <input
-                name="codigo_cliente"
-                required
-              />
+              Tel. personal *
+              <input name="telefono" required />
             </label>
 
+            <label>
+              DNI *
+              <input name="dni" required />
+            </label>
 
             <label>
               Estado civil
-
               <select name="estado_civil">
-
-                <option value="">
-                  Seleccionar
-                </option>
-
-                <option value="SOLTER@">
-                  Solter@
-                </option>
-
-                <option value="CASAD@">
-                  Casad@
-                </option>
-
-                <option value="VIUD@">
-                  Viud@
-                </option>
-
-                <option value="DIVORCIAD@">
-                  Divorciad@
-                </option>
-
+                <option value="">Seleccionar</option>
+                <option value="SOLTER@">Solter@</option>
+                <option value="CASAD@">Casad@</option>
+                <option value="VIUD@">Viud@</option>
+                <option value="DIVORCIAD@">Divorciad@</option>
               </select>
-
             </label>
-
 
             <label>
               Nivel cliente
-
-              <select
-                name="nivel_cliente"
-                required
-              >
-
-                <option value="">
-                  Seleccionar
-                </option>
-
+              <select name="nivel_cliente">
+                <option value="">Seleccionar</option>
                 <option>1</option>
                 <option>2</option>
                 <option>3</option>
@@ -367,59 +298,65 @@
                 <option>7</option>
                 <option>8</option>
                 <option>9</option>
-
               </select>
-
             </label>
 
+            <label>
+              Tipo de contrato *
+              <select name="tipo_contrato" required>
+                <option value="">Seleccionar</option>
+                <option value="AL CONTADO">Al contado</option>
+                <option value="FINANCIADO">Financiado</option>
+                <option value="DFP">DFP</option>
+                <option value="SIN INTERESES">Sin intereses</option>
+              </select>
+            </label>
 
             <label class="wide">
-              Dirección
-
-              <input
-                name="direccion"
-                required
-              />
+              Dirección *
+              <input name="direccion" required />
             </label>
 
+            <label class="wide">
+              Mercadería *
+              <input name="mercaderia" required />
+            </label>
+
+            <label class="wide">
+              Regalo
+              <input name="regalo" />
+            </label>
+
+            <label>
+              Monto total *
+              <input name="monto_total" type="number" step="0.01" min="0" required />
+            </label>
+
+            <label>
+              Monto de cuota
+              <input name="monto_cuota" type="number" step="0.01" min="0" />
+            </label>
+
+            <label>
+              Cantidad de cuotas
+              <input name="cantidad_cuotas" type="number" min="0" />
+            </label>
+
+            <label>
+              Fecha de pago
+              <input name="fecha_pago" type="date" />
+            </label>
 
             <label class="wide">
               Observaciones
-
-              <textarea
-                name="observaciones"
-                rows="3"
-              ></textarea>
+              <textarea name="observaciones" rows="3"></textarea>
             </label>
 
-
             <div class="form-actions wide">
-
-              <button
-                id="cancelClienteEdit"
-                type="button"
-                class="btn ghost hidden"
-              >
-                Cancelar edición
-              </button>
-
-              <button
-                type="reset"
-                class="btn ghost"
-              >
-                Limpiar
-              </button>
-
-              <button
-                id="clienteSubmit"
-                type="submit"
-                class="btn primary"
-              >
-                Guardar cliente
-              </button>
-
+              <button id="cancelClienteEdit" type="button" class="btn ghost hidden">Cancelar edición</button>
+              <button type="reset" class="btn ghost">Limpiar</button>
+              <button id="clienteSubmit" type="submit" class="btn primary">Guardar registro</button>
             </div>
-
           </form>
 
 
@@ -439,11 +376,7 @@
 
               </div>
 
-              <input
-                id="clienteSearch"
-                class="search"
-                placeholder="Buscar cliente, DNI o teléfono..."
-              />
+              <input id="clienteSearch" class="search" placeholder="Buscar cliente, DNI o teléfono..." />
 
             </div>
 
@@ -500,11 +433,7 @@
 
             </div>
 
-            <input
-              id="ventaSearch"
-              class="search"
-              placeholder="Buscar cliente, orden o mercadería..."
-            />
+            <input id="ventaSearch" class="search" placeholder="Buscar cliente, orden o mercadería..." />
 
           </div>
 
@@ -584,11 +513,7 @@
               </select>
 
 
-              <input
-                id="cuotaSearch"
-                class="search"
-                placeholder="Buscar cliente..."
-              />
+              <input id="cuotaSearch" class="search" placeholder="Buscar cliente..." />
 
             </div>
 
@@ -650,10 +575,7 @@
             </div>
 
 
-            <button
-              id="exportExcelBtn"
-              class="btn primary"
-            >
+            <button id="exportExcelBtn" class="btn primary">
               Descargar Excel
             </button>
 
@@ -679,16 +601,9 @@
             </div>
 
 
-            <input
-              id="importExcelInput"
-              type="file"
-              accept=".xlsx,.xls"
-            />
+            <input id="importExcelInput" type="file" accept=".xlsx,.xls" />
 
-            <button
-              id="importClientesBtn"
-              class="btn secondary section-space"
-            >
+            <button id="importClientesBtn" class="btn secondary section-space">
               Importar clientes
             </button>
 
