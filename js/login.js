@@ -1,76 +1,64 @@
-const loginForm = document.getElementById("loginForm");
-const loginError = document.getElementById("loginError");
+(function () {
+  const form = document.getElementById("loginForm");
+  const toast = document.getElementById("toast");
 
-if (!loginForm) {
-  console.error("No existe el formulario con id='loginForm'.");
-} else {
-  loginForm.addEventListener("submit", async function (event) {
+  if (!form) {
+    console.error("No existe #loginForm en login.html");
+    return;
+  }
+
+  form.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    loginError.textContent = "";
+    const correo = String(form.correo?.value || "").trim().toLowerCase();
+    const clave = String(form.clave?.value || "").trim();
 
-    const correoInput = document.getElementById("correo");
-    const claveInput = document.getElementById("clave");
-
-    const correo = correoInput.value.trim().toLowerCase();
-    const clave = claveInput.value;
-
-    try {
-      const { data, error } =
-        await window.supabaseClient.auth.signInWithPassword({
-          email: correo,
-          password: clave
-        });
-
-      if (error) {
-        console.error("[LOGIN] Error:", error);
-        loginError.textContent = "Correo o contraseña incorrectos.";
-        return;
-      }
-
-      const user = data.user;
-
-      // Buscar el perfil del usuario
-      const { data: perfil, error: perfilError } =
-        await window.supabaseClient
-          .from("profiles")
-          .select("id, nombre, apellido, email, telefono, empresa, rol")
-          .eq("id", user.id)
-          .single();
-
-      if (perfilError) {
-        console.error("[LOGIN] Error obteniendo perfil:", perfilError);
-        loginError.textContent =
-          "El usuario inició sesión, pero no tiene un perfil configurado.";
-        return;
-      }
-
-      // Guardar información básica para la interfaz
-      sessionStorage.setItem(
-        "imvicto_user",
-        JSON.stringify(perfil)
-      );
-
-      console.log("[LOGIN] Usuario autenticado:", perfil);
-
-      // Redireccionar según el rol
-      if (perfil.rol === "admin") {
-        window.location.href = "./admin.html";
-        return;
-      }
-
-      if (perfil.rol === "vendedor") {
-        window.location.href = "./vendedor.html";
-        return;
-      }
-
-      loginError.textContent =
-        "El usuario no tiene un rol válido.";
-
-    } catch (error) {
-      console.error("[LOGIN] Error inesperado:", error);
-      loginError.textContent =
-        "Ocurrió un error al iniciar sesión.";
+    if (typeof IMVICTO_USERS === "undefined") {
+      showToast("No se cargó config.js. Revisa que esté antes de login.js.", true);
+      return;
     }
+
+    const user = IMVICTO_USERS.find((u) => {
+      return String(u.correo || "").trim().toLowerCase() === correo &&
+             String(u.clave || "").trim() === clave;
+    });
+
+    if (!user) {
+      showToast("Correo o contraseña incorrectos.", true);
+      return;
+    }
+
+    sessionStorage.setItem("imvicto_user", JSON.stringify({
+      nombre: user.nombre,
+      correo: user.correo,
+      rol: user.rol
+    }));
+
+    if (user.rol === "admin") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    if (user.rol === "vendedor") {
+      window.location.href = "vendedor.html";
+      return;
+    }
+
+    showToast("El usuario no tiene un rol válido.", true);
   });
-}
+
+  function showToast(message, isError) {
+    if (!toast) {
+      alert(message);
+      return;
+    }
+
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    toast.style.background = isError ? "#8f241d" : "#0d2944";
+
+    setTimeout(() => {
+      toast.classList.add("hidden");
+    }, 3500);
+  }
+})();
