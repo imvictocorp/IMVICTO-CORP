@@ -13,14 +13,15 @@ const DB = {
     const { data, error } = await imvictoSupabase
       .from(table)
       .insert(payload)
-      .select();
+      .select()
+      .single();
 
     if (error) throw error;
-    return Array.isArray(data) ? data[0] : data;
+    return data;
   },
 
   async insertMany(table, rows) {
-    if (!rows.length) return [];
+    if (!rows || !rows.length) return [];
 
     const { data, error } = await imvictoSupabase
       .from(table)
@@ -36,10 +37,11 @@ const DB = {
       .from(table)
       .update(payload)
       .eq("id", id)
-      .select();
+      .select()
+      .single();
 
     if (error) throw error;
-    return Array.isArray(data) ? data[0] : data;
+    return data;
   },
 
   async remove(table, id) {

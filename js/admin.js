@@ -1,743 +1,599 @@
 (function () {
-  const KEYS = {
-    clientes: "imvicto_clientes",
-    ventas: "imvicto_ventas",
-    cuotas: "imvicto_cuotas",
-    demos: "imvicto_demos",
-    mantenimientos: "imvicto_mantenimientos"
-  };
-
   const state = {
     clientes: [],
     ventas: [],
     cuotas: [],
-    demos: [],
-    mantenimientos: [],
     editingClientId: null
   };
 
   const els = {
-    navButtons: document.querySelectorAll(".nav-btn"),
-    views: document.querySelectorAll(".view"),
-    viewTitle: document.getElementById("viewTitle"),
-    viewSubtitle: document.getElementById("viewSubtitle"),
-    refreshBtn: document.getElementById("refreshBtn"),
-
-    statClientes: document.getElementById("statClientes"),
-    statVentas: document.getElementById("statVentas"),
-    statVencidas: document.getElementById("statVencidas"),
-    statPendiente: document.getElementById("statPendiente"),
-    statDemos: document.getElementById("statDemos"),
-    statMantenimientos: document.getElementById("statMantenimientos"),
-
-    homeCuotasBody: document.getElementById("homeCuotasBody"),
-
     clienteForm: document.getElementById("clienteForm"),
     clienteFormTitle: document.getElementById("clienteFormTitle"),
     clienteSubmit: document.getElementById("clienteSubmit"),
     cancelClienteEdit: document.getElementById("cancelClienteEdit"),
-    clienteSearch: document.getElementById("clienteSearch"),
-    clientesBody: document.getElementById("clientesBody"),
 
-    ventaSearch: document.getElementById("ventaSearch"),
-    ventasBody: document.getElementById("ventasBody"),
+    clientesBody:
+      document.getElementById("clientesBody") ||
+      document.getElementById("clientesTableBody") ||
+      document.querySelector("[data-clientes-body]"),
 
-    cuotaFilter: document.getElementById("cuotaFilter"),
-    cuotaSearch: document.getElementById("cuotaSearch"),
-    cuotasBody: document.getElementById("cuotasBody"),
+    clienteSearch:
+      document.getElementById("clienteSearch") ||
+      document.querySelector("[data-cliente-search]"),
 
-    exportExcelBtn: document.getElementById("exportExcelBtn"),
-    importExcelInput: document.getElementById("importExcelInput"),
-    importClientesBtn: document.getElementById("importClientesBtn"),
+    excelInput:
+      document.getElementById("excelInput") ||
+      document.getElementById("importExcelInput") ||
+      document.querySelector('input[type="file"]'),
 
-    usuariosBody: document.getElementById("usuariosBody"),
+    importBtn:
+      document.getElementById("importBtn") ||
+      document.getElementById("importClientesBtn") ||
+      document.querySelector("[data-import-clientes]"),
 
-    toast: document.getElementById("toast"),
-    modalRoot: document.getElementById("modalRoot")
-  };
-
-  const viewCopy = {
-    inicio: ["Inicio", "Control general de clientes, ventas, cuotas y reportes."],
-    clientes: ["Clientes", "Registro, edición y depuración de base de clientes."],
-    ventas: ["Ventas", "Ventas registradas por el equipo comercial."],
-    cuotas: ["Cuotas", "Control administrativo de vencimientos y pagos."],
-    excel: ["Excel", "Importación y exportación de la base local."],
-    usuarios: ["Usuarios", "Usuarios configurados para login local."]
+    toast: document.getElementById("toast")
   };
 
   init();
 
-  function init() {
-    loadAll();
+  async function init() {
     bindEvents();
+    await loadFromSupabase();
     renderAll();
   }
 
   function bindEvents() {
-    els.navButtons.forEach((btn) => {
-      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    if (els.clienteForm) {
+      els.clienteForm.addEventListener("submit", handleClienteSubmit);
+    }
+
+    if (els.cancelClienteEdit) {
+      els.cancelClienteEdit.addEventListener("click", cancelClientEdit);
+    }
+
+    if (els.clienteSearch) {
+      els.clienteSearch.addEventListener("input", renderClientes);
+    }
+
+    if (els.importBtn) {
+      els.importBtn.addEventListener("click", handleExcelImport);
+    }
+
+    document.addEventListener("click", async function (event) {
+      const editBtn = event.target.closest("[data-action='edit-cliente']");
+      const deleteBtn = event.target.closest("[data-action='delete-cliente']");
+
+      if (editBtn) {
+        const id = editBtn.dataset.id;
+        editClient(id);
+      }
+
+      if (deleteBtn) {
+        const id = deleteBtn.dataset.id;
+        await deleteClient(id);
+      }
     });
-
-    els.refreshBtn?.addEventListener("click", () => {
-      loadAll();
-      renderAll();
-      toast("Datos actualizados.");
-    });
-
-    els.clienteForm?.addEventListener("submit", handleClienteSubmit);
-    els.cancelClienteEdit?.addEventListener("click", cancelClientEdit);
-    els.clienteSearch?.addEventListener("input", renderClientes);
-
-    els.ventaSearch?.addEventListener("input", renderVentas);
-
-    els.cuotaFilter?.addEventListener("change", renderCuotas);
-    els.cuotaSearch?.addEventListener("input", renderCuotas);
-
-    els.exportExcelBtn?.addEventListener("click", exportExcel);
-    els.importClientesBtn?.addEventListener("click", importClientesFromExcel);
-
-    document.addEventListener("click", handleDocumentClick);
   }
 
-  function loadAll() {
-    state.clientes = readArray(KEYS.clientes);
-    state.ventas = readArray(KEYS.ventas);
-    state.cuotas = readArray(KEYS.cuotas);
-    state.demos = readArray(KEYS.demos);
-    state.mantenimientos = readArray(KEYS.mantenimientos);
-  }
+  async function loadFromSupabase() {
+    try {
+      ensureSupabaseReady();
 
-  function saveAll() {
-    writeArray(KEYS.clientes, state.clientes);
-    writeArray(KEYS.ventas, state.ventas);
-    writeArray(KEYS.cuotas, state.cuotas);
-    writeArray(KEYS.demos, state.demos);
-    writeArray(KEYS.mantenimientos, state.mantenimientos);
+      const [clientes, ventas, cuotas] = await Promise.all([
+        DB.getAll("clientes"),
+        DB.getAll("ventas"),
+        DB.getAll("cuotas")
+      ]);
+
+      state.clientes = clientes;
+      state.ventas = ventas;
+      state.cuotas = cuotas;
+
+      toast("Datos cargados desde Supabase.");
+    } catch (error) {
+      console.error("[SUPABASE LOAD ERROR]", error);
+      toast("Error cargando Supabase: " + error.message, true);
+    }
   }
 
   function renderAll() {
-    renderStats();
-    renderHomeCuotas();
     renderClientes();
-    renderVentas();
-    renderCuotas();
-    renderUsuarios();
-  }
-
-  function switchView(viewName) {
-    els.navButtons.forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.view === viewName);
-    });
-
-    els.views.forEach((view) => {
-      view.classList.toggle("active", view.id === viewName);
-    });
-
-    const [title, subtitle] = viewCopy[viewName] || viewCopy.inicio;
-    els.viewTitle.textContent = title;
-    els.viewSubtitle.textContent = subtitle;
-  }
-
-  function renderStats() {
-    const today = startOfDay(new Date());
-
-    const vencidas = state.cuotas.filter((cuota) => {
-      return cuota.estado !== "pagado" && parseDate(cuota.fecha_vencimiento) < today;
-    });
-
-    const pendiente = state.cuotas
-      .filter((cuota) => cuota.estado !== "pagado")
-      .reduce((sum, cuota) => sum + toNumber(cuota.monto), 0);
-
-    els.statClientes.textContent = state.clientes.length;
-    els.statVentas.textContent = state.ventas.length;
-    els.statVencidas.textContent = vencidas.length;
-    els.statPendiente.textContent = money(pendiente);
-    els.statDemos.textContent = state.demos.length;
-    els.statMantenimientos.textContent = state.mantenimientos.length;
-  }
-
-  function renderHomeCuotas() {
-    const today = startOfDay(new Date());
-    const limit = addDays(today, 14);
-
-    const cuotas = state.cuotas
-      .filter((cuota) => cuota.estado !== "pagado")
-      .filter((cuota) => {
-        const date = parseDate(cuota.fecha_vencimiento);
-        return date >= today && date <= limit;
-      })
-      .sort((a, b) => String(a.fecha_vencimiento).localeCompare(String(b.fecha_vencimiento)));
-
-    if (!cuotas.length) {
-      els.homeCuotasBody.innerHTML = `<tr><td colspan="5" class="empty-row">No hay cuotas próximas.</td></tr>`;
-      return;
-    }
-
-    els.homeCuotasBody.innerHTML = cuotas.map((cuota) => {
-      return `
-        <tr>
-          <td>${escapeHtml(cuota.cliente_nombre || "")}</td>
-          <td>${escapeHtml(cuota.numero_cuota || "")}</td>
-          <td>${money(cuota.monto)}</td>
-          <td>${formatDate(cuota.fecha_vencimiento)}</td>
-          <td>${cuotaBadge(cuota)}</td>
-        </tr>
-      `;
-    }).join("");
   }
 
   function renderClientes() {
-    const q = normalizeText(els.clienteSearch?.value || "");
+    if (!els.clientesBody) {
+      console.warn("No encontré el contenedor de clientes. Falta id='clientesBody'.");
+      return;
+    }
+
+    const search = normalizeText(els.clienteSearch?.value || "");
 
     const clientes = state.clientes.filter((cliente) => {
-      const haystack = normalizeText([
+      const text = normalizeText([
         cliente.nombres,
         cliente.apellidos,
         cliente.dni,
         cliente.telefono,
+        cliente.numero_cliente,
         cliente.codigo_cliente
       ].join(" "));
 
-      return haystack.includes(q);
+      return !search || text.includes(search);
     });
 
     if (!clientes.length) {
-      els.clientesBody.innerHTML = `<tr><td colspan="6" class="empty-row">No hay clientes para mostrar.</td></tr>`;
+      els.clientesBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty-cell">No hay clientes registrados.</td>
+        </tr>
+      `;
       return;
     }
 
     els.clientesBody.innerHTML = clientes.map((cliente) => {
-      const ventasCliente = state.ventas.filter((venta) => venta.cliente_id === cliente.id).length;
+      const ventasCliente = state.ventas.filter((venta) => {
+        return venta.cliente_id === cliente.id || venta.dni === cliente.dni;
+      }).length;
 
       return `
         <tr>
           <td>
-            <div class="client-name">${escapeHtml(fullName(cliente))}</div>
-            <div class="client-sub">${ventasCliente} venta(s)</div>
+            <strong>${escapeHtml(fullName(cliente))}</strong>
+            <small>${ventasCliente} venta(s)</small>
           </td>
           <td>${escapeHtml(cliente.dni || "")}</td>
           <td>${escapeHtml(cliente.telefono || "")}</td>
-          <td>${escapeHtml(cliente.codigo_cliente || "")}</td>
+          <td>${escapeHtml(cliente.numero_cliente || cliente.codigo_cliente || "")}</td>
           <td>${escapeHtml(cliente.nivel_cliente || "")}</td>
           <td>
-            <div class="row-actions">
-              <button class="btn secondary mini" data-action="edit-client" data-id="${cliente.id}">Editar</button>
-              <button class="btn danger mini" data-action="delete-client" data-id="${cliente.id}">Eliminar</button>
-            </div>
+            <button type="button" class="btn mini secondary" data-action="edit-cliente" data-id="${cliente.id}">
+              Editar
+            </button>
+            <button type="button" class="btn mini danger" data-action="delete-cliente" data-id="${cliente.id}">
+              Eliminar
+            </button>
           </td>
         </tr>
       `;
     }).join("");
   }
 
-  function renderVentas() {
-    const q = normalizeText(els.ventaSearch?.value || "");
-
-    const ventas = state.ventas.filter((venta) => {
-      const haystack = normalizeText([
-        venta.cliente_nombre,
-        venta.vendedor_nombre,
-        venta.numero_orden,
-        venta.tipo_contrato,
-        venta.mercaderia
-      ].join(" "));
-
-      return haystack.includes(q);
-    });
-
-    if (!ventas.length) {
-      els.ventasBody.innerHTML = `<tr><td colspan="7" class="empty-row">No hay ventas registradas.</td></tr>`;
-      return;
-    }
-
-els.ventasBody.innerHTML = ventas.map((venta) => {
-  return `
-    <tr>
-      <td>${escapeHtml(venta.cliente_nombre || "")}</td>
-      <td>${escapeHtml(venta.numero_orden || "")}</td>
-      <td>${escapeHtml(venta.numero_cliente || "")}</td>
-      <td>${escapeHtml(venta.estado_pedido || "")}</td>
-      <td>${escapeHtml(venta.tipo_contrato || "")}</td>
-      <td>${escapeHtml(venta.mercaderia || "")}</td>
-      <td>${money(venta.monto_total)}</td>
-    </tr>
-  `;
-}).join("");
-
-  }
-
-  function renderCuotas() {
-    const q = normalizeText(els.cuotaSearch?.value || "");
-    const filter = els.cuotaFilter?.value || "todas";
-
-    let cuotas = state.cuotas.filter((cuota) => {
-      const haystack = normalizeText(cuota.cliente_nombre || "");
-      return haystack.includes(q);
-    });
-
-    if (filter !== "todas") {
-      cuotas = cuotas.filter((cuota) => getCuotaEstado(cuota) === filter);
-    }
-
-    const groups = groupBy(cuotas, "cliente_id");
-
-    const rows = Object.values(groups).map((items) => {
-      const first = items[0];
-      const pendientes = items.filter((cuota) => cuota.estado !== "pagado");
-      const vencidas = items.filter((cuota) => getCuotaEstado(cuota) === "vencido");
-      const totalPendiente = pendientes.reduce((sum, cuota) => sum + toNumber(cuota.monto), 0);
-
-      const detail = items
-        .sort((a, b) => toNumber(a.numero_cuota) - toNumber(b.numero_cuota))
-        .map((cuota) => {
-          return `
-            <div>
-              Cuota ${escapeHtml(cuota.numero_cuota || "")} ·
-              ${money(cuota.monto)} ·
-              ${formatDate(cuota.fecha_vencimiento)} ·
-              ${cuotaBadge(cuota)}
-            </div>
-          `;
-        })
-        .join("");
-
-      return `
-        <tr>
-          <td>${escapeHtml(first.cliente_nombre || "")}</td>
-          <td>${items.length}</td>
-          <td>${pendientes.length}</td>
-          <td>${vencidas.length}</td>
-          <td>${money(totalPendiente)}</td>
-          <td><div class="detail-box">${detail}</div></td>
-        </tr>
-      `;
-    });
-
-    if (!rows.length) {
-      els.cuotasBody.innerHTML = `<tr><td colspan="6" class="empty-row">No hay cuotas para mostrar.</td></tr>`;
-      return;
-    }
-
-    els.cuotasBody.innerHTML = rows.join("");
-  }
-
-  function renderUsuarios() {
-    if (typeof IMVICTO_USERS === "undefined") {
-      els.usuariosBody.innerHTML = `<tr><td colspan="4" class="empty-row">No se cargó config.js.</td></tr>`;
-      return;
-    }
-
-    els.usuariosBody.innerHTML = IMVICTO_USERS.map((user) => {
-      return `
-        <tr>
-          <td>${escapeHtml(user.nombre || "")}</td>
-          <td>${escapeHtml(user.correo || "")}</td>
-          <td>${escapeHtml(user.rol || "")}</td>
-          <td>${escapeHtml(Array.isArray(user.alias) ? user.alias.join(", ") : "")}</td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  function handleClienteSubmit(event) {
+  async function handleClienteSubmit(event) {
     event.preventDefault();
 
     const form = event.target;
     const data = new FormData(form);
 
-    const cliente = {
-      id: state.editingClientId || makeId(),
-      anio: toInt(data.get("anio")),
+    const clientePayload = {
       nombres: upper(data.get("nombres")),
       apellidos: upper(data.get("apellidos")),
-      dni: clean(data.get("dni")),
-      telefono: clean(data.get("telefono")),
-      telefono_referencia: clean(data.get("telefono_referencia")),
+      numero_orden: clean(data.get("numero_orden")),
+      numero_cliente: clean(data.get("numero_cliente")),
+      fecha_orden: dateOrNull(data.get("fecha_orden")),
+      estado_pedido: upper(data.get("estado_pedido")),
       correo: clean(data.get("correo")),
-      codigo_cliente: clean(data.get("codigo_cliente")),
-      estado_civil: clean(data.get("estado_civil")),
-      nivel_cliente: clean(data.get("nivel_cliente")),
+      telefono: clean(data.get("telefono")),
+      dni: clean(data.get("dni")),
       direccion: upper(data.get("direccion")),
+      mercaderia: upper(data.get("mercaderia")),
+      regalo: upper(data.get("regalo")),
+      estado_civil: upper(data.get("estado_civil")),
+      nivel_cliente: clean(data.get("nivel_cliente")),
+      tipo_contrato: upper(data.get("tipo_contrato")),
+      monto_total: toNumber(data.get("monto_total")),
+      monto_cuota: toNumber(data.get("monto_cuota")),
+      cantidad_cuotas: toInt(data.get("cantidad_cuotas")),
+      fecha_pago: dateOrNull(data.get("fecha_pago")),
       observaciones: clean(data.get("observaciones")),
       updated_at: new Date().toISOString()
     };
 
-    if (state.editingClientId) {
-      state.clientes = state.clientes.map((item) => {
-        return item.id === state.editingClientId ? { ...item, ...cliente } : item;
-      });
-
-      syncClientName(cliente);
-      toast("Cliente actualizado.");
-    } else {
-      cliente.created_at = new Date().toISOString();
-      state.clientes.push(cliente);
-      toast("Cliente guardado.");
+    const validation = validateCliente(clientePayload);
+    if (validation) {
+      toast(validation, true);
+      return;
     }
 
-    saveAll();
-    cancelClientEdit();
-    loadAll();
-    renderAll();
+    try {
+      ensureSupabaseReady();
+
+      let savedCliente;
+
+      if (state.editingClientId) {
+        savedCliente = await DB.update("clientes", state.editingClientId, clientePayload);
+        await syncVentasCliente(savedCliente);
+        toast("Cliente actualizado.");
+      } else {
+        const existing = state.clientes.find((item) => {
+          return item.dni && clientePayload.dni && item.dni === clientePayload.dni;
+        });
+
+        if (existing) {
+          savedCliente = await DB.update("clientes", existing.id, clientePayload);
+        } else {
+          savedCliente = await DB.insert("clientes", clientePayload);
+        }
+
+        const ventaPayload = buildVentaPayload(savedCliente, clientePayload);
+        const savedVenta = await DB.insert("ventas", ventaPayload);
+
+        await generarCuotasDesdeVenta(savedVenta);
+
+        toast("Registro guardado en Supabase.");
+      }
+
+      cancelClientEdit();
+      await loadFromSupabase();
+      renderAll();
+    } catch (error) {
+      console.error("[SAVE ERROR]", error);
+      toast("Error al guardar: " + error.message, true);
+    }
+  }
+
+  function buildVentaPayload(cliente, source) {
+    return {
+      cliente_id: cliente.id,
+      cliente_nombre: fullName(cliente),
+      nombres: source.nombres,
+      apellidos: source.apellidos,
+      numero_orden: source.numero_orden,
+      numero_cliente: source.numero_cliente,
+      fecha_orden: source.fecha_orden,
+      estado_pedido: source.estado_pedido,
+      correo: source.correo,
+      telefono: source.telefono,
+      dni: source.dni,
+      direccion: source.direccion,
+      mercaderia: source.mercaderia,
+      regalo: source.regalo,
+      estado_civil: source.estado_civil,
+      nivel_cliente: source.nivel_cliente,
+      tipo_contrato: source.tipo_contrato,
+      monto_total: source.monto_total,
+      monto_cuota: source.monto_cuota,
+      cantidad_cuotas: source.cantidad_cuotas,
+      fecha_pago: source.fecha_pago,
+      vendedor_nombre: ""
+    };
+  }
+
+  async function generarCuotasDesdeVenta(venta) {
+    await DB.deleteWhere("cuotas", "venta_id", venta.id);
+
+    if (normalizeText(venta.estado_pedido) === "CANCELACION TOTAL") {
+      return;
+    }
+
+    if (!venta.monto_cuota || !venta.cantidad_cuotas || !venta.fecha_pago) {
+      return;
+    }
+
+    const cuotas = [];
+
+    for (let i = 1; i <= Number(venta.cantidad_cuotas); i++) {
+      cuotas.push({
+        venta_id: venta.id,
+        cliente_id: venta.cliente_id,
+        cliente_nombre: venta.cliente_nombre,
+        numero_orden: venta.numero_orden,
+        numero_cliente: venta.numero_cliente,
+        numero_cuota: i,
+        monto: Number(venta.monto_cuota),
+        fecha_vencimiento: addMonthsToDate(venta.fecha_pago, i - 1),
+        estado: "pendiente",
+        estado_pedido: venta.estado_pedido,
+        tipo_contrato: venta.tipo_contrato
+      });
+    }
+
+    await DB.insertMany("cuotas", cuotas);
+  }
+
+  async function syncVentasCliente(cliente) {
+    const ventasCliente = state.ventas.filter((venta) => {
+      return venta.cliente_id === cliente.id || venta.dni === cliente.dni;
+    });
+
+    for (const venta of ventasCliente) {
+      await DB.update("ventas", venta.id, {
+        cliente_nombre: fullName(cliente),
+        nombres: cliente.nombres,
+        apellidos: cliente.apellidos,
+        correo: cliente.correo,
+        telefono: cliente.telefono,
+        dni: cliente.dni,
+        direccion: cliente.direccion,
+        estado_civil: cliente.estado_civil,
+        nivel_cliente: cliente.nivel_cliente
+      });
+    }
   }
 
   function editClient(id) {
     const cliente = state.clientes.find((item) => item.id === id);
-    if (!cliente || !els.clienteForm) return;
+
+    if (!cliente) {
+      toast("No encontré el cliente para editar.", true);
+      return;
+    }
 
     state.editingClientId = id;
 
-    setFormValue("anio", cliente.anio);
-    setFormValue("nombres", cliente.nombres);
-    setFormValue("apellidos", cliente.apellidos);
-    setFormValue("dni", cliente.dni);
-    setFormValue("telefono", cliente.telefono);
-    setFormValue("telefono_referencia", cliente.telefono_referencia);
-    setFormValue("correo", cliente.correo);
-    setFormValue("codigo_cliente", cliente.codigo_cliente);
-    setFormValue("estado_civil", cliente.estado_civil);
-    setFormValue("nivel_cliente", cliente.nivel_cliente);
-    setFormValue("direccion", cliente.direccion);
-    setFormValue("observaciones", cliente.observaciones);
+    setValue("nombres", cliente.nombres);
+    setValue("apellidos", cliente.apellidos);
+    setValue("numero_orden", cliente.numero_orden);
+    setValue("numero_cliente", cliente.numero_cliente || cliente.codigo_cliente);
+    setValue("fecha_orden", cliente.fecha_orden);
+    setValue("estado_pedido", cliente.estado_pedido);
+    setValue("correo", cliente.correo);
+    setValue("telefono", cliente.telefono);
+    setValue("dni", cliente.dni);
+    setValue("direccion", cliente.direccion);
+    setValue("mercaderia", cliente.mercaderia);
+    setValue("regalo", cliente.regalo);
+    setValue("estado_civil", cliente.estado_civil);
+    setValue("nivel_cliente", cliente.nivel_cliente);
+    setValue("tipo_contrato", cliente.tipo_contrato);
+    setValue("monto_total", cliente.monto_total);
+    setValue("monto_cuota", cliente.monto_cuota);
+    setValue("cantidad_cuotas", cliente.cantidad_cuotas);
+    setValue("fecha_pago", cliente.fecha_pago);
+    setValue("observaciones", cliente.observaciones);
 
-    els.clienteFormTitle.textContent = "Modificar cliente";
-    els.clienteSubmit.textContent = "Actualizar cliente";
-    els.cancelClienteEdit.classList.remove("hidden");
+    if (els.clienteFormTitle) els.clienteFormTitle.textContent = "Modificar cliente";
+    if (els.clienteSubmit) els.clienteSubmit.textContent = "Actualizar cliente";
+    if (els.cancelClienteEdit) els.cancelClienteEdit.classList.remove("hidden");
 
-    switchView("clientes");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function deleteClient(id) {
+  async function deleteClient(id) {
     const cliente = state.clientes.find((item) => item.id === id);
-    if (!cliente) return;
 
-    showConfirm({
-      title: "Eliminar cliente",
-      message: `¿Seguro que deseas eliminar a ${fullName(cliente)}? Sus ventas/cuotas no se eliminan automáticamente.`,
-      confirmText: "Eliminar",
-      onConfirm: () => {
-        state.clientes = state.clientes.filter((item) => item.id !== id);
-        saveAll();
-        loadAll();
-        renderAll();
-        toast("Cliente eliminado.");
-      }
-    });
+    if (!cliente) {
+      toast("No encontré el cliente.", true);
+      return;
+    }
+
+    const ok = confirm(`¿Eliminar cliente ${fullName(cliente)}?`);
+
+    if (!ok) return;
+
+    try {
+      ensureSupabaseReady();
+
+      await DB.remove("clientes", id);
+
+      await loadFromSupabase();
+      renderAll();
+
+      toast("Cliente eliminado.");
+    } catch (error) {
+      console.error("[DELETE ERROR]", error);
+      toast("Error al eliminar: " + error.message, true);
+    }
   }
 
   function cancelClientEdit() {
     state.editingClientId = null;
-    els.clienteForm?.reset();
-    els.clienteFormTitle.textContent = "Nuevo cliente";
-    els.clienteSubmit.textContent = "Guardar cliente";
-    els.cancelClienteEdit.classList.add("hidden");
+
+    if (els.clienteForm) els.clienteForm.reset();
+    if (els.clienteFormTitle) els.clienteFormTitle.textContent = "Nuevo registro";
+    if (els.clienteSubmit) els.clienteSubmit.textContent = "Guardar registro";
+    if (els.cancelClienteEdit) els.cancelClienteEdit.classList.add("hidden");
   }
 
-  function syncClientName(cliente) {
-    const name = fullName(cliente);
-
-    state.ventas = state.ventas.map((venta) => {
-      return venta.cliente_id === cliente.id ? { ...venta, cliente_nombre: name } : venta;
-    });
-
-    state.cuotas = state.cuotas.map((cuota) => {
-      return cuota.cliente_id === cliente.id ? { ...cuota, cliente_nombre: name } : cuota;
-    });
-
-    state.demos = state.demos.map((demo) => {
-      return demo.cliente_id === cliente.id ? { ...demo, nombre_cliente: name } : demo;
-    });
-
-    state.mantenimientos = state.mantenimientos.map((item) => {
-      return item.cliente_id === cliente.id ? { ...item, nombre_cliente: name } : item;
-    });
-  }
-
-  function exportExcel() {
-    if (typeof XLSX === "undefined") {
-      toast("No se cargó la librería XLSX.", true);
-      return;
-    }
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.clientes), "Clientes");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.ventas), "Ventas");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.cuotas), "Cuotas");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.demos), "Demos");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(state.mantenimientos), "Mantenimientos");
-
-    XLSX.writeFile(wb, `IMVICTO_BASE_${toISODate(new Date())}.xlsx`);
-  }
-
-  async function importClientesFromExcel() {
-    const file = els.importExcelInput?.files?.[0];
-
-    if (!file) {
+  async function handleExcelImport() {
+    if (!els.excelInput || !els.excelInput.files || !els.excelInput.files[0]) {
       toast("Selecciona un archivo Excel.", true);
       return;
     }
 
     if (typeof XLSX === "undefined") {
-      toast("No se cargó la librería XLSX.", true);
+      toast("No se cargó la librería XLSX. Revisa el script de SheetJS.", true);
       return;
     }
 
-    const buffer = await file.arrayBuffer();
-    const wb = XLSX.read(buffer);
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    const file = els.excelInput.files[0];
 
-    let imported = 0;
+    try {
+      ensureSupabaseReady();
 
-    rows.forEach((row) => {
-      const cliente = {
-        id: makeId(),
-        anio: toInt(getColumn(row, ["AÑO", "ANIO", "Año"])),
-        nombres: upper(getColumn(row, ["NOMBRES", "Nombres", "Nombre"])),
-        apellidos: upper(getColumn(row, ["APELLIDOS", "Apellidos"])),
-        dni: clean(getColumn(row, ["DNI", "Dni"])),
-        telefono: clean(getColumn(row, ["TEL PERSONAL", "TELÉFONO", "TELEFONO", "Teléfono"])),
-        telefono_referencia: clean(getColumn(row, ["TEL DE REFERENCIA", "TEL REFERENCIA"])),
-        correo: clean(getColumn(row, ["CORREO", "Correo"])),
-        codigo_cliente: clean(getColumn(row, ["N° CLIENTE", "CODIGO CLIENTE", "CÓDIGO CLIENTE"])),
-        estado_civil: upper(getColumn(row, ["ESTADO CIVIL", "Estado civil"])),
-        nivel_cliente: clean(getColumn(row, ["NIVEL DE CLIENTE", "NIVEL CLIENTE", "Nivel"])),
-        direccion: upper(getColumn(row, ["DIRECCIÓN", "DIRECCION", "Dirección"])),
-        observaciones: "",
-        created_at: new Date().toISOString()
-      };
+      const rows = await readExcel(file);
 
-      if (!cliente.nombres || !cliente.apellidos) return;
-
-      const existingIndex = state.clientes.findIndex((item) => {
-        return cliente.dni && item.dni === cliente.dni;
-      });
-
-      if (existingIndex >= 0) {
-        state.clientes[existingIndex] = {
-          ...state.clientes[existingIndex],
-          ...cliente,
-          id: state.clientes[existingIndex].id
-        };
-      } else {
-        state.clientes.push(cliente);
+      if (!rows.length) {
+        toast("El Excel no tiene filas para importar.", true);
+        return;
       }
 
-      imported++;
-    });
+      let importedClientes = 0;
+      let importedVentas = 0;
+      let importedCuotas = 0;
 
-    saveAll();
-    loadAll();
-    renderAll();
+      for (const row of rows) {
+        const clientePayload = mapExcelRowToCliente(row);
 
-    toast(`Clientes importados/actualizados: ${imported}.`);
+        if (!clientePayload.nombres || !clientePayload.apellidos || !clientePayload.dni || !clientePayload.telefono) {
+          continue;
+        }
+
+        let savedCliente;
+
+        const existing = state.clientes.find((item) => {
+          return item.dni && clientePayload.dni && item.dni === clientePayload.dni;
+        });
+
+        if (existing) {
+          savedCliente = await DB.update("clientes", existing.id, clientePayload);
+        } else {
+          savedCliente = await DB.insert("clientes", clientePayload);
+          importedClientes++;
+        }
+
+        const ventaPayload = buildVentaPayload(savedCliente, clientePayload);
+        const savedVenta = await DB.insert("ventas", ventaPayload);
+        importedVentas++;
+
+        const beforeCount = importedCuotas;
+        const cuotas = buildCuotasFromVenta(savedVenta);
+
+        if (cuotas.length) {
+          await DB.insertMany("cuotas", cuotas);
+          importedCuotas += cuotas.length;
+        }
+
+        console.log("Cuotas generadas:", importedCuotas - beforeCount);
+      }
+
+      await loadFromSupabase();
+      renderAll();
+
+      toast(`Importación lista. Clientes nuevos: ${importedClientes}. Ventas: ${importedVentas}. Cuotas: ${importedCuotas}.`);
+    } catch (error) {
+      console.error("[IMPORT ERROR]", error);
+      toast("Error al importar: " + error.message, true);
+    }
   }
 
-function handleClienteSubmit(event) {
-  event.preventDefault();
-
-  const form = event.target;
-  const data = new FormData(form);
-
-  const cliente = {
-    id: state.editingClientId || makeId(),
-    nombres: upper(data.get("nombres")),
-    apellidos: upper(data.get("apellidos")),
-    dni: clean(data.get("dni")),
-    telefono: clean(data.get("telefono")),
-    correo: clean(data.get("correo")),
-    codigo_cliente: clean(data.get("numero_cliente")),
-    estado_civil: clean(data.get("estado_civil")),
-    nivel_cliente: clean(data.get("nivel_cliente")),
-    direccion: upper(data.get("direccion")),
-    observaciones: clean(data.get("observaciones")),
-    updated_at: new Date().toISOString()
-  };
-
-  const venta = {
-    id: makeId(),
-    cliente_id: cliente.id,
-    cliente_nombre: fullName(cliente),
-    numero_orden: clean(data.get("numero_orden")),
-    numero_cliente: clean(data.get("numero_cliente")),
-    fecha_orden: clean(data.get("fecha_orden")),
-    estado_pedido: clean(data.get("estado_pedido")),
-    correo: clean(data.get("correo")),
-    telefono: clean(data.get("telefono")),
-    dni: clean(data.get("dni")),
-    direccion: upper(data.get("direccion")),
-    mercaderia: upper(data.get("mercaderia")),
-    regalo: upper(data.get("regalo")),
-    estado_civil: clean(data.get("estado_civil")),
-    nivel_cliente: clean(data.get("nivel_cliente")),
-    tipo_contrato: clean(data.get("tipo_contrato")),
-    monto_total: toNumber(data.get("monto_total")),
-    monto_cuota: toNumber(data.get("monto_cuota")),
-    cantidad_cuotas: toInt(data.get("cantidad_cuotas")),
-    fecha_pago: clean(data.get("fecha_pago")),
-    vendedor_nombre: "",
-    documentos: [],
-    created_at: new Date().toISOString()
-  };
-
-  if (state.editingClientId) {
-    state.clientes = state.clientes.map((item) => {
-      return item.id === state.editingClientId ? { ...item, ...cliente } : item;
-    });
-
-    syncClientName(cliente);
-    toast("Cliente actualizado.");
-  } else {
-    cliente.created_at = new Date().toISOString();
-
-    const existingIndex = state.clientes.findIndex((item) => {
-      return item.dni && cliente.dni && item.dni === cliente.dni;
-    });
-
-    if (existingIndex >= 0) {
-      cliente.id = state.clientes[existingIndex].id;
-      venta.cliente_id = cliente.id;
-      venta.cliente_nombre = fullName(cliente);
-
-      state.clientes[existingIndex] = {
-        ...state.clientes[existingIndex],
-        ...cliente
-      };
-    } else {
-      state.clientes.push(cliente);
+  function buildCuotasFromVenta(venta) {
+    if (normalizeText(venta.estado_pedido) === "CANCELACION TOTAL") {
+      return [];
     }
 
-    state.ventas.push(venta);
-    generarCuotasDesdeVenta(venta);
+    if (!venta.monto_cuota || !venta.cantidad_cuotas || !venta.fecha_pago) {
+      return [];
+    }
 
-    toast("Registro guardado.");
+    const cuotas = [];
+
+    for (let i = 1; i <= Number(venta.cantidad_cuotas); i++) {
+      cuotas.push({
+        venta_id: venta.id,
+        cliente_id: venta.cliente_id,
+        cliente_nombre: venta.cliente_nombre,
+        numero_orden: venta.numero_orden,
+        numero_cliente: venta.numero_cliente,
+        numero_cuota: i,
+        monto: Number(venta.monto_cuota),
+        fecha_vencimiento: addMonthsToDate(venta.fecha_pago, i - 1),
+        estado: "pendiente",
+        estado_pedido: venta.estado_pedido,
+        tipo_contrato: venta.tipo_contrato
+      });
+    }
+
+    return cuotas;
   }
 
-  saveAll();
-  cancelClientEdit();
-  loadAll();
-  renderAll();
-}
+  function readExcel(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
+      reader.onload = function (event) {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
 
-function generarCuotasDesdeVenta(venta) {
-  /*
-    Limpia cuotas anteriores de esa venta si existieran.
-    Esto evita duplicados si se vuelve a registrar o editar.
-  */
-  state.cuotas = state.cuotas.filter((cuota) => cuota.venta_id !== venta.id);
+          const rows = XLSX.utils.sheet_to_json(sheet, {
+            defval: "",
+            raw: false
+          });
 
-  /*
-    Si el pedido está en CANCELACIÓN TOTAL, no debe generar cuotas.
-  */
-  if (normalizeText(venta.estado_pedido) === "CANCELACION TOTAL") {
-    return;
-  }
+          resolve(rows);
+        } catch (error) {
+          reject(error);
+        }
+      };
 
-  /*
-    Si no hay datos suficientes para cuotas, no genera.
-  */
-  if (!venta.cantidad_cuotas || !venta.monto_cuota || !venta.fecha_pago) {
-    return;
-  }
-
-  for (let i = 1; i <= venta.cantidad_cuotas; i++) {
-    const fechaVencimiento = addMonthsToDate(venta.fecha_pago, i - 1);
-
-    state.cuotas.push({
-      id: makeId(),
-      venta_id: venta.id,
-      cliente_id: venta.cliente_id,
-      cliente_nombre: venta.cliente_nombre,
-      numero_orden: venta.numero_orden,
-      numero_cliente: venta.numero_cliente,
-      numero_cuota: i,
-      monto: venta.monto_cuota,
-      fecha_vencimiento: fechaVencimiento,
-      estado: "pendiente",
-      estado_pedido: venta.estado_pedido,
-      tipo_contrato: venta.tipo_contrato,
-      created_at: new Date().toISOString()
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
     });
   }
-}
 
-  function showConfirm({ title, message, confirmText, onConfirm }) {
-    els.modalRoot.classList.remove("hidden");
-
-    els.modalRoot.innerHTML = `
-      <div class="modal-card">
-        <h3>${escapeHtml(title)}</h3>
-        <p>${escapeHtml(message)}</p>
-        <div class="modal-actions">
-          <button class="btn ghost" id="modalCancel">Cancelar</button>
-          <button class="btn danger" id="modalConfirm">${escapeHtml(confirmText)}</button>
-        </div>
-      </div>
-    `;
-
-    document.getElementById("modalCancel").onclick = closeModal;
-    document.getElementById("modalConfirm").onclick = () => {
-      closeModal();
-      onConfirm();
+  function mapExcelRowToCliente(row) {
+    return {
+      nombres: upper(pick(row, ["NOMBRES", "NOMBRES(O)", "Nombre", "Nombres"])),
+      apellidos: upper(pick(row, ["APELLIDOS", "APELLIDOS(O)", "Apellido", "Apellidos"])),
+      numero_orden: clean(pick(row, ["Nº ORDEN", "N° ORDEN", "N ORDEN", "ORDEN"])),
+      numero_cliente: clean(pick(row, ["Nº CLIENTE", "N° CLIENTE", "N CLIENTE", "CODIGO CLIENTE", "CÓDIGO CLIENTE"])),
+      fecha_orden: normalizeExcelDate(pick(row, ["FECHA DE LA ORDEN", "FECHA ORDEN", "FECHA"])),
+      estado_pedido: upper(pick(row, ["ESTADO DEL PEDIDO", "ESTADO PEDIDO", "ESTADO"])) || "ACTUAL",
+      correo: clean(pick(row, ["CORREO", "EMAIL"])),
+      telefono: clean(pick(row, ["TEL PERSONAL", "TEL PERSONAL(O)", "TELEFONO", "TELÉFONO"])),
+      dni: clean(pick(row, ["DNI", "DNI(O)"])),
+      direccion: upper(pick(row, ["DIRECCIÓN", "DIRECCION", "DIRECCIÓN(O)", "DIRECCION(O)"])),
+      mercaderia: upper(pick(row, ["MERCADERIA", "MERCADERÍA", "MERCADERIA(O)", "MERCADERÍA(O)"])),
+      regalo: upper(pick(row, ["REGALO"])),
+      estado_civil: upper(pick(row, ["ESTADO CIVIL"])),
+      nivel_cliente: clean(pick(row, ["NIVEL DE CLIENTE", "NIVEL CLIENTE", "NIVEL"])),
+      tipo_contrato: upper(pick(row, ["TIPO DE CONTRATO", "TIPO CONTRATO", "TIPO DE CONTRATO(O)"])),
+      monto_total: toNumber(pick(row, ["MONTO TOTAL", "MONTO TOTAL(O)"])),
+      monto_cuota: toNumber(pick(row, ["MONTO DE CUOTA", "MONTO CUOTA"])),
+      cantidad_cuotas: toInt(pick(row, ["CANTIDAD DE CUOTAS", "TOTAL CUOTAS", "CUOTAS"])),
+      fecha_pago: normalizeExcelDate(pick(row, ["FECHA DE PAGO", "FECHA PAGO"])),
+      observaciones: clean(pick(row, ["OBSERVACIONES", "OBS"]))
     };
   }
 
-  function closeModal() {
-    els.modalRoot.classList.add("hidden");
-    els.modalRoot.innerHTML = "";
-  }
+  function pick(row, names) {
+    const normalizedRow = {};
 
-  function cuotaBadge(cuota) {
-    const estado = getCuotaEstado(cuota);
-    return `<span class="badge ${estado}">${estado}</span>`;
-  }
+    Object.keys(row).forEach((key) => {
+      normalizedRow[normalizeText(key)] = row[key];
+    });
 
-  function getCuotaEstado(cuota) {
-    if (cuota.estado === "pagado") return "pagado";
-
-    const today = startOfDay(new Date());
-    const vence = parseDate(cuota.fecha_vencimiento);
-
-    if (vence < today) return "vencido";
-    return "pendiente";
-  }
-
-  function groupBy(items, key) {
-    return items.reduce((acc, item) => {
-      const value = item[key] || "sin_id";
-      if (!acc[value]) acc[value] = [];
-      acc[value].push(item);
-      return acc;
-    }, {});
-  }
-
-  function getColumn(row, names) {
     for (const name of names) {
-      if (row[name] !== undefined && row[name] !== "") return row[name];
+      const direct = row[name];
+
+      if (direct !== undefined && direct !== "") return direct;
+
+      const normalized = normalizedRow[normalizeText(name)];
+
+      if (normalized !== undefined && normalized !== "") return normalized;
     }
 
     return "";
   }
 
-  function setFormValue(name, value) {
-    const input = els.clienteForm.querySelector(`[name="${name}"]`);
-    if (input) input.value = value || "";
+  function validateCliente(cliente) {
+    if (!cliente.nombres) return "Nombres es obligatorio.";
+    if (!cliente.apellidos) return "Apellidos es obligatorio.";
+    if (!cliente.telefono) return "Tel. personal es obligatorio.";
+    if (!cliente.dni) return "DNI es obligatorio.";
+    if (!cliente.direccion) return "Dirección es obligatoria.";
+    if (!cliente.estado_pedido) return "Estado del pedido es obligatorio.";
+    if (!cliente.tipo_contrato) return "Tipo de contrato es obligatorio.";
+    if (!cliente.mercaderia) return "Mercadería es obligatoria.";
+    if (!cliente.monto_total) return "Monto total es obligatorio.";
+
+    return "";
   }
 
-  function readArray(key) {
-    try {
-      return JSON.parse(localStorage.getItem(key) || "[]");
-    } catch {
-      return [];
+  function ensureSupabaseReady() {
+    if (typeof imvictoSupabase === "undefined") {
+      throw new Error("No se cargó imvictoSupabase. Revisa supabase.js y el orden de scripts.");
+    }
+
+    if (typeof DB === "undefined") {
+      throw new Error("No se cargó DB. Revisa database.js y el orden de scripts.");
     }
   }
 
-  function writeArray(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+  function setValue(name, value) {
+    if (!els.clienteForm) return;
+
+    const input = els.clienteForm.querySelector(`[name="${name}"]`);
+
+    if (input) {
+      input.value = value || "";
+    }
+  }
+
+  function fullName(cliente) {
+    return `${cliente?.nombres || ""} ${cliente?.apellidos || ""}`.trim();
   }
 
   function clean(value) {
@@ -748,6 +604,16 @@ function generarCuotasDesdeVenta(venta) {
     return clean(value).toUpperCase();
   }
 
+  function toNumber(value) {
+    const n = Number(String(value || "0").replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function toInt(value) {
+    const n = parseInt(String(value || "0"), 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
   function normalizeText(value) {
     return String(value || "")
       .normalize("NFD")
@@ -756,52 +622,61 @@ function generarCuotasDesdeVenta(venta) {
       .trim();
   }
 
-  function toNumber(value) {
-    return Number(value || 0);
+  function dateOrNull(value) {
+    const cleanValue = clean(value);
+    return cleanValue || null;
   }
 
-  function toInt(value) {
-    const parsed = parseInt(value, 10);
-    return Number.isNaN(parsed) ? "" : parsed;
-  }
+  function normalizeExcelDate(value) {
+    const raw = clean(value);
 
-  function money(value) {
-    return `S/ ${toNumber(value).toFixed(2)}`;
-  }
+    if (!raw) return null;
 
-  function makeId() {
-    return crypto.randomUUID
-      ? crypto.randomUUID()
-      : `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
 
-  function fullName(cliente) {
-    return `${cliente?.nombres || ""} ${cliente?.apellidos || ""}`.trim();
+    const parts = raw.split(/[\/\-\.]/);
+
+    if (parts.length === 3) {
+      let day = parts[0].padStart(2, "0");
+      let month = parts[1].padStart(2, "0");
+      let year = parts[2];
+
+      if (year.length === 2) year = "20" + year;
+
+      return `${year}-${month}-${day}`;
+    }
+
+    const parsed = new Date(raw);
+
+    if (!Number.isNaN(parsed.getTime())) {
+      return toISODate(parsed);
+    }
+
+    return null;
   }
 
   function parseDate(value) {
     return new Date(value + "T00:00:00");
   }
 
-  function startOfDay(date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  }
+  function addMonthsToDate(dateValue, months) {
+    const date = parseDate(dateValue);
 
-  function addDays(date, days) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    const result = new Date(
+      date.getFullYear(),
+      date.getMonth() + months,
+      date.getDate()
+    );
+
+    return toISODate(result);
   }
 
   function toISODate(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  }
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
 
-  function formatDate(value) {
-    if (!value) return "";
-    return parseDate(value).toLocaleDateString("es-PE");
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   function escapeHtml(value) {
@@ -815,7 +690,8 @@ function generarCuotasDesdeVenta(venta) {
 
   function toast(message, isError = false) {
     if (!els.toast) {
-      alert(message);
+      console.log(message);
+      if (isError) alert(message);
       return;
     }
 
@@ -823,9 +699,9 @@ function generarCuotasDesdeVenta(venta) {
     els.toast.style.background = isError ? "#8f241d" : "#0d2944";
     els.toast.classList.remove("hidden");
 
-    clearTimeout(window.__imvictoToast);
-    window.__imvictoToast = setTimeout(() => {
+    clearTimeout(window.__imvictoAdminToast);
+    window.__imvictoAdminToast = setTimeout(() => {
       els.toast.classList.add("hidden");
-    }, 3500);
+    }, 4500);
   }
 })();
