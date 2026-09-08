@@ -14,7 +14,7 @@
     const clave = String(form.clave?.value || "").trim();
 
     if (typeof IMVICTO_USERS === "undefined") {
-      showToast("No se cargó config.js. Revisa que esté antes de login.js.", true);
+      showToast("No se cargó config.js. Revisa el orden de scripts.", true);
       return;
     }
 
@@ -44,10 +44,10 @@
       return;
     }
 
-    showToast("El usuario no tiene un rol válido.", true);
+    showToast("Rol no válido.", true);
   });
 
-  function showToast(message, isError) {
+  function showToast(message, isError = false) {
     if (!toast) {
       alert(message);
       return;
@@ -57,7 +57,8 @@
     toast.classList.remove("hidden");
     toast.style.background = isError ? "#8f241d" : "#0d2944";
 
-    setTimeout(() => {
+    clearTimeout(window.__loginToast);
+    window.__loginToast = setTimeout(() => {
       toast.classList.add("hidden");
     }, 3500);
   }
