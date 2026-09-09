@@ -1,58 +1,65 @@
-const loginForm = document.getElementById("loginForm");
-const loginError = document.getElementById("loginError");
+(function () {
+  const form = document.getElementById("loginForm");
+  const toast = document.getElementById("toast");
 
-if (!loginForm) {
-  console.error("No existe el formulario con id='loginForm'.");
-}
-
-loginForm.addEventListener("submit", function (event) {
-  event.preventDefault();
-
-  loginError.textContent = "";
-
-  const correoInput = document.getElementById("correo");
-  const claveInput = document.getElementById("clave");
-
-  if (!correoInput || !claveInput) {
-    loginError.textContent = "Error interno: faltan campos de login.";
+  if (!form) {
+    console.error("No existe #loginForm en login.html");
     return;
   }
 
-  if (typeof IMVICTO_USERS === "undefined") {
-    loginError.textContent = "Error interno: no se cargó config.js.";
-    console.error("No existe IMVICTO_USERS. Revisa que config.js cargue antes que login.js.");
-    return;
-  }
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
 
-  const correo = correoInput.value.trim().toLowerCase();
-  const clave = claveInput.value.trim();
+    const correo = String(form.correo?.value || "").trim().toLowerCase();
+    const clave = String(form.clave?.value || "").trim();
 
-  const usuario = IMVICTO_USERS.find((user) => {
-    return user.correo.toLowerCase() === correo && user.clave === clave;
+    if (typeof IMVICTO_USERS === "undefined") {
+      showToast("No se cargó config.js. Revisa el orden de scripts.", true);
+      return;
+    }
+
+    const user = IMVICTO_USERS.find((u) => {
+      return String(u.correo || "").trim().toLowerCase() === correo &&
+             String(u.clave || "").trim() === clave;
+    });
+
+    if (!user) {
+      showToast("Correo o contraseña incorrectos.", true);
+      return;
+    }
+
+    sessionStorage.setItem("imvicto_user", JSON.stringify({
+      nombre: user.nombre,
+      correo: user.correo,
+      rol: user.rol
+    }));
+
+    if (user.rol === "admin") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    if (user.rol === "vendedor") {
+      window.location.href = "vendedor.html";
+      return;
+    }
+
+    showToast("Rol no válido.", true);
   });
 
-  if (!usuario) {
-    loginError.textContent = "Correo o contraseña incorrectos.";
-    return;
+  function showToast(message, isError = false) {
+    if (!toast) {
+      alert(message);
+      return;
+    }
+
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    toast.style.background = isError ? "#8f241d" : "#0d2944";
+
+    clearTimeout(window.__loginToast);
+    window.__loginToast = setTimeout(() => {
+      toast.classList.add("hidden");
+    }, 3500);
   }
-
-  sessionStorage.setItem("imvicto_user", JSON.stringify({
-    nombre: usuario.nombre,
-    correo: usuario.correo,
-    rol: usuario.rol
-  }));
-
-  console.log("[LOGIN] Usuario guardado:", usuario);
-
-  if (usuario.rol === "admin") {
-    window.location.href = "./admin.html";
-    return;
-  }
-
-  if (usuario.rol === "vendedor") {
-    window.location.href = "./vendedor.html";
-    return;
-  }
-
-  loginError.textContent = "El usuario no tiene un rol válido.";
-});
+})();

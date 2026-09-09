@@ -5,6 +5,14 @@
     mantenimientos: "imvicto_mantenimientos"
   };
 
+  const ESTADOS = {
+    pendiente: "Pendiente",
+    venta: "Venta",
+    no_venta: "No venta",
+    reprogramada: "Reprogramada",
+    cancelada: "Cancelada"
+  };
+
   const state = {
     user: getUser(),
     clientes: [],
@@ -14,12 +22,20 @@
   };
 
   const els = {
+    navButtons: document.querySelectorAll(".nav-btn"),
+    views: document.querySelectorAll(".view"),
+    viewTitle: document.getElementById("viewTitle"),
+    viewSubtitle: document.getElementById("viewSubtitle"),
+
     form: document.getElementById("quickGestionForm"),
     clienteSelect: document.getElementById("quickClienteSelect"),
     syncFormsBtn: document.getElementById("syncFormsBtn"),
 
     statMisDemos: document.getElementById("statMisDemos"),
     statMisMantenimientos: document.getElementById("statMisMantenimientos"),
+
+    weeklyLeader: document.getElementById("weeklyLeader"),
+    weeklyRanking: document.getElementById("weeklyRanking"),
 
     agendaDemos: document.getElementById("agendaDemos"),
     agendaMantenimientos: document.getElementById("agendaMantenimientos"),
@@ -29,7 +45,30 @@
     calendarLabel: document.getElementById("calendarLabel"),
     calendarGrid: document.getElementById("calendarGrid"),
 
+    kpiWeekDemos: document.getElementById("kpiWeekDemos"),
+    kpiWeekMantenimientos: document.getElementById("kpiWeekMantenimientos"),
+    kpiWeekVentas: document.getElementById("kpiWeekVentas"),
+    kpiWeekNoVentas: document.getElementById("kpiWeekNoVentas"),
+    kpiWeekReprogramadas: document.getElementById("kpiWeekReprogramadas"),
+    kpiWeekTotal: document.getElementById("kpiWeekTotal"),
+
+    kpiMonthDemos: document.getElementById("kpiMonthDemos"),
+    kpiMonthMantenimientos: document.getElementById("kpiMonthMantenimientos"),
+    kpiMonthVentas: document.getElementById("kpiMonthVentas"),
+    kpiMonthNoVentas: document.getElementById("kpiMonthNoVentas"),
+    kpiMonthReprogramadas: document.getElementById("kpiMonthReprogramadas"),
+    kpiMonthTotal: document.getElementById("kpiMonthTotal"),
+
+    kpiRecentList: document.getElementById("kpiRecentList"),
+
     toast: document.getElementById("toast")
+  };
+
+  const viewCopy = {
+    inicio: ["Inicio", "Registra tu gestión comercial y visualiza tu agenda."],
+    bonos: ["Bonos e incentivos", "Consulta la campaña vigente del equipo comercial."],
+    kpis: ["KPIs", "Revisa tus indicadores semanales y mensuales."],
+    jd: ["Hacia el JD", "Capacitación comercial para aplicar en campo."]
   };
 
   init();
@@ -45,8 +84,11 @@
   }
 
   function bindEvents() {
-    els.form?.addEventListener("submit", handleSubmit);
+    els.navButtons.forEach((btn) => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
 
+    els.form?.addEventListener("submit", handleSubmit);
     els.syncFormsBtn?.addEventListener("click", importarAgendaDesdeForms);
 
     els.clienteSelect?.addEventListener("change", () => {
@@ -62,12 +104,24 @@
       state.calendarDate = addMonths(state.calendarDate, 1);
       renderCalendar();
     });
+
+    document.addEventListener("change", (event) => {
+      const target = event.target;
+
+      if (!target.matches("[data-action='change-status']")) return;
+
+      const id = target.dataset.id;
+      const tipo = target.dataset.tipo;
+      const estado = target.value;
+
+      updateItemStatus(tipo, id, estado);
+    });
   }
 
   function loadAll() {
-    state.clientes = readArray(KEYS.clientes);
-    state.demos = readArray(KEYS.demos);
-    state.mantenimientos = readArray(KEYS.mantenimientos);
+    state.clientes = normalizeItems(readArray(KEYS.clientes));
+    state.demos = normalizeItems(readArray(KEYS.demos));
+    state.mantenimientos = normalizeItems(readArray(KEYS.mantenimientos));
   }
 
   function saveAll() {
@@ -76,24 +130,44 @@
     writeArray(KEYS.mantenimientos, state.mantenimientos);
   }
 
+  function normalizeItems(items) {
+    return items.map((item) => ({
+      ...item,
+      estado_gestion: item.estado_gestion || "pendiente"
+    }));
+  }
+
   function renderAll() {
     renderClienteSelect();
     renderStats();
+    renderWeeklyLeaderboard();
     renderAgenda();
     renderCalendar();
+    renderKPIs();
+  }
+
+  function switchView(viewName) {
+    els.navButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.view === viewName);
+    });
+
+    els.views.forEach((view) => {
+      view.classList.toggle("active", view.id === viewName);
+    });
+
+    const [title, subtitle] = viewCopy[viewName] || viewCopy.inicio;
+
+    if (els.viewTitle) els.viewTitle.textContent = title;
+    if (els.viewSubtitle) els.viewSubtitle.textContent = subtitle;
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function renderClienteSelect() {
     const options = state.clientes
       .slice()
       .sort((a, b) => fullName(a).localeCompare(fullName(b)))
-      .map((cliente) => {
-        return `
-          <option value="${cliente.id}">
-            ${escapeHtml(fullName(cliente))}
-          </option>
-        `;
-      })
+      .map((cliente) => `<option value="${cliente.id}">${escapeHtml(fullName(cliente))}</option>`)
       .join("");
 
     if (els.clienteSelect) {
@@ -108,13 +182,72 @@
     const demos = state.demos.filter(belongsToUser);
     const mantenimientos = state.mantenimientos.filter(belongsToUser);
 
-    if (els.statMisDemos) {
-      els.statMisDemos.textContent = demos.length;
+    if (els.statMisDemos) els.statMisDemos.textContent = demos.length;
+    if (els.statMisMantenimientos) els.statMisMantenimientos.textContent = countUpcoming(mantenimientos);
+  }
+
+  function renderWeeklyLeaderboard() {
+    if (!els.weeklyLeader || !els.weeklyRanking) return;
+
+    const now = new Date();
+    const weekStart = getWeekStart(now);
+    const weekEnd = addDays(weekStart, 6);
+
+    const allItems = [
+      ...state.demos.map((item) => ({ ...item, tipo: "demo" })),
+      ...state.mantenimientos.map((item) => ({ ...item, tipo: "mantenimiento" }))
+    ].filter((item) => isBetween(item.fecha, weekStart, weekEnd));
+
+    const rankingMap = {};
+
+    allItems.forEach((item) => {
+      const vendedor = normalizeSellerName(item.vendedor_nombre || item.encargado || item.notas || "SIN VENDEDOR");
+
+      if (!rankingMap[vendedor]) {
+        rankingMap[vendedor] = {
+          vendedor,
+          demos: 0,
+          mantenimientos: 0,
+          ventas: 0,
+          total: 0
+        };
+      }
+
+      rankingMap[vendedor].total++;
+
+      if (item.tipo === "demo") rankingMap[vendedor].demos++;
+      if (item.tipo === "mantenimiento") rankingMap[vendedor].mantenimientos++;
+      if (item.estado_gestion === "venta") rankingMap[vendedor].ventas++;
+    });
+
+    const ranking = Object.values(rankingMap).sort((a, b) => {
+      if (b.ventas !== a.ventas) return b.ventas - a.ventas;
+      return b.total - a.total;
+    });
+
+    if (!ranking.length) {
+      els.weeklyLeader.innerHTML = "";
+      els.weeklyRanking.innerHTML = "";
+      return;
     }
 
-    if (els.statMisMantenimientos) {
-      els.statMisMantenimientos.textContent = countUpcoming(mantenimientos);
-    }
+    const winner = ranking[0];
+
+    els.weeklyLeader.innerHTML = `
+      <span>Liderando esta semana</span>
+      <strong>${escapeHtml(winner.vendedor)}</strong>
+      <small>${winner.total} gestión(es) · ${winner.ventas} venta(s)</small>
+    `;
+
+    els.weeklyRanking.innerHTML = ranking.slice(0, 5).map((item, index) => {
+      return `
+        <article class="leader-row">
+          <div class="leader-position">${index + 1}</div>
+          <div class="leader-name">${escapeHtml(item.vendedor)}</div>
+          <div class="leader-score">${item.total} gest.</div>
+        </article>
+      `;
+    }).join("");
   }
 
   function renderAgenda() {
@@ -132,6 +265,7 @@
 
   function renderAgendaItem(item) {
     const tipoLabel = item.tipo === "demo" ? "Demo" : "Mantenimiento";
+    const estado = item.estado_gestion || "pendiente";
 
     return `
       <article class="agenda-card ${escapeHtml(item.tipo)}">
@@ -146,16 +280,28 @@
               <span>${escapeHtml(item.perfil || "Sin perfil")}</span>
             </div>
 
-            ${
-              item.direccion
-                ? `<div class="agenda-address">${escapeHtml(item.direccion)}</div>`
-                : ""
-            }
+            ${item.direccion ? `<div class="agenda-address">${escapeHtml(item.direccion)}</div>` : ""}
+
+            <span class="status-pill status-${escapeHtml(estado)}">
+              ${escapeHtml(ESTADOS[estado] || "Pendiente")}
+            </span>
           </div>
 
-          <span class="agenda-badge ${escapeHtml(item.tipo)}">
-            ${tipoLabel}
-          </span>
+          <div class="status-box">
+            <span class="agenda-badge ${escapeHtml(item.tipo)}">${tipoLabel}</span>
+
+            <label class="status-label">
+              Resultado
+              <select
+                class="status-select"
+                data-action="change-status"
+                data-id="${escapeHtml(item.id)}"
+                data-tipo="${escapeHtml(item.tipo)}"
+              >
+                ${renderStatusOptions(estado)}
+              </select>
+            </label>
+          </div>
         </div>
 
         ${item.notas ? `<p class="muted small">${escapeHtml(item.notas)}</p>` : ""}
@@ -163,10 +309,68 @@
     `;
   }
 
+  function renderStatusOptions(current) {
+    return Object.entries(ESTADOS).map(([value, label]) => {
+      return `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`;
+    }).join("");
+  }
+
+  function updateItemStatus(tipo, id, estado) {
+    const key = tipo === "mantenimiento" ? "mantenimientos" : "demos";
+
+    state[key] = state[key].map((item) => {
+      if (item.id !== id) return item;
+
+      return {
+        ...item,
+        estado_gestion: estado,
+        status_updated_at: new Date().toISOString()
+      };
+    });
+
+    saveAll();
+    loadAll();
+    renderAll();
+
+    toast("Estado actualizado.");
+  }
+
+  function renderKPIs() {
+    const demos = state.demos.filter(belongsToUser);
+    const mantenimientos = state.mantenimientos.filter(belongsToUser);
+    const all = [...demos, ...mantenimientos];
+
+    const now = new Date();
+    const weekStart = getWeekStart(now);
+    const weekEnd = addDays(weekStart, 6);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const weekItems = all.filter((item) => isBetween(item.fecha, weekStart, weekEnd));
+    const monthItems = all.filter((item) => isBetween(item.fecha, monthStart, monthEnd));
+
+    setText(els.kpiWeekDemos, demos.filter((item) => isBetween(item.fecha, weekStart, weekEnd)).length);
+    setText(els.kpiWeekMantenimientos, mantenimientos.filter((item) => isBetween(item.fecha, weekStart, weekEnd)).length);
+    setText(els.kpiWeekVentas, countByStatus(weekItems, "venta"));
+    setText(els.kpiWeekNoVentas, countByStatus(weekItems, "no_venta"));
+    setText(els.kpiWeekReprogramadas, countByStatus(weekItems, "reprogramada"));
+    setText(els.kpiWeekTotal, weekItems.length);
+
+    setText(els.kpiMonthDemos, demos.filter((item) => isBetween(item.fecha, monthStart, monthEnd)).length);
+    setText(els.kpiMonthMantenimientos, mantenimientos.filter((item) => isBetween(item.fecha, monthStart, monthEnd)).length);
+    setText(els.kpiMonthVentas, countByStatus(monthItems, "venta"));
+    setText(els.kpiMonthNoVentas, countByStatus(monthItems, "no_venta"));
+    setText(els.kpiMonthReprogramadas, countByStatus(monthItems, "reprogramada"));
+    setText(els.kpiMonthTotal, monthItems.length);
+
+    if (els.kpiRecentList) {
+      els.kpiRecentList.innerHTML = sortByDate(all).slice(-8).reverse().map(renderAgendaItem).join("");
+    }
+  }
+
   async function importarAgendaDesdeForms() {
     if (typeof IMVICTO_FORMS === "undefined") {
       toast("No se cargó IMVICTO_FORMS. Revisa config.js.", true);
-      alert("No se cargó IMVICTO_FORMS.\n\nRevisa que vendedor.html tenga:\n<script src=\"../js/config.js\"></script>\nantes de vendedor.js.");
       return;
     }
 
@@ -174,25 +378,18 @@
 
     if (!csvUrl || csvUrl.includes("PEGA_AQUI")) {
       toast("Pega el link CSV del Google Sheet en config.js.", true);
-      alert("Falta pegar el link CSV en config.js.");
       return;
     }
 
     if (!csvUrl.includes("output=csv")) {
       toast("El link no parece CSV. Debe incluir output=csv.", true);
-      alert(
-        "El link no parece CSV.\n\nDebe incluir:\noutput=csv\n\nNo debe ser link del Form ni pubhtml."
-      );
       return;
     }
 
     try {
       toast("Sincronizando Google Forms...");
 
-      const url = addCacheBust(csvUrl);
-      console.log("[FORMS] URL CSV:", url);
-
-      const response = await fetch(url, {
+      const response = await fetch(addCacheBust(csvUrl), {
         method: "GET",
         cache: "no-store"
       });
@@ -208,31 +405,24 @@
       }
 
       if (csvText.toLowerCase().includes("<html") || csvText.toLowerCase().includes("<!doctype")) {
-        throw new Error("El link devolvió HTML, no CSV. Publica como Comma-separated values (.csv).");
+        throw new Error("El link devolvió HTML, no CSV.");
       }
 
       const rows = csvToObjects(csvText);
-      console.log("[FORMS] Filas leídas:", rows.length);
-      console.table(rows.slice(0, 5));
-
       const sellerNames = getSellerNames();
-      console.log("[FORMS] Buscando encargado/vendedor:", sellerNames);
 
       let revisadas = 0;
       let coinciden = 0;
       let cargadas = 0;
 
+      const oldStatusMap = buildOldFormsStatusMap();
       const nuevasDemosForms = [];
       const nuevosMantenimientosForms = [];
 
       rows.forEach((row) => {
         revisadas++;
 
-        const encargado = normalizeText(getColumn(row, [
-          "ENCARGADO",
-          "Encargado"
-        ]));
-
+        const encargado = normalizeText(getColumn(row, ["ENCARGADO", "Encargado"]));
         const vendedores = normalizeText(getColumn(row, [
           "VENDEDORES",
           "VENDEDOR",
@@ -260,37 +450,12 @@
           ? "mantenimiento"
           : "demo";
 
-        const fecha = normalizeGoogleDate(getColumn(row, [
-          "DÍA",
-          "DIA",
-          "FECHA",
-          "Fecha"
-        ]));
+        const fecha = normalizeGoogleDate(getColumn(row, ["DÍA", "DIA", "FECHA", "Fecha"]));
+        const hora = normalizeTime(getColumn(row, ["HORA", "Hora"]));
 
-        const hora = normalizeTime(getColumn(row, [
-          "HORA",
-          "Hora"
-        ]));
-
-        const cliente = upper(getColumn(row, [
-          "CLIENTE",
-          "Cliente",
-          "NOMBRE CLIENTE",
-          "NOMBRE"
-        ]));
-
-        const direccion = upper(getColumn(row, [
-          "DIRECCION",
-          "DIRECCIÓN",
-          "Direccion",
-          "Dirección"
-        ]));
-
-        const perfil = upper(getColumn(row, [
-          "PERFIL",
-          "Perfil"
-        ]));
-
+        const cliente = upper(getColumn(row, ["CLIENTE", "Cliente", "NOMBRE CLIENTE", "NOMBRE"]));
+        const direccion = upper(getColumn(row, ["DIRECCION", "DIRECCIÓN", "Direccion", "Dirección"]));
+        const perfil = upper(getColumn(row, ["PERFIL", "Perfil"]));
         const notas = upper(getColumn(row, [
           "VENDEDORES",
           "VENDEDOR",
@@ -300,6 +465,15 @@
         ]));
 
         if (!fecha || !cliente) return;
+
+        const formsKey = buildFormsKey({
+          tipo,
+          cliente,
+          fecha,
+          hora,
+          direccion,
+          perfil
+        });
 
         const item = {
           id: makeId(),
@@ -312,9 +486,11 @@
           fecha,
           hora,
           notas,
-          vendedor_nombre: state.user?.nombre || "",
+          vendedor_nombre: state.user?.nombre || encargado || vendedores || "",
           vendedor_email: state.user?.correo || state.user?.email || "",
           origen: "google_forms",
+          forms_key: formsKey,
+          estado_gestion: oldStatusMap[formsKey] || "pendiente",
           updated_from_forms_at: new Date().toISOString()
         };
 
@@ -327,12 +503,6 @@
         cargadas++;
       });
 
-      /*
-        IMPORTANTE:
-        Esto borra SOLO los registros anteriores que vinieron de Google Forms
-        y que pertenecen al vendedor actual.
-        No borra registros manuales hechos desde la página.
-      */
       state.demos = state.demos.filter((item) => {
         if (item.origen !== "google_forms") return true;
         return !belongsToUser(item);
@@ -343,11 +513,6 @@
         return !belongsToUser(item);
       });
 
-      /*
-        Vuelve a cargar lo que existe actualmente en Google Sheets.
-        Si borraste una fila en Sheets, desaparece de la página.
-        Si cambiaste MANT por DEMO, se actualiza.
-      */
       state.demos.push(...nuevasDemosForms);
       state.mantenimientos.push(...nuevosMantenimientosForms);
 
@@ -356,30 +521,9 @@
       renderAll();
 
       toast(`Forms actualizado. Revisadas: ${revisadas}. Coinciden: ${coinciden}. Cargadas: ${cargadas}.`);
-
-      console.log("[FORMS] Resultado:", {
-        revisadas,
-        coinciden,
-        cargadas,
-        nuevasDemosForms,
-        nuevosMantenimientosForms
-      });
     } catch (error) {
       console.error("[FORMS ERROR]", error);
-
-      const mensaje = error?.message || String(error);
-
-      toast("Error Forms: " + mensaje, true);
-
-      alert(
-        "Error al sincronizar Google Forms:\n\n" +
-        mensaje +
-        "\n\nRevisa:\n" +
-        "1. Que abras la página con Live Server.\n" +
-        "2. Que el link tenga output=csv.\n" +
-        "3. Que el Google Sheet esté publicado como CSV.\n" +
-        "4. Que config.js cargue antes de vendedor.js."
-      );
+      toast("Error Forms: " + (error?.message || String(error)), true);
     }
   }
 
@@ -402,6 +546,7 @@
       perfil: upper(data.get("perfil")),
       fecha: clean(data.get("fecha")),
       hora: clean(data.get("hora")),
+      estado_gestion: clean(data.get("estado_gestion")) || "pendiente",
       notas: clean(data.get("notas")),
       vendedor_nombre: state.user?.nombre || "",
       vendedor_email: state.user?.correo || state.user?.email || "",
@@ -471,10 +616,7 @@
 
       if (date.getFullYear() !== year || date.getMonth() !== month) return;
 
-      if (!map.has(item.fecha)) {
-        map.set(item.fecha, []);
-      }
-
+      if (!map.has(item.fecha)) map.set(item.fecha, []);
       map.get(item.fecha).push(item);
     });
 
@@ -494,10 +636,15 @@
       if (dayEvents.length) classes.push("has-events");
 
       const dots = dayEvents
-        .slice(0, 5)
+        .slice(0, 8)
+        .map((item) => `<i class="dot ${getStatusDotClass(item)}"></i>`)
+        .join("");
+
+      const miniEvents = dayEvents
+        .slice(0, 3)
         .map((item) => {
-          const cls = item.tipo === "demo" ? "demo-dot" : "mantenimiento-dot";
-          return `<i class="dot ${cls}"></i>`;
+          const label = item.tipo === "demo" ? "D" : "M";
+          return `<div class="seller-day-event">${label} · ${escapeHtml(item.nombre_cliente || "")}</div>`;
         })
         .join("");
 
@@ -505,11 +652,55 @@
         <div class="${classes.join(" ")}" title="${escapeHtml(buildDayTitle(iso, dayEvents))}">
           <span class="seller-day-number">${day}</span>
           <div class="seller-day-dots">${dots}</div>
+          <div class="seller-day-mini">${miniEvents}</div>
         </div>
       `);
     }
 
     els.calendarGrid.innerHTML = cells.join("");
+  }
+
+  function getStatusDotClass(item) {
+    const status = item.estado_gestion || "pendiente";
+
+    if (status === "venta") return "venta-dot";
+    if (status === "no_venta") return "no-venta-dot";
+    if (status === "reprogramada") return "repro-dot";
+    if (status === "cancelada") return "cancelada-dot";
+
+    return item.tipo === "demo" ? "demo-dot" : "mantenimiento-dot";
+  }
+
+  function buildOldFormsStatusMap() {
+    const map = {};
+
+    [...state.demos, ...state.mantenimientos].forEach((item) => {
+      if (item.origen !== "google_forms") return;
+
+      const key = item.forms_key || buildFormsKey({
+        tipo: item.tipo,
+        cliente: item.nombre_cliente,
+        fecha: item.fecha,
+        hora: item.hora,
+        direccion: item.direccion,
+        perfil: item.perfil
+      });
+
+      map[key] = item.estado_gestion || "pendiente";
+    });
+
+    return map;
+  }
+
+  function buildFormsKey({ tipo, cliente, fecha, hora, direccion, perfil }) {
+    return [
+      normalizeText(tipo),
+      normalizeText(cliente),
+      normalizeText(fecha),
+      normalizeText(hora),
+      normalizeText(direccion),
+      normalizeText(perfil)
+    ].join("|");
   }
 
   function fillClientFields(clienteId) {
@@ -557,12 +748,26 @@
     const userEmail = normalizeText(state.user?.correo || state.user?.email || "");
 
     if (!item.vendedor_email && !item.vendedor_nombre) return true;
-
     if (userEmail && itemEmail && userEmail === itemEmail) return true;
 
     return sellerNames.some((name) => {
       return itemName.includes(name) || itemNotes.includes(name);
     });
+  }
+
+  function normalizeSellerName(value) {
+    const normalized = normalizeText(value);
+
+    if (typeof IMVICTO_USERS !== "undefined") {
+      const found = IMVICTO_USERS.find((user) => {
+        const names = [user.nombre, ...(Array.isArray(user.alias) ? user.alias : [])].map(normalizeText);
+        return names.some((name) => normalized.includes(name));
+      });
+
+      if (found) return normalizeText(found.nombre);
+    }
+
+    return normalized || "SIN VENDEDOR";
   }
 
   function countUpcoming(items) {
@@ -574,12 +779,17 @@
     }).length;
   }
 
+  function countByStatus(items, status) {
+    return items.filter((item) => item.estado_gestion === status).length;
+  }
+
   function buildDayTitle(iso, events) {
     if (!events.length) return formatDate(iso);
 
     const lines = events.map((item) => {
       const label = item.tipo === "demo" ? "Demo" : "Mantenimiento";
-      return `${label}: ${item.nombre_cliente || ""} ${item.hora || ""}`.trim();
+      const status = ESTADOS[item.estado_gestion || "pendiente"] || "Pendiente";
+      return `${label}: ${item.nombre_cliente || ""} · ${item.hora || ""} · ${status}`.trim();
     });
 
     return `${formatDate(iso)}\n${lines.join("\n")}`;
@@ -647,9 +857,7 @@
 
   function getColumn(row, names) {
     for (const name of names) {
-      if (row[name] !== undefined && row[name] !== "") {
-        return row[name];
-      }
+      if (row[name] !== undefined && row[name] !== "") return row[name];
 
       const normalizedName = normalizeText(name);
 
@@ -666,9 +874,7 @@
 
     if (!raw) return "";
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      return raw;
-    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
 
     const parts = raw.split(/[\/\-\.]/);
 
@@ -677,22 +883,14 @@
       let second = parts[1].padStart(2, "0");
       let year = parts[2];
 
-      if (year.length === 2) {
-        year = "20" + year;
-      }
+      if (year.length === 2) year = "20" + year;
 
-      /*
-        Google Forms en Perú normalmente exporta DD/MM/YYYY.
-        Resultado final: YYYY-MM-DD
-      */
       return `${year}-${second}-${first}`;
     }
 
     const parsed = new Date(raw);
 
-    if (!Number.isNaN(parsed.getTime())) {
-      return toISODate(parsed);
-    }
+    if (!Number.isNaN(parsed.getTime())) return toISODate(parsed);
 
     return "";
   }
@@ -718,9 +916,27 @@
     }
   }
 
+  function isBetween(value, start, end) {
+    if (!value) return false;
+
+    const date = parseDate(value);
+    return date >= startOfDay(start) && date <= startOfDay(end);
+  }
+
+  function getWeekStart(date) {
+    const d = startOfDay(date);
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    return addDays(d, diff);
+  }
+
   function addCacheBust(url) {
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}cacheBust=${Date.now()}`;
+  }
+
+  function setText(el, value) {
+    if (el) el.textContent = value;
   }
 
   function readArray(key) {
@@ -791,6 +1007,10 @@
 
   function addMonths(date, months) {
     return new Date(date.getFullYear(), date.getMonth() + months, 1);
+  }
+
+  function addDays(date, days) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
   }
 
   function toISODate(date) {

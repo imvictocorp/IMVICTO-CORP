@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>IMVICTO CORP | Vendedor</title>
+
+  <link rel="icon" type="image/png" href="./img/logo-imvicto.jpg" />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/vendedor.css" />
+</head>
+
+<body data-roles="vendedor,admin">
+  <div class="app-shell seller-shell">
+    <aside class="sidebar seller-sidebar">
+      <div class="sidebar-brand seller-brand">
+        <img src="./img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+        <div>
+          <strong>IMVICTO CORP</strong>
+          <span>Panel vendedor</span>
+        </div>
+      </div>
+
+ <nav class="nav seller-nav">
+  <a class="nav-link active" href="vendedor.html">Inicio</a>
+  <a class="nav-link" href="vendedor-bonos.html">Bonos e incentivos</a>
+  <a class="nav-link" href="vendedor-kpis.html">KPIs</a>
+  <a class="nav-link" href="vendedor-jd.html">Hacia el JD</a>
+</nav>
+
+      <div class="seller-side-card">
+        <span>Gestión comercial</span>
+        <strong>Registra demos, mantenimientos y revisa tu avance.</strong>
+      </div>
+
+      <div class="sidebar-footer">
+        <span id="sessionLabel" class="small"></span>
+        <button id="logoutBtn" class="btn ghost full">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main seller-main">
+      <header class="seller-hero">
+        <div>
+          <p class="eyebrow">Panel comercial</p>
+          <h1 id="viewTitle">Inicio</h1>
+          <p id="viewSubtitle">Registra tu gestión comercial y visualiza tu agenda.</p>
+        </div>
+
+        <div class="hero-mini-stats">
+          <article>
+            <span>Mis demos</span>
+            <strong id="statMisDemos">0</strong>
+          </article>
+
+          <article>
+            <span>Mantenimientos</span>
+            <strong id="statMisMantenimientos">0</strong>
+          </article>
+        </div>
+      </header>
+
+      <!-- INICIO -->
+      <section id="inicio" class="view active">
+        <section class="leader-panel">
+          <div>
+            <p class="eyebrow dark">Ranking semanal</p>
+            <h2>¿Quién va llevando la delantera?</h2>
+            <p>Se calcula con demos y mantenimientos registrados durante la semana actual.</p>
+          </div>
+
+          <div id="weeklyLeader" class="leader-winner"></div>
+          <div id="weeklyRanking" class="leader-ranking"></div>
+        </section>
+
+        <div class="clean-page.grid section-space">
+          <section class="quick-panel">
+            <div class="quick-header">
+              <span>Registro rápido</span>
+              <h2>Finalizar gestión</h2>
+              <p>
+                Agenda una demo o mantenimiento. Se cargará automáticamente a tus métricas,
+                listas y calendario.
+              </p>
+            </div>
+
+            <button id="syncFormsBtn" type="button" class="btn secondary full sync-btn">
+              Sincronizar Google Forms
+            </button>
+
+            <form id="quickGestionForm" class="quick-form">
+              <label>
+                Tipo de gestión
+                <select name="tipo" required>
+                  <option value="demo">Demo</option>
+                  <option value="mantenimiento">Mantenimiento</option>
+                </select>
+              </label>
+
+              <label>
+                Cliente existente
+                <select name="cliente_id" id="quickClienteSelect">
+                  <option value="">Registrar manualmente</option>
+                </select>
+              </label>
+
+              <label>
+                Nombre cliente
+                <input name="nombre_cliente" required />
+              </label>
+
+              <label>
+                Teléfono
+                <input name="telefono" />
+              </label>
+
+              <label class="wide">
+                Dirección
+                <input name="direccion" />
+              </label>
+
+              <label>
+                Perfil
+                <input name="perfil" required />
+              </label>
+
+              <label>
+                Fecha
+                <input name="fecha" type="date" required />
+              </label>
+
+              <label>
+                Hora
+                <input name="hora" type="time" />
+              </label>
+
+              <label>
+                Estado de gestión
+                <select name="estado_gestion">
+                  <option value="pendiente">Pendiente</option>
+                  <option value="venta">Venta</option>
+                  <option value="no_venta">No venta</option>
+                  <option value="reprogramada">Reprogramada</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </label>
+
+              <label class="wide">
+                Notas
+                <textarea name="notas" rows="3"></textarea>
+              </label>
+
+              <button type="submit" class="btn primary full">
+                Guardar en mi calendario
+              </button>
+            </form>
+          </section>
+
+          <aside class="vertical-agenda">
+            <section class="seller-panel agenda-block">
+              <div class="seller-panel-head">
+                <div>
+                  <h3>Mis demos</h3>
+                  <p>Demos agendadas. Puedes marcar resultado.</p>
+                </div>
+              </div>
+
+              <div id="agendaDemos" class="agenda-list"></div>
+            </section>
+
+            <section class="seller-panel agenda-block">
+              <div class="seller-panel-head">
+                <div>
+                  <h3>Mantenimientos próximos</h3>
+                  <p>Visitas, garantías y mantenimientos.</p>
+                </div>
+              </div>
+
+              <div id="agendaMantenimientos" class="agenda-list"></div>
+            </section>
+          </aside>
+        </div>
+
+        <section class="seller-panel section-space">
+          <div class="seller-panel-head">
+            <div>
+              <h3>Calendario del vendedor</h3>
+              <p>
+                Demos y mantenimientos cargados desde el formulario o Google Forms.
+                Al costado de cada registro puedes marcar: Venta, No venta, Reprogramada o Cancelada.
+              </p>
+            </div>
+
+            <div class="calendar-actions">
+              <button id="calendarPrev" type="button" class="btn ghost mini">‹</button>
+              <strong id="calendarLabel"></strong>
+              <button id="calendarNext" type="button" class="btn ghost mini">›</button>
+            </div>
+          </div>
+
+          <div class="calendar-weekdays seller-weekdays">
+            <span>L</span>
+            <span>M</span>
+            <span>M</span>
+            <span>J</span>
+            <span>V</span>
+            <span>S</span>
+            <span>D</span>
+          </div>
+
+          <div id="calendarGrid" class="seller-calendar-grid"></div>
+
+          <div class="seller-legend">
+            <span><i class="dot demo-dot"></i> Demo</span>
+            <span><i class="dot mantenimiento-dot"></i> Mantenimiento</span>
+            <span><i class="dot venta-dot"></i> Venta</span>
+            <span><i class="dot no-venta-dot"></i> No venta</span>
+            <span><i class="dot repro-dot"></i> Reprogramada</span>
+            <span><i class="dot cancelada-dot"></i> Cancelada</span>
+          </div>
+        </section>
+      </section>
+
+      <!-- BONOS -->
+      <section id="bonos" class="view">
+        <section class="bonus-page">
+          <div class="bonus-copy">
+            <p class="eyebrow">Campaña vigente</p>
+            <h2>Bonos e incentivos</h2>
+            <p>Revisa las metas comerciales vigentes antes de iniciar gestión.</p>
+          </div>
+
+          <div class="bonus-image-wrap">
+            <img src="./img/bono-incentivo.png" alt="Bonos e incentivos IMVICTO CORP" />
+          </div>
+        </section>
+      </section>
+
+      <!-- KPIS -->
+      <section id="kpis" class="view">
+        <div class="kpi-grid">
+          <section class="seller-panel">
+            <div class="seller-panel-head">
+              <div>
+                <h3>KPIs semanales</h3>
+                <p>Gestiones registradas durante la semana actual.</p>
+              </div>
+            </div>
+
+            <div class="kpi-cards">
+              <article>
+                <span>Demos semana</span>
+                <strong id="kpiWeekDemos">0</strong>
+              </article>
+
+              <article>
+                <span>Mantenimientos semana</span>
+                <strong id="kpiWeekMantenimientos">0</strong>
+              </article>
+
+              <article>
+                <span>Ventas semana</span>
+                <strong id="kpiWeekVentas">0</strong>
+              </article>
+
+              <article>
+                <span>No venta</span>
+                <strong id="kpiWeekNoVentas">0</strong>
+              </article>
+
+              <article>
+                <span>Reprogramadas</span>
+                <strong id="kpiWeekReprogramadas">0</strong>
+              </article>
+
+              <article>
+                <span>Total gestiones</span>
+                <strong id="kpiWeekTotal">0</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="seller-panel">
+            <div class="seller-panel-head">
+              <div>
+                <h3>KPIs mensuales</h3>
+                <p>Gestiones registradas durante el mes actual.</p>
+              </div>
+            </div>
+
+            <div class="kpi-cards">
+              <article>
+                <span>Demos mes</span>
+                <strong id="kpiMonthDemos">0</strong>
+              </article>
+
+              <article>
+                <span>Mantenimientos mes</span>
+                <strong id="kpiMonthMantenimientos">0</strong>
+              </article>
+
+              <article>
+                <span>Ventas mes</span>
+                <strong id="kpiMonthVentas">0</strong>
+              </article>
+
+              <article>
+                <span>No venta</span>
+                <strong id="kpiMonthNoVentas">0</strong>
+              </article>
+
+              <article>
+                <span>Reprogramadas</span>
+                <strong id="kpiMonthReprogramadas">0</strong>
+              </article>
+
+              <article>
+                <span>Total gestiones</span>
+                <strong id="kpiMonthTotal">0</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <section class="seller-panel section-space">
+          <div class="seller-panel-head">
+            <div>
+              <h3>Últimas gestiones</h3>
+              <p>Actividad reciente del vendedor.</p>
+            </div>
+          </div>
+
+          <div id="kpiRecentList" class="agenda-list"></div>
+        </section>
+      </section>
+
+      <!-- HACIA EL JD -->
+      <section id="jd" class="view">
+        <section class="jd-hero">
+          <p class="eyebrow">Formación comercial</p>
+          <h2>Hacia el JD</h2>
+          <p>El conocimiento es poder siempre y cuando se aplique.</p>
+        </section>
+
+        <div class="video-grid">
+          <article class="video-card">
+            <div class="video-frame">
+              <iframe src="https://www.youtube.com/embed/fDlAmTxsu8w" title="Demostración" allowfullscreen></iframe>
+            </div>
+            <h3>Demostración</h3>
+          </article>
+
+          <article class="video-card">
+            <div class="video-frame">
+              <iframe src="https://www.youtube.com/embed/U0PbWtQVca8" title="Cierre Maestro" allowfullscreen></iframe>
+            </div>
+            <h3>Cierre Maestro</h3>
+          </article>
+
+          <article class="video-card">
+            <div class="video-frame">
+              <iframe src="https://www.youtube.com/embed/Mf3uq4liw9Q" title="Papelería" allowfullscreen></iframe>
+            </div>
+            <h3>Papelería</h3>
+          </article>
+
+          <article class="video-card">
+            <div class="video-frame">
+              <iframe src="https://www.youtube.com/embed/NK063MJ64ak" title="4 en 14" allowfullscreen></iframe>
+            </div>
+            <h3>4 en 14</h3>
+          </article>
+
+          <article class="video-card">
+            <div class="video-frame">
+              <iframe src="https://www.youtube.com/embed/m9edcFtgFuA" title="Objeciones" allowfullscreen></iframe>
+            </div>
+            <h3>Objeciones</h3>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./js/supabase.js"></script>
+<script src="./js/database.js"></script>
+<script src="./js/config.js"></script>
+<script src="./js/auth.js"></script>
+<script src="./js/vendedor.js"></script>
+</body>
+</html>

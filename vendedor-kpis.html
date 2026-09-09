@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IMVICTO CORP | KPIs</title>
+
+  <link rel="icon" type="image/png" href="./img/logo-imvicto.jpg" />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/vendedor.css" />
+</head>
+
+<body data-roles="vendedor,admin">
+  <div class="app-shell seller-shell">
+    <aside class="sidebar seller-sidebar">
+      <div class="sidebar-brand seller-brand">
+        <img src="./img/logo-imvicto.jpg" alt="IMVICTO CORP" />
+        <div>
+          <strong>IMVICTO CORP</strong>
+          <span>Panel vendedor</span>
+        </div>
+      </div>
+
+      <nav class="nav seller-nav">
+        <a class="nav-link" href="vendedor.html">Inicio</a>
+        <a class="nav-link" href="vendedor-bonos.html">Bonos e incentivos</a>
+        <a class="nav-link active" href="vendedor-kpis.html">KPIs</a>
+        <a class="nav-link" href="vendedor-jd.html">Hacia el JD</a>
+      </nav>
+
+      <div class="seller-side-card">
+        <span>Indicadores</span>
+        <strong>Mide tu gestión semanal y mensual.</strong>
+      </div>
+
+      <div class="sidebar-footer">
+        <span id="sessionLabel" class="small"></span>
+        <button id="logoutBtn" class="btn ghost full">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main seller-main">
+      <header class="seller-hero compact">
+        <div>
+          <p class="eyebrow">Indicadores comerciales</p>
+          <h1>KPIs</h1>
+          <p>Avance semanal y mensual según tus demos, mantenimientos y resultados.</p>
+        </div>
+      </header>
+
+      <div class="kpi-page-grid">
+        <section class="seller-panel">
+          <div class="seller-panel-head">
+            <div>
+              <h3>KPIs semanales</h3>
+              <p>Semana actual.</p>
+            </div>
+          </div>
+
+          <div class="kpi-cards">
+            <article><span>Demos semana</span><strong id="kpiWeekDemos">0</strong></article>
+            <article><span>Mantenimientos</span><strong id="kpiWeekMantenimientos">0</strong></article>
+            <article><span>Ventas</span><strong id="kpiWeekVentas">0</strong></article>
+            <article><span>No venta</span><strong id="kpiWeekNoVentas">0</strong></article>
+            <article><span>Reprogramadas</span><strong id="kpiWeekReprogramadas">0</strong></article>
+            <article><span>Total gestiones</span><strong id="kpiWeekTotal">0</strong></article>
+          </div>
+        </section>
+
+        <section class="seller-panel">
+          <div class="seller-panel-head">
+            <div>
+              <h3>KPIs mensuales</h3>
+              <p>Mes actual.</p>
+            </div>
+          </div>
+
+          <div class="kpi-cards">
+            <article><span>Demos mes</span><strong id="kpiMonthDemos">0</strong></article>
+            <article><span>Mantenimientos</span><strong id="kpiMonthMantenimientos">0</strong></article>
+            <article><span>Ventas</span><strong id="kpiMonthVentas">0</strong></article>
+            <article><span>No venta</span><strong id="kpiMonthNoVentas">0</strong></article>
+            <article><span>Reprogramadas</span><strong id="kpiMonthReprogramadas">0</strong></article>
+            <article><span>Total gestiones</span><strong id="kpiMonthTotal">0</strong></article>
+          </div>
+        </section>
+      </div>
+
+      <section class="seller-panel section-space">
+        <div class="seller-panel-head">
+          <div>
+            <h3>Últimas gestiones</h3>
+            <p>Actividad reciente del vendedor.</p>
+          </div>
+        </div>
+
+        <div id="kpiRecentList" class="agenda-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/vendedor.js"></script>
+</body>
+</html>
