@@ -1,11 +1,18 @@
 
+
 const SUPABASE_URL = "https://vwzfegupacytdadjoksw.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_X3yqYYIpSG6rNwej9OLUrg_pQXfeEY-E";
+
+const SUPABASE_KEY = "sb_publishable_X3yqYYIpSG6rNwej9OLUrg_pQXfeEY-";
 
 
-window.db = supabase.createClient(
+window.imvictoSupabase =
+supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_KEY
 );
 
-console.log("Supabase conectado");
+
+console.log(
+    "Supabase conectado",
+    window.imvictoSupabase
+);
