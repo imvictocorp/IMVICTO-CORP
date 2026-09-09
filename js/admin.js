@@ -22,18 +22,18 @@ let editandoCliente = null;
 
 function getDB(){
 
+    if(window.imvictoSupabase){
+        return window.imvictoSupabase;
+    }
+
+
     if(window.db){
         return window.db;
     }
 
 
-    if(typeof db !== "undefined"){
-        return db;
-    }
-
-
     throw new Error(
-        "Supabase no conectado. Revisa supabase.js"
+        "Supabase no cargado"
     );
 
 }
