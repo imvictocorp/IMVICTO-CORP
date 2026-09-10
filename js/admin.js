@@ -317,7 +317,7 @@ clientes =
 clientesResp.data || [];
 
 
-
+guardarClientesLocal();
 
 
 // VENTAS
@@ -1826,6 +1826,93 @@ toast.classList.add(
 );
 
 },3000);
+
+
+}
+
+// =======================================
+// INICIO ADMIN
+// =======================================
+
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+
+iniciarEventos();
+
+
+cargarDatos()
+
+.then(()=>{
+
+
+renderTodo();
+
+
+})
+
+.catch(error=>{
+
+
+console.error(error);
+
+
+cargarClientesLocal();
+
+
+renderTodo();
+
+
+mostrarToast(
+"Modo local activado",
+true
+);
+
+
+});
+
+
+});
+
+// =======================================
+// BACKUP LOCAL CLIENTES
+// =======================================
+
+
+function guardarClientesLocal(){
+
+
+localStorage.setItem(
+"imvicto_clientes",
+JSON.stringify(clientes)
+);
+
+
+}
+
+
+
+
+function cargarClientesLocal(){
+
+
+const data =
+localStorage.getItem(
+"imvicto_clientes"
+);
+
+
+
+if(data){
+
+
+clientes =
+JSON.parse(data);
+
+
+}
 
 
 }
