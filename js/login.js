@@ -1,29 +1,17 @@
-const ADMIN = {
-    correo: "micaela@imvicto.com",
-    clave: "Chayanne16"
-};
-
-
 document.addEventListener("DOMContentLoaded",()=>{
 
-
 const form = document.querySelector("#loginForm");
-
 
 if(!form) return;
 
 
-
 form.addEventListener("submit",(e)=>{
-
 
 e.preventDefault();
 
 
-
 const correo =
 document.querySelector("#correo").value.trim();
-
 
 
 const clave =
@@ -31,24 +19,15 @@ document.querySelector("#clave").value.trim();
 
 
 
-
-// ADMIN
+/* ADMIN */
 
 if(
-correo === ADMIN.correo &&
-clave === ADMIN.clave
+correo === "micaela@imvicto.com" &&
+clave === "Chayanne16"
 ){
 
-localStorage.setItem(
-    "usuario",
-    "Micaela"
-);
-
-localStorage.setItem(
-    "rol",
-    "admin"
-);
-
+localStorage.setItem("usuario","Micaela");
+localStorage.setItem("rol","admin");
 
 window.location.href="./admin.html";
 
@@ -58,27 +37,31 @@ return;
 
 
 
-// VENDEDORES
+/* VENDEDORES LOCALES */
 
-if(
-correo===USUARIO_ADMIN &&
-clave===PASSWORD_ADMIN
-){
+const usuarios =
+JSON.parse(localStorage.getItem("imvicto_users")) || [
 
-localStorage.setItem("usuario","admin");
-
-window.location.href="./admin.html";
-
-return;
-
+{
+id:1,
+nombre:"Mathias",
+correo:"mathias@imvicto.com",
+clave:"123456",
+rol:"vendedor",
+activo:true
 }
 
+];
 
 
-const vendedor = VENDEDORES.find(v =>
-    v.correo===correo &&
-    v.password===clave
+const vendedor = usuarios.find(usuario=>
+
+usuario.correo===correo &&
+usuario.clave===clave &&
+usuario.activo!==false
+
 );
+
 
 
 if(vendedor){
@@ -95,7 +78,14 @@ localStorage.setItem(
 );
 
 
+localStorage.setItem(
+"vendedor_id",
+vendedor.id
+);
+
+
 window.location.href="./vendedor.html";
+
 
 return;
 
@@ -103,7 +93,6 @@ return;
 
 
 
-// ERROR
 
 const error =
 document.querySelector("#loginError");
@@ -115,6 +104,7 @@ error.textContent =
 "Usuario o contraseña incorrectos";
 
 }
+
 
 
 });

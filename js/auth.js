@@ -2,11 +2,18 @@ document.addEventListener(
 "DOMContentLoaded",
 ()=>{
 
-const usuario = localStorage.getItem("usuario");
 
-const pagina = window.location.pathname;
+const usuario =
+localStorage.getItem("usuario");
 
-const esLogin = pagina.includes("login.html");
+
+const pagina =
+window.location.pathname;
+
+
+const esLogin =
+pagina.includes("login.html");
+
 
 
 if(!usuario && !esLogin){
@@ -40,13 +47,20 @@ if(logout){
 
 logout.onclick=()=>{
 
+
 localStorage.removeItem("usuario");
+localStorage.removeItem("rol");
+localStorage.removeItem("vendedor_id");
+
 
 window.location.href="./login.html";
 
+
 };
 
+
 }
+
 
 
 });
