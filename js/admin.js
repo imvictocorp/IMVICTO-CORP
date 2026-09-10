@@ -447,27 +447,6 @@ cuotasResp.data || [];
 // =======================================
 
 
-function renderTodo(){
-
-
-renderStats();
-
-
-renderClientes();
-
-
-renderVentas();
-
-
-renderCuotas();
-
-
-}
-
-
-
-
-
 
 function renderStats(){
 

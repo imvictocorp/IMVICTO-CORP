@@ -1,10 +1,12 @@
 // =======================================
-// IMVICTO CORP - SEGUIMIENTO COMERCIAL
-// Supabase demos + mantenimientos
+// IMVICTO CORP
+// SEGUIMIENTO VENDEDORES
+// LOCAL STORAGE
 // =======================================
 
 
-const supabaseDB = window.imvictoSupabase;
+const STORAGE_DEMOS = "imvicto_demos";
+const STORAGE_MANT = "imvicto_mantenimientos";
 
 
 const state = {
@@ -13,95 +15,17 @@ const state = {
 
     mantenimientos: [],
 
-    calendarDate: startOfMonth(new Date())
+    calendarDate: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        1
+    )
 
 };
 
 
 
-const els = {
-
-
-    syncFormsBtn:
-    document.getElementById("syncFormsBtn"),
-
-
-    clearFiltersBtn:
-    document.getElementById("clearFiltersBtn"),
-
-
-    exportSeguimientoBtn:
-    document.getElementById("exportSeguimientoBtn"),
-
-
-
-    filterVendedor:
-    document.getElementById("filterVendedor"),
-
-
-    filterTipo:
-    document.getElementById("filterTipo"),
-
-
-    filterDesde:
-    document.getElementById("filterDesde"),
-
-
-    filterHasta:
-    document.getElementById("filterHasta"),
-
-
-    filterSearch:
-    document.getElementById("filterSearch"),
-
-
-
-    statDemos:
-    document.getElementById("statDemos"),
-
-
-    statMantenimientos:
-    document.getElementById("statMantenimientos"),
-
-
-    statHoy:
-    document.getElementById("statHoy"),
-
-
-    statSemana:
-    document.getElementById("statSemana"),
-
-
-
-    calendarPrev:
-    document.getElementById("calendarPrev"),
-
-
-    calendarNext:
-    document.getElementById("calendarNext"),
-
-
-    calendarLabel:
-    document.getElementById("calendarLabel"),
-
-
-    calendarGrid:
-    document.getElementById("calendarGrid"),
-
-
-
-    sellerSummary:
-    document.getElementById("sellerSummary"),
-
-
-    followList:
-    document.getElementById("followList"),
-
-
-    toast:
-    document.getElementById("toast")
-
-};
+const els = {};
 
 
 
@@ -112,7 +36,16 @@ document.addEventListener(
 ()=>{
 
 
-    iniciar();
+    cargarElementos();
+
+
+    cargarDatos();
+
+
+    iniciarEventos();
+
+
+    renderTodo();
 
 
 });
@@ -122,29 +55,208 @@ document.addEventListener(
 
 
 
-async function iniciar(){
+function cargarElementos(){
 
 
-    if(!supabaseDB){
-
-        toast(
-        "Supabase no está conectado",
-        true
-        );
-
-        return;
-
-    }
+els.syncFormsBtn =
+document.getElementById(
+"syncFormsBtn"
+);
 
 
 
-    bindEvents();
+els.clearFiltersBtn =
+document.getElementById(
+"clearFiltersBtn"
+);
 
 
-    await cargarSeguimiento();
+
+els.exportSeguimientoBtn =
+document.getElementById(
+"exportSeguimientoBtn"
+);
 
 
-    renderAll();
+
+els.filterVendedor =
+document.getElementById(
+"filterVendedor"
+);
+
+
+
+els.filterTipo =
+document.getElementById(
+"filterTipo"
+);
+
+
+
+els.filterDesde =
+document.getElementById(
+"filterDesde"
+);
+
+
+
+els.filterHasta =
+document.getElementById(
+"filterHasta"
+);
+
+
+
+els.filterSearch =
+document.getElementById(
+"filterSearch"
+);
+
+
+
+els.statDemos =
+document.getElementById(
+"statDemos"
+);
+
+
+
+els.statMantenimientos =
+document.getElementById(
+"statMantenimientos"
+);
+
+
+
+els.statHoy =
+document.getElementById(
+"statHoy"
+);
+
+
+
+els.statSemana =
+document.getElementById(
+"statSemana"
+);
+
+
+
+els.calendarPrev =
+document.getElementById(
+"calendarPrev"
+);
+
+
+
+els.calendarNext =
+document.getElementById(
+"calendarNext"
+);
+
+
+
+els.calendarLabel =
+document.getElementById(
+"calendarLabel"
+);
+
+
+
+els.calendarGrid =
+document.getElementById(
+"calendarGrid"
+);
+
+
+
+els.sellerSummary =
+document.getElementById(
+"sellerSummary"
+);
+
+
+
+els.followList =
+document.getElementById(
+"followList"
+);
+
+
+
+els.toast =
+document.getElementById(
+"toast"
+);
+
+
+
+}
+
+
+
+
+
+
+
+
+// =======================================
+// CARGAR LOCAL
+// =======================================
+
+
+function cargarDatos(){
+
+
+
+state.demos =
+JSON.parse(
+localStorage.getItem(
+STORAGE_DEMOS
+)
+|| "[]"
+);
+
+
+
+state.mantenimientos =
+JSON.parse(
+localStorage.getItem(
+STORAGE_MANT
+)
+|| "[]"
+);
+
+
+
+}
+
+
+
+
+
+
+
+function guardarDatos(){
+
+
+
+localStorage.setItem(
+STORAGE_DEMOS,
+JSON.stringify(
+state.demos
+)
+);
+
+
+
+localStorage.setItem(
+STORAGE_MANT,
+JSON.stringify(
+state.mantenimientos
+)
+);
+
 
 
 }
@@ -160,173 +272,142 @@ async function iniciar(){
 // =======================================
 
 
-function bindEvents(){
+function iniciarEventos(){
 
 
 
-    els.syncFormsBtn?.addEventListener(
-        "click",
-        sincronizarForms
-    );
+els.syncFormsBtn?.addEventListener(
+"click",
+()=>{
 
 
-
-    els.clearFiltersBtn?.addEventListener(
-        "click",
-        limpiarFiltros
-    );
+mostrarToast(
+"Pendiente conectar Google Forms"
+);
 
 
-
-    els.exportSeguimientoBtn?.addEventListener(
-        "click",
-        exportarSeguimiento
-    );
-
-
-
-
-    [
-
-        els.filterVendedor,
-
-        els.filterTipo,
-
-        els.filterDesde,
-
-        els.filterHasta,
-
-        els.filterSearch
-
-
-    ].forEach(input=>{
-
-
-        input?.addEventListener(
-            "input",
-            renderAll
-        );
-
-
-        input?.addEventListener(
-            "change",
-            renderAll
-        );
-
-
-    });
-
-
-
-
-
-    els.calendarPrev?.addEventListener(
-        "click",
-        ()=>{
-
-            state.calendarDate =
-            addMonths(
-                state.calendarDate,
-                -1
-            );
-
-
-            renderCalendar();
-
-        }
-    );
-
-
-
-
-
-    els.calendarNext?.addEventListener(
-        "click",
-        ()=>{
-
-            state.calendarDate =
-            addMonths(
-                state.calendarDate,
-                1
-            );
-
-
-            renderCalendar();
-
-        }
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-// =======================================
-// CARGAR SUPABASE
-// =======================================
-
-
-async function cargarSeguimiento(){
-
-
-
-const demos =
-await supabaseDB
-.from("demos")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
 }
 );
 
 
 
 
-if(demos.error)
-throw demos.error;
 
-
-
-state.demos =
-demos.data || [];
-
+els.clearFiltersBtn?.addEventListener(
+"click",
+limpiarFiltros
+);
 
 
 
 
-const mantenimientos =
-await supabaseDB
-.from("mantenimientos")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
+
+els.exportSeguimientoBtn?.addEventListener(
+"click",
+exportarSeguimiento
+);
+
+
+
+
+
+[
+els.filterVendedor,
+els.filterTipo,
+els.filterDesde,
+els.filterHasta,
+els.filterSearch
+
+]
+.forEach(elemento=>{
+
+
+elemento?.addEventListener(
+"change",
+renderTodo
+);
+
+
+elemento?.addEventListener(
+"input",
+renderTodo
+);
+
+
+});
+
+
+
+
+
+els.calendarPrev?.addEventListener(
+"click",
+()=>{
+
+
+state.calendarDate.setMonth(
+state.calendarDate.getMonth()-1
+);
+
+
+renderCalendar();
+
+
 }
 );
 
 
 
 
-if(mantenimientos.error)
-throw mantenimientos.error;
+
+els.calendarNext?.addEventListener(
+"click",
+()=>{
+
+
+state.calendarDate.setMonth(
+state.calendarDate.getMonth()+1
+);
+
+
+renderCalendar();
+
+
+}
+);
 
 
 
-state.mantenimientos =
-mantenimientos.data || [];
+
+
+const logout =
+document.getElementById(
+"logoutBtn"
+);
+
+
+
+logout?.addEventListener(
+"click",
+()=>{
+
+
+localStorage.removeItem(
+"usuario"
+);
+
+
+window.location.href =
+"login.html";
+
+
+}
+);
 
 
 
 }
+
 
 
 
@@ -345,19 +426,25 @@ return [
 
 ...state.demos.map(
 (item)=>({
+
 ...item,
+
 tipo:"demo"
+
 })
 ),
 
 
+
 ...state.mantenimientos.map(
 (item)=>({
+
 ...item,
+
 tipo:"mantenimiento"
+
 })
 )
-
 
 ];
 
@@ -369,107 +456,123 @@ tipo:"mantenimiento"
 
 
 
+function obtenerFiltrados(){
 
-function filtrados(){
+
+let datos =
+obtenerTodos();
+
 
 
 const vendedor =
 normalizar(
-els.filterVendedor?.value || ""
+els.filterVendedor?.value
 );
 
 
 
 const tipo =
-els.filterTipo?.value || "";
+els.filterTipo?.value;
 
 
 
 const desde =
-els.filterDesde?.value || "";
+els.filterDesde?.value;
 
 
 
 const hasta =
-els.filterHasta?.value || "";
+els.filterHasta?.value;
 
 
 
 const buscar =
 normalizar(
-els.filterSearch?.value || ""
+els.filterSearch?.value
 );
 
 
 
 
-return obtenerTodos()
-.filter(item=>{
+return datos.filter(item=>{
 
 
-const itemVendedor =
-normalizar(
-item.vendedor_nombre || ""
-);
+if(
+vendedor &&
+normalizar(item.vendedor_nombre)
+!== vendedor
+)
 
+return false;
+
+
+
+
+if(
+tipo &&
+item.tipo!==tipo
+)
+
+return false;
+
+
+
+
+if(
+desde &&
+item.fecha < desde
+)
+
+return false;
+
+
+
+
+if(
+hasta &&
+item.fecha > hasta
+)
+
+return false;
+
+
+
+
+if(
+buscar
+){
 
 
 const texto =
 normalizar(
-
 [
 item.nombre_cliente,
 item.direccion,
 item.perfil,
-item.vendedor_nombre,
-item.notas
-
-].join(" ")
-
+item.vendedor_nombre
+]
+.join(" ")
 );
 
 
 
+if(
+!texto.includes(buscar)
+)
 
-if(vendedor &&
-itemVendedor!==vendedor)
 return false;
 
 
-
-
-if(tipo &&
-item.tipo!==tipo)
-return false;
-
-
-
-
-if(desde &&
-item.fecha < desde)
-return false;
-
-
-
-
-if(hasta &&
-item.fecha > hasta)
-return false;
-
-
-
-
-if(buscar &&
-!texto.includes(buscar))
-return false;
+}
 
 
 
 return true;
 
 
-
 });
+
+
 
 }
 
@@ -478,23 +581,36 @@ return true;
 // =======================================
 
 
-function renderAll(){
+function renderTodo(){
+
 
     renderFiltroVendedores();
 
+
     renderStats();
+
 
     renderResumen();
 
+
     renderLista();
 
+
     renderCalendar();
+
 
 }
 
 
 
 
+
+
+
+
+// =======================================
+// FILTRO VENDEDORES
+// =======================================
 
 
 function renderFiltroVendedores(){
@@ -515,14 +631,16 @@ const vendedores =
 ...new Set(
 
 obtenerTodos()
+
 .map(
 x=>x.vendedor_nombre
 )
+
 .filter(Boolean)
 
 )
 
-].sort();
+];
 
 
 
@@ -535,8 +653,8 @@ Todos
 ${
 vendedores.map(v=>`
 
-<option value="${escapeHtml(v)}">
-${escapeHtml(v)}
+<option value="${v}">
+${v}
 </option>
 
 `).join("")
@@ -559,7 +677,14 @@ actual;
 
 
 
+
+// =======================================
+// ESTADISTICAS
+// =======================================
+
+
 function renderStats(){
+
 
 
 const datos =
@@ -568,15 +693,15 @@ obtenerTodos();
 
 
 const hoy =
-toISODate(
+fechaISO(
 new Date()
 );
 
 
 
 const semana =
-toISODate(
-addDays(
+fechaISO(
+sumarDias(
 new Date(),
 7
 )
@@ -585,37 +710,41 @@ new Date(),
 
 
 
-if(els.statDemos)
 els.statDemos.textContent =
+
 datos.filter(
 x=>x.tipo==="demo"
 ).length;
 
 
 
-if(els.statMantenimientos)
+
 els.statMantenimientos.textContent =
+
 datos.filter(
 x=>x.tipo==="mantenimiento"
 ).length;
 
 
 
-if(els.statHoy)
+
 els.statHoy.textContent =
+
 datos.filter(
 x=>x.fecha===hoy
 ).length;
 
 
 
-if(els.statSemana)
+
 els.statSemana.textContent =
+
 datos.filter(
 x=>
 x.fecha>=hoy &&
 x.fecha<=semana
 ).length;
+
 
 
 }
@@ -626,7 +755,14 @@ x.fecha<=semana
 
 
 
+
+// =======================================
+// RESUMEN VENDEDORES
+// =======================================
+
+
 function renderResumen(){
+
 
 
 if(!els.sellerSummary)
@@ -634,24 +770,24 @@ return;
 
 
 
-const grupos={};
+const resumen={};
 
 
 
-filtrados()
+obtenerFiltrados()
 .forEach(item=>{
 
 
 const vendedor =
 item.vendedor_nombre ||
-"SIN VENDEDOR";
+"Sin vendedor";
 
 
 
-if(!grupos[vendedor]){
+if(!resumen[vendedor]){
 
 
-grupos[vendedor]={
+resumen[vendedor]={
 
 nombre:vendedor,
 
@@ -668,17 +804,18 @@ total:0
 
 
 
-grupos[vendedor].total++;
+resumen[vendedor].total++;
 
 
 
 if(item.tipo==="demo"){
 
-grupos[vendedor].demos++;
+resumen[vendedor].demos++;
 
-}else{
+}
+else{
 
-grupos[vendedor].mantenimientos++;
+resumen[vendedor].mantenimientos++;
 
 }
 
@@ -689,41 +826,53 @@ grupos[vendedor].mantenimientos++;
 
 
 
+
+
 els.sellerSummary.innerHTML =
 
-Object.values(grupos)
+Object.values(resumen)
 
 .sort(
-(a,b)=>b.total-a.total
+(a,b)=>
+b.total-a.total
 )
 
-.map(x=>`
+.map(
+(v,index)=>`
 
-<article class="seller-card">
+<article class="seller-card ${index===0 ? "leader":""}">
 
 <strong>
-${escapeHtml(x.nombre)}
+${index===0 ? "🥇 ":""}
+${escapeHtml(v.nombre)}
 </strong>
+
 
 <div>
 
 <span>
-Demos: ${x.demos}
+Demos: ${v.demos}
 </span>
 
-<span>
-Mant: ${x.mantenimientos}
-</span>
 
 <span>
-Total: ${x.total}
+Mantenimientos: ${v.mantenimientos}
 </span>
+
+
+<span>
+Total: ${v.total}
+</span>
+
 
 </div>
 
+
 </article>
 
-`).join("");
+`
+
+).join("");
 
 
 
@@ -734,6 +883,11 @@ Total: ${x.total}
 
 
 
+
+
+// =======================================
+// LISTA GESTIONES
+// =======================================
 
 
 function renderLista(){
@@ -746,25 +900,26 @@ return;
 
 
 const datos =
-filtrados();
+obtenerFiltrados();
 
 
 
 if(!datos.length){
 
 
-els.followList.innerHTML=
-
+els.followList.innerHTML =
 `
+
 <p>
-No existen gestiones registradas.
+No hay gestiones registradas.
 </p>
+
 `;
 
 return;
 
-
 }
+
 
 
 
@@ -772,7 +927,7 @@ els.followList.innerHTML =
 
 datos.map(item=>`
 
-<article class="follow-card ${item.tipo}">
+<article class="follow-card">
 
 
 <div class="follow-card-top">
@@ -780,32 +935,50 @@ datos.map(item=>`
 
 <div>
 
+
 <strong>
-${escapeHtml(item.nombre_cliente || "")}
+
+${escapeHtml(
+item.nombre_cliente || ""
+)}
+
 </strong>
+
 
 
 <div class="follow-meta">
 
 <span>
-${formatDate(item.fecha)}
+${formatearFecha(item.fecha)}
 </span>
 
-<span>
-${escapeHtml(item.hora || "")}
-</span>
 
 <span>
-${escapeHtml(item.vendedor_nombre || "")}
+${escapeHtml(
+item.hora || ""
+)}
+</span>
+
+
+<span>
+${escapeHtml(
+item.vendedor_nombre || ""
+)}
 </span>
 
 
 </div>
+
 
 
 <div>
-${escapeHtml(item.direccion || "")}
+
+${escapeHtml(
+item.direccion || ""
+)}
+
 </div>
+
 
 
 </div>
@@ -813,7 +986,15 @@ ${escapeHtml(item.direccion || "")}
 
 
 <span class="follow-badge ${item.tipo}">
-${item.tipo==="demo" ? "Demo":"Mantenimiento"}
+
+${
+item.tipo==="demo"
+?
+"Demo"
+:
+"Mantenimiento"
+}
+
 </span>
 
 
@@ -822,7 +1003,6 @@ ${item.tipo==="demo" ? "Demo":"Mantenimiento"}
 
 
 </article>
-
 
 `).join("");
 
@@ -845,44 +1025,20 @@ ${item.tipo==="demo" ? "Demo":"Mantenimiento"}
 function renderCalendar(){
 
 
+
 if(!els.calendarGrid)
 return;
 
 
 
-const inicio =
-startOfMonth(
-state.calendarDate
-);
-
-
-
-const year =
-inicio.getFullYear();
-
-
-
-const month =
-inicio.getMonth();
-
-
-
-const dias =
-new Date(
-year,
-month+1,
-0
-).getDate();
-
-
-
-const offset =
-(inicio.getDay()+6)%7;
+const fecha =
+state.calendarDate;
 
 
 
 els.calendarLabel.textContent =
-inicio.toLocaleDateString(
+
+fecha.toLocaleDateString(
 "es-PE",
 {
 month:"long",
@@ -892,11 +1048,55 @@ year:"numeric"
 
 
 
+
+const primerDia =
+new Date(
+fecha.getFullYear(),
+fecha.getMonth(),
+1
+);
+
+
+
+const ultimoDia =
+new Date(
+fecha.getFullYear(),
+fecha.getMonth()+1,
+0
+);
+
+
+
+const espacios =
+(primerDia.getDay()+6)%7;
+
+
+
+let html="";
+
+
+
+for(
+let i=0;
+i<espacios;
+i++
+){
+
+html+=`
+
+<div class="follow-day empty"></div>
+
+`;
+
+}
+
+
+
 const eventos={};
 
 
 
-filtrados()
+obtenerFiltrados()
 .forEach(item=>{
 
 
@@ -911,40 +1111,28 @@ eventos[item.fecha].push(item);
 
 
 
-let html="";
-
-
-
-for(let i=0;i<offset;i++){
-
-html+=`
-<div class="follow-day empty"></div>
-`;
-
-}
-
 
 
 for(
-let d=1;
-d<=dias;
-d++
+let dia=1;
+dia<=ultimoDia.getDate();
+dia++
 ){
 
 
-const fecha =
-toISODate(
+const fechaDia =
+fechaISO(
 new Date(
-year,
-month,
-d
+fecha.getFullYear(),
+fecha.getMonth(),
+dia
 )
 );
 
 
 
 const items =
-eventos[fecha] || [];
+eventos[fechaDia] || [];
 
 
 
@@ -953,8 +1141,9 @@ html+=`
 <div class="follow-day">
 
 <span>
-${d}
+${dia}
 </span>
+
 
 
 <div>
@@ -964,14 +1153,18 @@ items.map(i=>`
 
 <i class="dot ${
 i.tipo==="demo"
-?"demo-dot"
-:"mantenimiento-dot"
-}"></i>
+?
+"demo-dot"
+:
+"mantenimiento-dot"
+}">
+</i>
 
 `).join("")
 }
 
 </div>
+
 
 
 </div>
@@ -988,34 +1181,11 @@ els.calendarGrid.innerHTML =
 html;
 
 
-}
-
-
-
-
-
-
-
-// =======================================
-// SINCRONIZACIÓN FORMS
-// (por ahora manual)
-// =======================================
-
-
-async function sincronizarForms(){
-
-
-toast(
-"Sincronización Forms pendiente"
-);
-
 
 }
 
-
-
 // =======================================
-// EXPORTAR
+// EXPORTAR EXCEL
 // =======================================
 
 
@@ -1024,19 +1194,22 @@ function exportarSeguimiento(){
 
 if(typeof XLSX==="undefined"){
 
-toast(
-"No está cargado XLSX",
+
+mostrarToast(
+"No está cargado Excel",
 true
 );
 
+
 return;
+
 
 }
 
 
 
 const datos =
-obtenerTodos();
+obtenerFiltrados();
 
 
 
@@ -1062,8 +1235,9 @@ hoja,
 
 XLSX.writeFile(
 libro,
-"IMVICTO_SEGUIMIENTO.xlsx"
+"Seguimiento_IMVICTO.xlsx"
 );
+
 
 
 }
@@ -1073,34 +1247,104 @@ libro,
 
 
 
+// =======================================
+// LIMPIAR FILTROS
+// =======================================
+
 
 function limpiarFiltros(){
+
 
 
 if(els.filterVendedor)
 els.filterVendedor.value="";
 
 
+
 if(els.filterTipo)
 els.filterTipo.value="";
+
 
 
 if(els.filterDesde)
 els.filterDesde.value="";
 
 
+
 if(els.filterHasta)
 els.filterHasta.value="";
+
 
 
 if(els.filterSearch)
 els.filterSearch.value="";
 
 
-renderAll();
+
+renderTodo();
+
+
 
 }
 
+
+
+
+
+
+// =======================================
+// AGREGAR DATOS (PARA FUTURO FORM)
+// =======================================
+
+
+function agregarDemo(demo){
+
+
+
+state.demos.push({
+
+...demo,
+
+tipo:"demo"
+
+});
+
+
+
+guardarDatos();
+
+
+renderTodo();
+
+
+
+}
+
+
+
+
+function agregarMantenimiento(item){
+
+
+
+state.mantenimientos.push({
+
+...item,
+
+tipo:"mantenimiento"
+
+});
+
+
+
+guardarDatos();
+
+
+renderTodo();
+
+
+
+}
 
 
 
@@ -1114,75 +1358,95 @@ renderAll();
 
 function normalizar(texto){
 
+
 return String(texto || "")
+
 .normalize("NFD")
+
 .replace(
 /[\u0300-\u036f]/g,
 ""
 )
+
 .toUpperCase()
+
 .trim();
 
+
 }
+
+
 
 
 
 function escapeHtml(texto){
 
+
 return String(texto || "")
 
-.replaceAll("&","&amp;")
+.replaceAll(
+"&",
+"&amp;"
+)
 
-.replaceAll("<","&lt;")
+.replaceAll(
+"<",
+"&lt;"
+)
 
-.replaceAll(">","&gt;")
+.replaceAll(
+">",
+"&gt;"
+)
 
-.replaceAll('"',"&quot;")
+.replaceAll(
+'"',
+"&quot;"
+)
 
-.replaceAll("'","&#039;");
-
-}
-
-
-
-function toast(msg,error=false){
-
-
-if(!els.toast){
-
-alert(msg);
-
-return;
-
-}
-
-
-
-els.toast.textContent=msg;
-
-
-els.toast.style.background =
-error
-?
-"#991b1b"
-:
-"#0b2744";
-
-
-els.toast.classList.remove(
-"hidden"
+.replaceAll(
+"'",
+"&#039;"
 );
 
 
-setTimeout(()=>{
+}
 
 
-els.toast.classList.add(
-"hidden"
+
+
+
+
+function fechaISO(fecha){
+
+
+return fecha.toISOString()
+.substring(
+0,
+10
 );
 
 
-},3000);
+}
+
+
+
+
+
+function sumarDias(fecha,dias){
+
+
+const nueva =
+new Date(fecha);
+
+
+nueva.setDate(
+nueva.getDate()+dias
+);
+
+
+
+return nueva;
 
 
 }
@@ -1190,27 +1454,19 @@ els.toast.classList.add(
 
 
 
-function toISODate(date){
 
-
-return date.toISOString()
-.slice(0,10);
-
-
-}
-
-
-
-function formatDate(fecha){
+function formatearFecha(fecha){
 
 
 if(!fecha)
 return "";
 
 
+
 return new Date(
 fecha+"T00:00:00"
 )
+
 .toLocaleDateString(
 "es-PE"
 );
@@ -1220,44 +1476,50 @@ fecha+"T00:00:00"
 
 
 
-function startOfMonth(date){
-
-
-return new Date(
-date.getFullYear(),
-date.getMonth(),
-1
-);
-
-
-}
 
 
 
-function addMonths(date,n){
+function mostrarToast(
+mensaje,
+error=false
+){
 
 
-return new Date(
-date.getFullYear(),
-date.getMonth()+n,
-1
-);
 
+if(!els.toast){
+
+alert(mensaje);
+
+return;
 
 }
 
 
 
-function addDays(date,n){
+els.toast.textContent =
+mensaje;
 
 
-const d=new Date(date);
 
-d.setDate(
-d.getDate()+n
+els.toast.classList.remove(
+"hidden"
 );
 
-return d;
+
+
+setTimeout(
+()=>{
+
+
+els.toast.classList.add(
+"hidden"
+);
+
+
+},
+2500
+);
+
 
 
 }
