@@ -2,35 +2,16 @@ document.addEventListener(
 "DOMContentLoaded",
 ()=>{
 
+const usuario = localStorage.getItem("usuario");
 
-const usuario =
-localStorage.getItem(
-"usuario"
-);
+const pagina = window.location.pathname;
 
-
-
-const pagina =
-window.location.pathname;
+const esLogin = pagina.includes("login.html");
 
 
+if(!usuario && !esLogin){
 
-const esLogin =
-pagina.includes(
-"login.html"
-);
-
-
-
-if(
-!usuario &&
-!esLogin
-){
-
-
-window.location.href =
-"./login.html";
-
+window.location.href="./login.html";
 
 return;
 
@@ -39,10 +20,7 @@ return;
 
 
 const session =
-document.getElementById(
-"sessionLabel"
-);
-
+document.getElementById("sessionLabel");
 
 
 if(session){
@@ -50,39 +28,25 @@ if(session){
 session.textContent =
 "Sesión: "+usuario;
 
-
 }
 
 
 
 const logout =
-document.getElementById(
-"logoutBtn"
-);
-
+document.getElementById("logoutBtn");
 
 
 if(logout){
 
+logout.onclick=()=>{
 
-logout.onclick = ()=>{
+localStorage.removeItem("usuario");
 
-
-localStorage.removeItem(
-"usuario"
-);
-
-
-
-window.location.href =
-"./login.html";
-
+window.location.href="./login.html";
 
 };
 
-
 }
-
 
 
 });
