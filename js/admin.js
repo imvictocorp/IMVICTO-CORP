@@ -543,146 +543,6 @@ pendiente.toFixed(2);
 
 }
 
-// =======================================
-// CLIENTES
-// =======================================
-
-
-function renderClientes(){
-
-
-const tbody =
-document.getElementById(
-"clientesBody"
-);
-
-
-
-if(!tbody)
-return;
-
-
-
-const buscar =
-document.getElementById(
-"clienteSearch"
-);
-
-
-
-const texto =
-(buscar?.value || "")
-.toLowerCase();
-
-
-
-
-const lista =
-clientes.filter(c=>{
-
-
-return (
-
-String(c.nombres || "")
-.toLowerCase()
-.includes(texto)
-
-||
-
-String(c.apellidos || "")
-.toLowerCase()
-.includes(texto)
-
-||
-
-String(c.dni || "")
-.includes(texto)
-
-);
-
-
-
-});
-
-
-
-
-
-if(!lista.length){
-
-
-tbody.innerHTML =
-`
-<tr>
-<td colspan="4">
-No hay clientes registrados
-</td>
-</tr>
-`;
-
-
-return;
-
-}
-
-
-
-
-
-tbody.innerHTML =
-
-lista.map(c=>`
-
-<tr>
-
-<td>
-${c.nombres || ""}
-${c.apellidos || ""}
-</td>
-
-
-<td>
-${c.dni || ""}
-</td>
-
-
-<td>
-${c.telefono || ""}
-</td>
-
-
-<td>
-
-
-<button
-class="btn mini secondary"
-onclick="editarCliente('${c.id}')">
-
-Editar
-
-</button>
-
-
-
-<button
-class="btn mini danger"
-onclick="eliminarCliente('${c.id}')">
-
-Eliminar
-
-</button>
-
-
-</td>
-
-
-</tr>
-
-`).join("");
-
-
-
-}
 
 
 
@@ -1339,7 +1199,62 @@ libro,
 
 
 
+// =======================================
+// RENDER TODO
+// =======================================
 
+function renderTodo(){
+
+    renderStats();
+    renderUltimasCuotas();
+
+}
+
+
+
+// =======================================
+// ULTIMAS CUOTAS
+// =======================================
+
+function renderUltimasCuotas(){
+
+    const tabla =
+    document.getElementById("ultimasCuotas");
+
+    if(!tabla) return;
+
+
+    tabla.innerHTML = "";
+
+
+    cuotas
+    .slice(0,5)
+    .forEach(c=>{
+
+
+        tabla.innerHTML += `
+
+        <tr>
+
+            <td>${c.cliente || ""}</td>
+
+            <td>${c.cuota || ""}</td>
+
+            <td>S/ ${Number(c.monto || 0).toFixed(2)}</td>
+
+            <td>${c.fecha || ""}</td>
+
+            <td>${c.estado || ""}</td>
+
+        </tr>
+
+        `;
+
+
+    });
+
+
+}
 
 
 // =======================================
