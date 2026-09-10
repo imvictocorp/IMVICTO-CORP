@@ -122,9 +122,9 @@ try{
 
 await cargarDatos();
 
-
-renderTodo();
-
+if(typeof renderTodo === "function"){
+    renderTodo();
+}
 
 
 mostrarToast(
@@ -1369,3 +1369,40 @@ toast.classList.add(
 
 
 }
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+
+const btnImportar =
+document.getElementById(
+"importClientesBtn"
+);
+
+
+if(btnImportar){
+
+btnImportar.onclick =
+importarExcelClientes;
+
+}
+
+
+
+const btnExportar =
+document.getElementById(
+"exportExcelBtn"
+);
+
+
+if(btnExportar){
+
+btnExportar.onclick =
+exportarExcel;
+
+}
+
+
+
+});

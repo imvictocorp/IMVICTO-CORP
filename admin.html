@@ -535,7 +535,7 @@
             </thead>
 
 
-<tbody id="ultimasCuotas">
+            <tbody id="ultimasCuotas">
 
             </tbody>
 
@@ -565,11 +565,16 @@
           </h3>
 
 
-          <input id="importExcelInput" type="file">
+          <input id="importExcelInput" type="file" accept=".xlsx,.xls" />
 
 
-          <button id="importClientesBtn">
+          <button id="importClientesBtn" class="btn" type="button">
             Importar clientes
+          </button>
+
+
+          <button id="exportExcelBtn" class="btn secondary" type="button">
+            Exportar Excel
           </button>
 
 
@@ -622,13 +627,9 @@
   <div id="toast" class="toast hidden"></div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-<script src="./config.js"></script>
-
-<script src="./js/supabase.js"></script>
-
-<script src="./js/admin.js"></script>
+  <script src="./js/admin.js"></script>
 
 </body>
 
