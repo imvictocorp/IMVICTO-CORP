@@ -1256,6 +1256,51 @@ function renderUltimasCuotas(){
 
 }
 
+// =======================================
+// RENDER TODO
+// =======================================
+
+function renderTodo(){
+
+    renderStats();
+
+    if(typeof renderUltimasCuotas === "function"){
+        renderUltimasCuotas();
+    }
+
+}
+
+
+
+// =======================================
+// ULTIMAS CUOTAS
+// =======================================
+
+function renderUltimasCuotas(){
+
+    const tabla = document.getElementById("ultimasCuotas");
+
+    if(!tabla) return;
+
+    tabla.innerHTML = "";
+
+    cuotas.slice(0,5).forEach(c=>{
+
+        tabla.innerHTML += `
+        <tr>
+            <td>${c.cliente || ""}</td>
+            <td>${c.cuota || ""}</td>
+            <td>S/ ${Number(c.monto || 0).toFixed(2)}</td>
+            <td>${c.fecha_vencimiento || ""}</td>
+            <td>${c.estado || ""}</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+
 
 // =======================================
 // TOAST
