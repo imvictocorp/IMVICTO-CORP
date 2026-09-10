@@ -32,7 +32,6 @@ function getDB(){
 }
 
 
-
 // =======================================
 // INICIO
 // =======================================
@@ -279,9 +278,6 @@ exportarExcel;
 
 
 
-
-
-
 // =======================================
 // VISTAS
 // =======================================
@@ -342,9 +338,6 @@ btn.dataset.view===nombre
 
 
 
-
-
-
 // =======================================
 // CARGAR DATOS SUPABASE
 // =======================================
@@ -356,7 +349,6 @@ async function cargarDatos(){
 
 const db =
 getDB();
-
 
 
 // CLIENTES
@@ -384,9 +376,6 @@ clientesResp.data || [];
 
 
 
-
-
-
 // VENTAS
 
 const ventasResp =
@@ -408,9 +397,6 @@ ventas =
 ventasResp.data || [];
 
 }
-
-
-
 
 
 
@@ -437,15 +423,9 @@ cuotasResp.data || [];
 
 }
 
-
-
-
-
-
 // =======================================
 // RENDER GENERAL
 // =======================================
-
 
 
 function renderStats(){
@@ -546,6 +526,64 @@ pendiente.toFixed(2);
 
 
 
+// =======================================
+// RENDER CLIENTES
+// =======================================
+
+
+function renderClientes(){
+
+
+const tabla =
+document.getElementById(
+"tablaClientes"
+);
+
+
+
+if(!tabla)
+return;
+
+
+
+tabla.innerHTML="";
+
+
+
+clientes.forEach(c=>{
+
+
+tabla.innerHTML += `
+
+<tr>
+
+<td>
+${c.nombres || ""} ${c.apellidos || ""}
+</td>
+
+<td>
+${c.dni || ""}
+</td>
+
+<td>
+${c.telefono || ""}
+</td>
+
+<td>
+${c.estado_pedido || ""}
+</td>
+
+
+</tr>
+
+`;
+
+
+});
+
+
+}
+
 
 
 
@@ -573,19 +611,16 @@ new FormData(form)
 
 
 
-
 const cliente = {
 
 
 nombres:
-datos.nombres
-?.toUpperCase(),
+datos.nombres?.toUpperCase(),
 
 
 
 apellidos:
-datos.apellidos
-?.toUpperCase(),
+datos.apellidos?.toUpperCase(),
 
 
 
@@ -625,14 +660,12 @@ datos.dni,
 
 
 direccion:
-datos.direccion
-?.toUpperCase(),
+datos.direccion?.toUpperCase(),
 
 
 
 mercaderia:
-datos.mercaderia
-?.toUpperCase(),
+datos.mercaderia?.toUpperCase(),
 
 
 
@@ -681,7 +714,6 @@ datos.fecha_pago || null
 
 
 
-
 const db =
 getDB();
 
@@ -693,7 +725,6 @@ let respuesta;
 
 
 if(editandoCliente){
-
 
 
 respuesta =
@@ -711,7 +742,6 @@ editandoCliente
 else{
 
 
-
 respuesta =
 await db
 .from("clientes")
@@ -720,7 +750,6 @@ await db
 
 
 }
-
 
 
 
@@ -759,16 +788,13 @@ renderTodo();
 
 
 
-
-
 // =======================================
-// EDITAR
+// EDITAR CLIENTE
 // =======================================
 
 
 window.editarCliente =
 function(id){
-
 
 
 const cliente =
@@ -824,11 +850,8 @@ cliente[key] || "";
 
 
 
-
-
-
 // =======================================
-// ELIMINAR
+// ELIMINAR CLIENTE
 // =======================================
 
 
@@ -841,7 +864,6 @@ if(!confirm(
 "¿Eliminar cliente?"
 ))
 return;
-
 
 
 
@@ -883,18 +905,12 @@ renderTodo();
 };
 
 
-
-
-
-
-
 // =======================================
 // IMPORTAR EXCEL
 // =======================================
 
 
 async function importarExcelClientes(){
-
 
 
 const input =
@@ -924,15 +940,12 @@ return;
 
 if(typeof XLSX==="undefined"){
 
-
 mostrarToast(
 "Falta cargar XLSX",
 true
 );
 
-
 return;
-
 
 }
 
@@ -970,7 +983,7 @@ getDB();
 
 
 
-let creados=0;
+let cantidad = 0;
 
 
 
@@ -978,78 +991,63 @@ for(const fila of filas){
 
 
 
-const cliente={
-
+const cliente = {
 
 
 nombres:
 fila.NOMBRES || "",
 
 
-
 apellidos:
 fila.APELLIDOS || "",
-
 
 
 numero_orden:
 fila["Nº ORDEN"] || "",
 
 
-
 numero_cliente:
 fila["Nº CLIENTE"] || "",
-
 
 
 fecha_orden:
 fila["FECHA DE LA ORDEN"] || null,
 
 
-
 estado_pedido:
 fila["ESTADO DEL PEDIDO"] || "ACTUAL",
-
 
 
 correo:
 fila.CORREO || "",
 
 
-
 telefono:
 fila["TEL PERSONAL"] || "",
-
 
 
 dni:
 fila.DNI || "",
 
 
-
 direccion:
 fila.DIRECCIÓN || "",
-
 
 
 mercaderia:
 fila.MERCADERIA || "",
 
 
-
 regalo:
 fila.REGALO || "",
-
 
 
 nivel_cliente:
 fila["NIVEL DE CLIENTE"] || "",
 
 
-
 tipo_contrato:
 fila["TIPO DE CONTRATO"] || "",
-
 
 
 monto_total:
@@ -1058,19 +1056,16 @@ fila["MONTO TOTAL"] || 0
 ),
 
 
-
 monto_cuota:
 Number(
 fila["MONTO DE CUOTA"] || 0
 ),
 
 
-
 cantidad_cuotas:
 Number(
 fila["CANTIDAD DE CUOTAS"] || 0
 ),
-
 
 
 fecha_pago:
@@ -1082,7 +1077,8 @@ fila["FECHA DE PAGO"] || null
 
 
 
-const existe =
+
+const existente =
 clientes.find(
 c=>
 c.dni &&
@@ -1091,33 +1087,45 @@ c.dni===cliente.dni
 
 
 
-if(existe){
+if(existente){
 
 
+const respuesta =
 await db
 .from("clientes")
 .update(cliente)
 .eq(
 "id",
-existe.id
+existente.id
 );
 
 
 
-}else{
+if(respuesta.error)
+throw respuesta.error;
 
 
+
+}
+else{
+
+
+const respuesta =
 await db
 .from("clientes")
 .insert(cliente);
 
 
 
+if(respuesta.error)
+throw respuesta.error;
+
+
 }
 
 
 
-creados++;
+cantidad++;
 
 
 }
@@ -1126,7 +1134,7 @@ creados++;
 
 
 mostrarToast(
-`${creados} clientes importados`
+`${cantidad} clientes actualizados/importados`
 );
 
 
@@ -1139,6 +1147,8 @@ renderTodo();
 
 
 }
+
+
 
 
 
@@ -1199,76 +1209,35 @@ libro,
 
 
 
-// =======================================
-// RENDER TODO
-// =======================================
 
-function renderTodo(){
-
-    renderStats();
-    renderUltimasCuotas();
-
-}
-
-
-
-// =======================================
-// ULTIMAS CUOTAS
-// =======================================
-
-function renderUltimasCuotas(){
-
-    const tabla =
-    document.getElementById("ultimasCuotas");
-
-    if(!tabla) return;
-
-
-    tabla.innerHTML = "";
-
-
-    cuotas
-    .slice(0,5)
-    .forEach(c=>{
-
-
-        tabla.innerHTML += `
-
-        <tr>
-
-            <td>${c.cliente || ""}</td>
-
-            <td>${c.cuota || ""}</td>
-
-            <td>S/ ${Number(c.monto || 0).toFixed(2)}</td>
-
-            <td>${c.fecha || ""}</td>
-
-            <td>${c.estado || ""}</td>
-
-        </tr>
-
-        `;
-
-
-    });
-
-
-}
 
 // =======================================
 // RENDER TODO
 // =======================================
 
+
 function renderTodo(){
 
     renderStats();
 
-    if(typeof renderUltimasCuotas === "function"){
-        renderUltimasCuotas();
+
+    if(typeof renderClientes==="function"){
+
+        renderClientes();
+
     }
 
+
+    if(typeof renderUltimasCuotas==="function"){
+
+        renderUltimasCuotas();
+
+    }
+
+
 }
+
+
 
 
 
@@ -1276,29 +1245,75 @@ function renderTodo(){
 // ULTIMAS CUOTAS
 // =======================================
 
+
 function renderUltimasCuotas(){
 
-    const tabla = document.getElementById("ultimasCuotas");
 
-    if(!tabla) return;
+const tabla =
+document.getElementById(
+"ultimasCuotas"
+);
 
-    tabla.innerHTML = "";
 
-    cuotas.slice(0,5).forEach(c=>{
 
-        tabla.innerHTML += `
-        <tr>
-            <td>${c.cliente || ""}</td>
-            <td>${c.cuota || ""}</td>
-            <td>S/ ${Number(c.monto || 0).toFixed(2)}</td>
-            <td>${c.fecha_vencimiento || ""}</td>
-            <td>${c.estado || ""}</td>
-        </tr>
-        `;
+if(!tabla)
+return;
 
-    });
+
+
+tabla.innerHTML="";
+
+
+
+cuotas
+.slice(0,5)
+.forEach(c=>{
+
+
+tabla.innerHTML += `
+
+<tr>
+
+<td>
+${c.cliente || ""}
+</td>
+
+
+<td>
+${c.cuota || ""}
+</td>
+
+
+<td>
+S/ ${Number(c.monto || 0).toFixed(2)}
+</td>
+
+
+<td>
+${c.fecha_vencimiento || c.fecha || ""}
+</td>
+
+
+<td>
+${c.estado || ""}
+</td>
+
+
+</tr>
+
+`;
+
+
+
+});
+
+
 
 }
+
+
+
+
 
 
 
