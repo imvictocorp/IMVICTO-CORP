@@ -107,14 +107,21 @@ function iniciarEventos(){
     );
 
 
-    if(refresh){
+if(refresh){
 
-        refresh.onclick =
-        cargarDatos;
+    refresh.onclick = ()=>{
 
-    }
+        cargarClientesLocal();
 
+        renderTodo();
 
+        mostrarToast(
+            "Datos actualizados"
+        );
+
+    };
+
+}
 
 
     // cliente
@@ -287,113 +294,78 @@ document
 
 async function cargarDatos(){
 
+    try{
 
-const supabase =
-getDB();
-
-
-
-// CLIENTES
-
-const clientesResp =
-await supabase
-.from("clientes")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
-}
-);
+        const supabase = getDB();
 
 
+        const clientesResp =
+        await supabase
+        .from("clientes")
+        .select("*")
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        );
 
-if(clientesResp.error)
-throw clientesResp.error;
 
+        if(!clientesResp.error){
 
+            clientes =
+            clientesResp.data || [];
 
-clientes =
-clientesResp.data || [];
+            guardarClientesLocal();
 
-
-guardarClientesLocal();
-
-
-// VENTAS
-
-const ventasResp =
-await supabase
-.from("ventas")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
-}
-);
+        }
 
 
 
-if(ventasResp.error)
-throw ventasResp.error;
+        const ventasResp =
+        await supabase
+        .from("ventas")
+        .select("*");
+
+
+        if(!ventasResp.error){
+
+            ventas =
+            ventasResp.data || [];
+
+        }
 
 
 
-ventas =
-ventasResp.data || [];
+        const cuotasResp =
+        await supabase
+        .from("cuotas")
+        .select("*");
+
+
+        if(!cuotasResp.error){
+
+            cuotas =
+            cuotasResp.data || [];
+
+        }
 
 
 
+    }catch(error){
 
 
-
-// CUOTAS
-
-
-const cuotasResp =
-await supabase
-.from("cuotas")
-.select("*")
-.order(
-"fecha_vencimiento"
-);
+        console.log(
+            "Supabase no disponible, usando local"
+        );
 
 
-
-if(cuotasResp.error)
-throw cuotasResp.error;
+        cargarClientesLocal();
 
 
-
-cuotas =
-cuotasResp.data || [];
-
-
-
-
-
-console.log(
-"Clientes:",
-clientes.length
-);
-
-
-console.log(
-"Ventas:",
-ventas.length
-);
-
-
-console.log(
-"Cuotas:",
-cuotas.length
-);
-
-
+    }
 
 }
-
 
 
 
@@ -711,10 +683,13 @@ form.reset();
 
 
 
-await cargarDatos();
-
+guardarClientesLocal();
 
 renderTodo();
+
+mostrarToast(
+    "Clientes guardados localmente"
+);
 
 
 
@@ -1842,36 +1817,15 @@ document.addEventListener(
 
 iniciarEventos();
 
-
 cargarDatos()
-
 .then(()=>{
 
+    cargarClientesLocal();
 
-renderTodo();
-
+    renderTodo();
 
 })
 
-.catch(error=>{
-
-
-console.error(error);
-
-
-cargarClientesLocal();
-
-
-renderTodo();
-
-
-mostrarToast(
-"Modo local activado",
-true
-);
-
-
-});
 
 
 });
