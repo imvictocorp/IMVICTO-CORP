@@ -44,38 +44,25 @@ function getDB(){
 // INICIO
 // ------------------------------
 
-document.addEventListener(
-"DOMContentLoaded",
-async()=>{
+document.addEventListener("DOMContentLoaded",()=>{
 
 
-    try{
+const logout=document.querySelector("#logoutBtn");
 
-        await cargarDatos();
+if(logout){
 
+logout.addEventListener("click",()=>{
 
-        iniciarEventos();
+localStorage.removeItem("usuario");
 
-
-        renderTodo();
-
-
-    }catch(error){
-
-        console.error(error);
-
-
-        mostrarToast(
-            "Error cargando Supabase: " + error.message,
-            true
-        );
-
-    }
-
-
+window.location.href="./login.html";
 
 });
 
+}
+
+
+});
 
 
 

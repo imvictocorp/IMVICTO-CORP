@@ -1,65 +1,29 @@
-(function () {
-  const form = document.getElementById("loginForm");
-  const toast = document.getElementById("toast");
+const USUARIO = "micaela@imvicto.com";
+const PASSWORD = "chayanne16";
 
-  if (!form) {
-    console.error("No existe #loginForm en login.html");
-    return;
-  }
+document.addEventListener("DOMContentLoaded",()=>{
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
+const form=document.querySelector("#loginForm");
 
-    const correo = String(form.correo?.value || "").trim().toLowerCase();
-    const clave = String(form.clave?.value || "").trim();
+form.addEventListener("submit",(e)=>{
 
-    if (typeof IMVICTO_USERS === "undefined") {
-      showToast("No se cargó config.js. Revisa el orden de scripts.", true);
-      return;
-    }
+e.preventDefault();
 
-    const user = IMVICTO_USERS.find((u) => {
-      return String(u.correo || "").trim().toLowerCase() === correo &&
-             String(u.clave || "").trim() === clave;
-    });
+const correo=document.querySelector("#correo").value;
+const clave=document.querySelector("#clave").value;
 
-    if (!user) {
-      showToast("Correo o contraseña incorrectos.", true);
-      return;
-    }
+if(correo===USUARIO && clave===PASSWORD){
 
-    sessionStorage.setItem("imvicto_user", JSON.stringify({
-      nombre: user.nombre,
-      correo: user.correo,
-      rol: user.rol
-    }));
+localStorage.setItem("usuario","admin");
 
-    if (user.rol === "admin") {
-      window.location.href = "admin.html";
-      return;
-    }
+window.location.href="./admin.html";
 
-    if (user.rol === "vendedor") {
-      window.location.href = "vendedor.html";
-      return;
-    }
+}else{
 
-    showToast("Rol no válido.", true);
-  });
+document.querySelector("#loginError").textContent="Usuario o contraseña incorrectos";
 
-  function showToast(message, isError = false) {
-    if (!toast) {
-      alert(message);
-      return;
-    }
+}
 
-    toast.textContent = message;
-    toast.classList.remove("hidden");
-    toast.style.background = isError ? "#8f241d" : "#0d2944";
+});
 
-    clearTimeout(window.__loginToast);
-    window.__loginToast = setTimeout(() => {
-      toast.classList.add("hidden");
-    }, 3500);
-  }
-})();
+});
