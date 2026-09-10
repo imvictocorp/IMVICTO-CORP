@@ -1,11 +1,14 @@
-const supabaseClient = supabase.createClient(
-    window.SUPABASE_URL,
-    window.SUPABASE_KEY
+const supabaseClient =
+supabase.createClient(
+window.SUPABASE_URL,
+window.SUPABASE_KEY
 );
 
-window.imvictoSupabase = supabaseClient;
+
+window.imvictoSupabase =
+supabaseClient;
+
 
 console.log(
-    "Supabase conectado",
-    window.imvictoSupabase
+"Supabase conectado"
 );

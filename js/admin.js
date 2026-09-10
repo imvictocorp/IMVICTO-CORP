@@ -1,12 +1,8 @@
 // =======================================
 // IMVICTO CORP - ADMIN PANEL
-// Supabase + Excel + CRUD clientes
+// Supabase + Excel + CRUD CLIENTES
 // =======================================
 
-
-// ------------------------------
-// VARIABLES
-// ------------------------------
 
 let clientes = [];
 let ventas = [];
@@ -15,20 +11,17 @@ let cuotas = [];
 let editandoCliente = null;
 
 
+// =======================================
+// SUPABASE
+// =======================================
 
-// ------------------------------
-// CONEXIÓN SUPABASE
-// ------------------------------
 
 function getDB(){
 
     if(window.imvictoSupabase){
+
         return window.imvictoSupabase;
-    }
 
-
-    if(window.db){
-        return window.db;
     }
 
 
@@ -40,187 +33,221 @@ function getDB(){
 
 
 
-// ------------------------------
+// =======================================
 // INICIO
-// ------------------------------
-
-document.addEventListener("DOMContentLoaded",()=>{
+// =======================================
 
 
-const logout=document.querySelector("#logoutBtn");
-
-if(logout){
-
-logout.addEventListener("click",()=>{
-
-localStorage.removeItem("usuario");
-
-window.location.href="./login.html";
-
-});
-
-}
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
 
 
-});
+    iniciarEventos();
 
 
-
-// ------------------------------
-// EVENTOS
-// ------------------------------
-
-function iniciarEventos(){
+    cargarDatos()
+    .then(()=>{
 
 
-    // navegación
-
-    document
-    .querySelectorAll(".nav-btn")
-    .forEach(btn=>{
+        renderTodo();
 
 
-        btn.addEventListener(
-        "click",
-        ()=>{
+    })
+    .catch(error=>{
 
 
-            const vista =
-            btn.dataset.view;
+        console.error(error);
 
 
-            cambiarVista(vista);
-
-
-        });
+        mostrarToast(
+            error.message,
+            true
+        );
 
 
     });
 
 
+});
 
-    // refrescar
 
-    const refresh =
-    document.getElementById(
-        "refreshBtn"
+
+
+// =======================================
+// EVENTOS
+// =======================================
+
+
+function iniciarEventos(){
+
+
+
+document
+.querySelectorAll(".nav-btn")
+.forEach(btn=>{
+
+
+btn.onclick=()=>{
+
+
+    cambiarVista(
+        btn.dataset.view
     );
+
+
+};
+
+
+});
+
+
+
+
+
+const refresh =
+document.getElementById(
+"refreshBtn"
+);
+
 
 
 if(refresh){
 
-    refresh.onclick = ()=>{
 
-        cargarClientesLocal();
+refresh.onclick=async()=>{
 
-        renderTodo();
 
-        mostrarToast(
-            "Datos actualizados"
-        );
+try{
 
-    };
+
+await cargarDatos();
+
+
+renderTodo();
+
+
+
+mostrarToast(
+"Datos actualizados"
+);
+
+
+
+}
+catch(error){
+
+
+mostrarToast(
+error.message,
+true
+);
+
 
 }
 
 
-    // cliente
+
+};
 
 
-    const form =
-    document.getElementById(
-        "clienteForm"
-    );
+
+}
 
 
-    if(form){
 
-        form.addEventListener(
-        "submit",
-        guardarCliente
-        );
 
-    }
+
+const logout =
+document.getElementById(
+"logoutBtn"
+);
+
+
+
+if(logout){
+
+
+logout.onclick=()=>{
+
+
+localStorage.removeItem(
+"usuario"
+);
+
+
+
+location.href=
+"./login.html";
+
+
+};
+
+
+}
+
+
+
+
+
+
+
+const form =
+document.getElementById(
+"clienteForm"
+);
+
+
+
+if(form){
+
+
+form.addEventListener(
+"submit",
+guardarCliente
+);
+
+
+}
+
 
 
 
 
 const buscar =
 document.getElementById(
-    "clienteSearch"
+"clienteSearch"
 );
+
 
 
 if(buscar){
 
-    buscar.addEventListener(
-        "input",
-        ()=>{
-            renderClientesLocal();
-        }
-    );
+
+buscar.addEventListener(
+"input",
+renderClientes
+);
+
 
 }
 
 
 
 
-    // excel
 
-
-    const importar =
-    document.getElementById(
-        "importClientesBtn"
-    );
-
-
-    if(importar){
-
-        importar.onclick =
-        importarExcelClientes;
-
-    }
+const importar =
+document.getElementById(
+"importClientesBtn"
+);
 
 
 
-
-    const exportar =
-    document.getElementById(
-        "exportExcelBtn"
-    );
+if(importar){
 
 
-    if(exportar){
-
-        exportar.onclick =
-        exportarExcel;
-
-    }
-
-
-
-
-    // logout
-
-    const logout =
-    document.getElementById(
-        "logoutBtn"
-    );
-
-
-    if(logout){
-
-        logout.onclick =
-        ()=>{
-
-            localStorage.clear();
-
-            location.href =
-            "./login.html";
-
-        };
-
-    }
+importar.onclick =
+importarExcelClientes;
 
 
 }
@@ -230,12 +257,38 @@ if(buscar){
 
 
 
+const exportar =
+document.getElementById(
+"exportExcelBtn"
+);
 
-// ------------------------------
-// CAMBIO DE VISTA
-// ------------------------------
+
+
+if(exportar){
+
+
+exportar.onclick =
+exportarExcel;
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+// =======================================
+// VISTAS
+// =======================================
+
 
 function cambiarVista(nombre){
+
 
 
 document
@@ -243,9 +296,9 @@ document
 .forEach(v=>{
 
 
-    v.classList.remove(
-        "active"
-    );
+v.classList.remove(
+"active"
+);
 
 
 });
@@ -254,16 +307,18 @@ document
 
 const vista =
 document.getElementById(
-    nombre
+nombre
 );
 
 
 
 if(vista){
 
-    vista.classList.add(
-        "active"
-    );
+
+vista.classList.add(
+"active"
+);
+
 
 }
 
@@ -274,119 +329,141 @@ document
 .forEach(btn=>{
 
 
-    btn.classList.toggle(
-        "active",
-        btn.dataset.view===nombre
-    );
+btn.classList.toggle(
+"active",
+btn.dataset.view===nombre
+);
 
 
 });
 
 
-
 }
 
 
 
 
 
-// ------------------------------
-// CARGAR DATOS
-// ------------------------------
+
+// =======================================
+// CARGAR DATOS SUPABASE
+// =======================================
+
 
 async function cargarDatos(){
 
-    try{
-
-        const supabase = getDB();
 
 
-        const clientesResp =
-        await supabase
-        .from("clientes")
-        .select("*")
-        .order(
-            "created_at",
-            {
-                ascending:false
-            }
-        );
-
-
-        if(!clientesResp.error){
-
-            clientes =
-            clientesResp.data || [];
-
-            guardarClientesLocal();
-
-        }
+const db =
+getDB();
 
 
 
-        const ventasResp =
-        await supabase
-        .from("ventas")
-        .select("*");
+// CLIENTES
 
-
-        if(!ventasResp.error){
-
-            ventas =
-            ventasResp.data || [];
-
-        }
-
-
-
-        const cuotasResp =
-        await supabase
-        .from("cuotas")
-        .select("*");
-
-
-        if(!cuotasResp.error){
-
-            cuotas =
-            cuotasResp.data || [];
-
-        }
+const clientesResp =
+await db
+.from("clientes")
+.select("*")
+.order(
+"created_at",
+{
+ascending:false
+}
+);
 
 
 
-    }catch(error){
+if(clientesResp.error)
+throw clientesResp.error;
 
 
-        console.log(
-            "Supabase no disponible, usando local"
-        );
+
+clientes =
+clientesResp.data || [];
 
 
-        cargarClientesLocal();
 
 
-    }
+
+
+// VENTAS
+
+const ventasResp =
+await db
+.from("ventas")
+.select("*")
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+
+if(!ventasResp.error){
+
+ventas =
+ventasResp.data || [];
 
 }
 
 
 
 
-// ------------------------------
+
+
+// CUOTAS
+
+const cuotasResp =
+await db
+.from("cuotas")
+.select("*")
+.order(
+"fecha_vencimiento"
+);
+
+
+
+if(!cuotasResp.error){
+
+cuotas =
+cuotasResp.data || [];
+
+}
+
+
+
+}
+
+
+
+
+
+
+// =======================================
 // RENDER GENERAL
-// ------------------------------
+// =======================================
+
 
 function renderTodo(){
 
-    renderStats();
 
-    renderClientesLocal();
+renderStats();
 
-    renderVentas();
 
-    renderCuotas();
+renderClientes();
+
+
+renderVentas();
+
+
+renderCuotas();
+
 
 }
+
 
 
 
@@ -401,9 +478,15 @@ document.getElementById(
 );
 
 
-if(clientesEl)
+
+if(clientesEl){
+
 clientesEl.textContent =
 clientes.length;
+
+}
+
+
 
 
 
@@ -413,21 +496,23 @@ document.getElementById(
 );
 
 
-if(ventasEl)
+
+if(ventasEl){
+
 ventasEl.textContent =
 ventas.length;
+
+}
+
+
 
 
 
 const vencidas =
-cuotas.filter(c=>{
-
-
-return c.estado ===
-"vencido";
-
-
-}).length;
+cuotas.filter(
+c=>
+c.estado==="VENCIDA"
+).length;
 
 
 
@@ -438,20 +523,24 @@ document.getElementById(
 
 
 
-if(vencidasEl)
+if(vencidasEl){
+
 vencidasEl.textContent =
 vencidas;
+
+}
 
 
 
 const pendiente =
 cuotas
-.filter(c=>c.estado!=="pagado")
+.filter(
+c=>
+c.estado!=="PAGADA"
+)
 .reduce(
 (a,b)=>
-a+Number(
-b.monto||0
-),
+a+Number(b.monto||0),
 0
 );
 
@@ -464,137 +553,94 @@ document.getElementById(
 
 
 
-if(pendienteEl)
+if(pendienteEl){
+
 pendienteEl.textContent =
 "S/ "+
 pendiente.toFixed(2);
 
+}
 
 
 }
 
-
 // =======================================
-// GUARDAR CLIENTE
+// CLIENTES
 // =======================================
 
 
-async function guardarCliente(event){
-
-event.preventDefault();
+function renderClientes(){
 
 
-const form =
-event.target;
-
-
-const datos =
-new FormData(form);
-
-
-
-const cliente = {
-
-
-nombres:
-String(datos.get("nombres")||"")
-.toUpperCase()
-.trim(),
-
-
-apellidos:
-String(datos.get("apellidos")||"")
-.toUpperCase()
-.trim(),
-
-
-numero_orden:
-datos.get("numero_orden"),
-
-
-numero_cliente:
-datos.get("numero_cliente"),
-
-
-fecha_orden:
-datos.get("fecha_orden"),
-
-
-estado_pedido:
-datos.get("estado_pedido"),
-
-
-correo:
-datos.get("correo"),
-
-
-telefono:
-datos.get("telefono"),
-
-
-dni:
-datos.get("dni"),
-
-
-direccion:
-String(datos.get("direccion")||"")
-.toUpperCase(),
-
-
-mercaderia:
-String(datos.get("mercaderia")||"")
-.toUpperCase(),
-
-
-regalo:
-datos.get("regalo"),
-
-
-estado_civil:
-datos.get("estado_civil"),
-
-
-nivel_cliente:
-datos.get("nivel_cliente"),
-
-
-tipo_contrato:
-datos.get("tipo_contrato"),
-
-
-monto_total:
-Number(datos.get("monto_total")||0),
-
-
-monto_cuota:
-Number(datos.get("monto_cuota")||0),
-
-
-cantidad_cuotas:
-Number(datos.get("cantidad_cuotas")||0),
-
-
-fecha_pago:
-datos.get("fecha_pago")
-
-
-};
-
-
-
-
-
-const error =
-validarCliente(cliente);
-
-
-
-if(error){
-
-mostrarToast(
-error,
-true
+const tbody =
+document.getElementById(
+"clientesBody"
 );
+
+
+
+if(!tbody)
+return;
+
+
+
+const buscar =
+document.getElementById(
+"clienteSearch"
+);
+
+
+
+const texto =
+(buscar?.value || "")
+.toLowerCase();
+
+
+
+
+const lista =
+clientes.filter(c=>{
+
+
+return (
+
+String(c.nombres || "")
+.toLowerCase()
+.includes(texto)
+
+||
+
+String(c.apellidos || "")
+.toLowerCase()
+.includes(texto)
+
+||
+
+String(c.dni || "")
+.includes(texto)
+
+);
+
+
+
+});
+
+
+
+
+
+if(!lista.length){
+
+
+tbody.innerHTML =
+`
+<tr>
+<td colspan="4">
+No hay clientes registrados
+</td>
+</tr>
+`;
+
 
 return;
 
@@ -604,56 +650,239 @@ return;
 
 
 
-const supabase =
+tbody.innerHTML =
+
+lista.map(c=>`
+
+<tr>
+
+<td>
+${c.nombres || ""}
+${c.apellidos || ""}
+</td>
+
+
+<td>
+${c.dni || ""}
+</td>
+
+
+<td>
+${c.telefono || ""}
+</td>
+
+
+<td>
+
+
+<button
+class="btn mini secondary"
+onclick="editarCliente('${c.id}')">
+
+Editar
+
+</button>
+
+
+
+<button
+class="btn mini danger"
+onclick="eliminarCliente('${c.id}')">
+
+Eliminar
+
+</button>
+
+
+</td>
+
+
+</tr>
+
+`).join("");
+
+
+
+}
+
+
+
+
+
+
+// =======================================
+// GUARDAR CLIENTE
+// =======================================
+
+
+async function guardarCliente(e){
+
+
+e.preventDefault();
+
+
+
+const form =
+e.target;
+
+
+
+const datos =
+Object.fromEntries(
+new FormData(form)
+);
+
+
+
+
+const cliente = {
+
+
+nombres:
+datos.nombres
+?.toUpperCase(),
+
+
+
+apellidos:
+datos.apellidos
+?.toUpperCase(),
+
+
+
+numero_orden:
+datos.numero_orden,
+
+
+
+numero_cliente:
+datos.numero_cliente,
+
+
+
+fecha_orden:
+datos.fecha_orden || null,
+
+
+
+estado_pedido:
+datos.estado_pedido,
+
+
+
+correo:
+datos.correo,
+
+
+
+telefono:
+datos.telefono,
+
+
+
+dni:
+datos.dni,
+
+
+
+direccion:
+datos.direccion
+?.toUpperCase(),
+
+
+
+mercaderia:
+datos.mercaderia
+?.toUpperCase(),
+
+
+
+regalo:
+datos.regalo,
+
+
+
+nivel_cliente:
+datos.nivel_cliente,
+
+
+
+tipo_contrato:
+datos.tipo_contrato,
+
+
+
+monto_total:
+Number(
+datos.monto_total || 0
+),
+
+
+
+monto_cuota:
+Number(
+datos.monto_cuota || 0
+),
+
+
+
+cantidad_cuotas:
+Number(
+datos.cantidad_cuotas || 0
+),
+
+
+
+fecha_pago:
+datos.fecha_pago || null
+
+
+};
+
+
+
+
+
+const db =
 getDB();
 
 
 
-try{
+
+let respuesta;
 
 
-// EDITAR
 
 if(editandoCliente){
 
 
-const respuesta =
-await supabase
+
+respuesta =
+await db
 .from("clientes")
 .update(cliente)
 .eq(
 "id",
 editandoCliente
-)
-.select()
-.single();
-
-
-
-if(respuesta.error)
-throw respuesta.error;
-
-
-
-mostrarToast(
-"Cliente actualizado"
 );
 
 
 
 }
-
 else{
 
 
-// NUEVO
 
-const respuesta =
-await supabase
+respuesta =
+await db
 .from("clientes")
-.insert(cliente)
-.select()
-.single();
+.insert(cliente);
+
+
+
+}
+
+
 
 
 
@@ -662,17 +891,10 @@ throw respuesta.error;
 
 
 
+
 mostrarToast(
-"Cliente guardado"
+"Cliente guardado correctamente"
 );
-
-
-
-}
-
-
-
-editandoCliente=null;
 
 
 
@@ -680,32 +902,15 @@ form.reset();
 
 
 
-guardarClientesLocal();
+editandoCliente=null;
+
+
+
+await cargarDatos();
+
 
 renderTodo();
 
-mostrarToast(
-    "Clientes guardados localmente"
-);
-
-
-
-}
-
-catch(error){
-
-
-console.error(error);
-
-
-mostrarToast(
-error.message,
-true
-);
-
-
-}
-
 
 
 }
@@ -718,69 +923,13 @@ true
 
 
 // =======================================
-// VALIDACIONES
-// =======================================
-
-
-function validarCliente(c){
-
-
-if(!c.nombres)
-return "Nombres obligatorio";
-
-
-if(!c.apellidos)
-return "Apellidos obligatorio";
-
-
-if(!c.estado_pedido)
-return "Estado pedido obligatorio";
-
-
-if(!c.telefono)
-return "Teléfono obligatorio";
-
-
-if(!c.dni)
-return "DNI obligatorio";
-
-
-if(!c.direccion)
-return "Dirección obligatoria";
-
-
-if(!c.mercaderia)
-return "Mercadería obligatoria";
-
-
-if(!c.tipo_contrato)
-return "Tipo contrato obligatorio";
-
-
-if(!c.monto_total)
-return "Monto total obligatorio";
-
-
-
-return null;
-
-
-}
-
-
-
-
-
-
-
-
-// =======================================
-// EDITAR CLIENTE
+// EDITAR
 // =======================================
 
 
 window.editarCliente =
 function(id){
+
 
 
 const cliente =
@@ -807,12 +956,12 @@ document.getElementById(
 
 
 Object.keys(cliente)
-.forEach(campo=>{
+.forEach(key=>{
 
 
 const input =
 form.querySelector(
-`[name="${campo}"]`
+`[name="${key}"]`
 );
 
 
@@ -820,37 +969,13 @@ form.querySelector(
 if(input){
 
 input.value =
-cliente[campo] || "";
+cliente[key] || "";
 
 }
 
 
 
 });
-
-
-
-document
-.getElementById(
-"clienteFormTitle"
-)
-.textContent =
-"Modificar cliente";
-
-
-
-document
-.getElementById(
-"clienteSubmit"
-)
-.textContent =
-"Actualizar";
-
-
-
-mostrarToast(
-"Modo edición activado"
-);
 
 
 
@@ -864,7 +989,7 @@ mostrarToast(
 
 
 // =======================================
-// ELIMINAR CLIENTE
+// ELIMINAR
 // =======================================
 
 
@@ -872,33 +997,34 @@ window.eliminarCliente =
 async function(id){
 
 
-const confirmar =
-confirm(
-"¿Eliminar este cliente?"
-);
 
-
-
-if(!confirmar)
+if(!confirm(
+"¿Eliminar cliente?"
+))
 return;
 
 
 
-const supabase =
+
+const db =
 getDB();
 
 
 
-try{
-
-
-await supabase
+const respuesta =
+await db
 .from("clientes")
 .delete()
 .eq(
 "id",
 id
 );
+
+
+
+
+if(respuesta.error)
+throw respuesta.error;
 
 
 
@@ -915,21 +1041,6 @@ renderTodo();
 
 
 
-}
-
-catch(error){
-
-
-mostrarToast(
-error.message,
-true
-);
-
-
-}
-
-
-
 };
 
 
@@ -938,22 +1049,24 @@ true
 
 
 
-
-
 // =======================================
-// IMPORTAR EXCEL A SUPABASE
+// IMPORTAR EXCEL
 // =======================================
 
 
 async function importarExcelClientes(){
 
 
-const archivo =
-document
-.getElementById(
+
+const input =
+document.getElementById(
 "importExcelInput"
-)
-.files[0];
+);
+
+
+
+const archivo =
+input?.files[0];
 
 
 
@@ -970,6 +1083,22 @@ return;
 
 
 
+if(typeof XLSX==="undefined"){
+
+
+mostrarToast(
+"Falta cargar XLSX",
+true
+);
+
+
+return;
+
+
+}
+
+
+
 
 const buffer =
 await archivo.arrayBuffer();
@@ -978,10 +1107,7 @@ await archivo.arrayBuffer();
 
 const workbook =
 XLSX.read(
-buffer,
-{
-type:"array"
-}
+buffer
 );
 
 
@@ -995,20 +1121,17 @@ workbook.SheetNames[0]
 
 const filas =
 XLSX.utils.sheet_to_json(
-hoja,
-{
-defval:""
-}
+hoja
 );
 
 
 
-const supabase =
+const db =
 getDB();
 
 
 
-let contador=0;
+let creados=0;
 
 
 
@@ -1019,100 +1142,120 @@ for(const fila of filas){
 const cliente={
 
 
+
 nombres:
-(fila["NOMBRES"]||"")
-.toUpperCase(),
+fila.NOMBRES || "",
+
 
 
 apellidos:
-(fila["APELLIDOS"]||"")
-.toUpperCase(),
+fila.APELLIDOS || "",
 
 
-dni:
-String(
-fila["DNI"]||""
-),
+
+numero_orden:
+fila["Nº ORDEN"] || "",
 
 
-telefono:
-String(
-fila["TEL PERSONAL"]||""
-),
+
+numero_cliente:
+fila["Nº CLIENTE"] || "",
+
+
+
+fecha_orden:
+fila["FECHA DE LA ORDEN"] || null,
+
+
+
+estado_pedido:
+fila["ESTADO DEL PEDIDO"] || "ACTUAL",
+
 
 
 correo:
-fila["CORREO"]||"",
+fila.CORREO || "",
+
+
+
+telefono:
+fila["TEL PERSONAL"] || "",
+
+
+
+dni:
+fila.DNI || "",
+
 
 
 direccion:
-(fila["DIRECCIÓN"]||"")
-.toUpperCase(),
+fila.DIRECCIÓN || "",
+
 
 
 mercaderia:
-(fila["MERCADERIA"]||"")
-.toUpperCase(),
+fila.MERCADERIA || "",
+
+
+
+regalo:
+fila.REGALO || "",
+
 
 
 nivel_cliente:
-fila["NIVEL DE CLIENTE"]||"",
+fila["NIVEL DE CLIENTE"] || "",
 
-
-estado_civil:
-fila["ESTADO CIVIL"]||"",
 
 
 tipo_contrato:
-fila["TIPO DE CONTRATO"]||"",
+fila["TIPO DE CONTRATO"] || "",
+
 
 
 monto_total:
 Number(
-fila["MONTO TOTAL"]||0
+fila["MONTO TOTAL"] || 0
 ),
+
 
 
 monto_cuota:
 Number(
-fila["MONTO DE CUOTA"]||0
+fila["MONTO DE CUOTA"] || 0
 ),
+
 
 
 cantidad_cuotas:
 Number(
-fila["CANTIDAD DE CUOTAS"]||0
+fila["CANTIDAD DE CUOTAS"] || 0
 ),
 
 
-estado_pedido:
-fila["ESTADO DEL PEDIDO"] || "ACTUAL"
+
+fecha_pago:
+fila["FECHA DE PAGO"] || null
+
 
 };
 
 
 
 
-
-if(!cliente.dni)
-continue;
-
-
-
-
 const existe =
 clientes.find(
-c=>c.dni===cliente.dni
+c=>
+c.dni &&
+c.dni===cliente.dni
 );
-
 
 
 
 if(existe){
 
 
-
-await supabase
+await db
 .from("clientes")
 .update(cliente)
 .eq(
@@ -1122,12 +1265,10 @@ existe.id
 
 
 
-}
-
-else{
+}else{
 
 
-await supabase
+await db
 .from("clientes")
 .insert(cliente);
 
@@ -1137,7 +1278,7 @@ await supabase
 
 
 
-contador++;
+creados++;
 
 
 }
@@ -1145,9 +1286,8 @@ contador++;
 
 
 
-
 mostrarToast(
-`Importados ${contador} clientes`
+`${creados} clientes importados`
 );
 
 
@@ -1160,8 +1300,6 @@ renderTodo();
 
 
 }
-
-
 
 
 
@@ -1176,6 +1314,26 @@ renderTodo();
 function exportarExcel(){
 
 
+if(typeof XLSX==="undefined"){
+
+mostrarToast(
+"Falta cargar XLSX",
+true
+);
+
+return;
+
+}
+
+
+
+const hoja =
+XLSX.utils.json_to_sheet(
+clientes
+);
+
+
+
 const libro =
 XLSX.utils.book_new();
 
@@ -1183,134 +1341,16 @@ XLSX.utils.book_new();
 
 XLSX.utils.book_append_sheet(
 libro,
-XLSX.utils.json_to_sheet(clientes),
+hoja,
 "Clientes"
-);
-
-
-
-XLSX.utils.book_append_sheet(
-libro,
-XLSX.utils.json_to_sheet(ventas),
-"Ventas"
-);
-
-
-
-XLSX.utils.book_append_sheet(
-libro,
-XLSX.utils.json_to_sheet(cuotas),
-"Cuotas"
 );
 
 
 
 XLSX.writeFile(
 libro,
-"IMVICTO_BASE.xlsx"
+"Clientes_IMVICTO.xlsx"
 );
-
-
-
-mostrarToast(
-"Excel exportado"
-);
-
-}
-
-
-// =======================================
-// RENDER VENTAS
-// =======================================
-
-
-function renderVentas(){
-
-
-const tbody =
-document.getElementById(
-"ventasBody"
-);
-
-
-
-if(!tbody)
-return;
-
-
-
-if(!ventas.length){
-
-tbody.innerHTML=
-`
-<tr>
-<td colspan="6">
-No hay ventas registradas
-</td>
-</tr>
-`;
-
-return;
-
-}
-
-
-
-tbody.innerHTML =
-ventas.map(venta=>{
-
-
-return `
-
-<tr>
-
-<td>
-${venta.cliente_nombre || ""}
-</td>
-
-
-<td>
-${venta.numero_orden || ""}
-</td>
-
-
-<td>
-${venta.tipo_contrato || ""}
-</td>
-
-
-<td>
-S/ ${Number(
-venta.monto_total || 0
-).toFixed(2)}
-</td>
-
-
-<td>
-${venta.estado_pedido || ""}
-</td>
-
-
-<td>
-
-<button
-class="btn mini secondary"
-onclick="editarVenta('${venta.id}')">
-
-Editar
-
-</button>
-
-
-</td>
-
-
-</tr>
-
-`;
-
-
-}).join("");
 
 
 
@@ -1324,434 +1364,15 @@ Editar
 
 
 // =======================================
-// EDITAR VENTA
+// TOAST
 // =======================================
-
-
-window.editarVenta =
-function(id){
-
-
-const venta =
-ventas.find(
-v=>v.id===id
-);
-
-
-
-if(!venta)
-return;
-
-
-
-const cliente =
-clientes.find(
-c=>c.id===venta.cliente_id
-);
-
-
-
-if(cliente){
-
-editarCliente(
-cliente.id
-);
-
-}
-
-
-
-mostrarToast(
-"Editando venta asociada"
-);
-
-
-
-};
-
-
-
-
-
-
-
-
-
-
-// =======================================
-// RENDER CUOTAS
-// =======================================
-
-
-function renderCuotas(){
-
-
-const tbody =
-document.getElementById(
-"cuotasBody"
-);
-
-
-
-if(!tbody)
-return;
-
-
-
-if(!cuotas.length){
-
-
-tbody.innerHTML=
-`
-<tr>
-<td colspan="5">
-No existen cuotas
-</td>
-</tr>
-`;
-
-return;
-
-}
-
-
-
-
-tbody.innerHTML =
-cuotas.map(cuota=>{
-
-
-return `
-
-<tr>
-
-<td>
-${cuota.cliente_nombre || ""}
-</td>
-
-
-<td>
-Cuota ${cuota.numero_cuota}
-</td>
-
-
-<td>
-S/ ${Number(
-cuota.monto || 0
-).toFixed(2)}
-</td>
-
-
-<td>
-${cuota.fecha_vencimiento || ""}
-</td>
-
-
-<td>
-
-<span class="badge">
-
-${cuota.estado || "PENDIENTE"}
-
-</span>
-
-</td>
-
-
-</tr>
-
-`;
-
-
-}).join("");
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// =======================================
-// CREAR / ACTUALIZAR CUOTAS
-// =======================================
-
-
-async function actualizarCuotasVenta(
-venta
-){
-
-
-const supabase =
-getDB();
-
-
-
-// primero borrar cuotas antiguas
-
-await supabase
-.from("cuotas")
-.delete()
-.eq(
-"venta_id",
-venta.id
-);
-
-
-
-
-
-// SI ES CANCELACIÓN TOTAL
-// NO CREA CUOTAS
-
-
-if(
-normalizar(
-venta.estado_pedido
-)
-==="CANCELACION TOTAL"
-){
-
-
-return;
-
-
-}
-
-
-
-
-
-// AL CONTADO NO TIENE CUOTAS
-
-
-if(
-normalizar(
-venta.tipo_contrato
-)
-==="AL CONTADO"
-){
-
-
-return;
-
-
-}
-
-
-
-
-
-// contratos financiados
-
-
-if(
-!venta.cantidad_cuotas ||
-!venta.monto_cuota ||
-!venta.fecha_pago
-){
-
-return;
-
-}
-
-
-
-
-
-const nuevasCuotas=[];
-
-
-
-for(
-let i=1;
-i<=venta.cantidad_cuotas;
-i++
-){
-
-
-nuevasCuotas.push({
-
-venta_id:
-venta.id,
-
-
-cliente_id:
-venta.cliente_id,
-
-
-cliente_nombre:
-venta.cliente_nombre,
-
-
-numero_cuota:
-i,
-
-
-monto:
-venta.monto_cuota,
-
-
-fecha_vencimiento:
-sumarMeses(
-venta.fecha_pago,
-i-1
-),
-
-
-estado:
-"PENDIENTE"
-
-
-
-});
-
-
-}
-
-
-
-
-
-const respuesta =
-await supabase
-.from("cuotas")
-.insert(
-nuevasCuotas
-);
-
-
-
-if(respuesta.error){
-
-throw respuesta.error;
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-// =======================================
-// ACTUALIZAR ESTADO CUOTA
-// =======================================
-
-
-window.marcarPagada =
-async function(id){
-
-
-const supabase =
-getDB();
-
-
-
-await supabase
-.from("cuotas")
-.update({
-
-estado:
-"PAGADA",
-
-fecha_pago:
-new Date()
-.toISOString()
-.slice(0,10)
-
-})
-.eq(
-"id",
-id
-);
-
-
-
-await cargarDatos();
-
-renderTodo();
-
-
-};
-
-
-
-
-
-
-
-
-
-// =======================================
-// UTILIDADES FINALES
-// =======================================
-
-
-function normalizar(texto){
-
-return String(
-texto || ""
-)
-.normalize("NFD")
-.replace(
-/[\u0300-\u036f]/g,
-""
-)
-.toUpperCase()
-.trim();
-
-}
-
-
-
-
-function sumarMeses(
-fecha,
-meses
-){
-
-
-const fechaBase =
-new Date(
-fecha + "T00:00:00"
-);
-
-
-
-fechaBase.setMonth(
-fechaBase.getMonth()+meses
-);
-
-
-
-return fechaBase
-.toISOString()
-.slice(0,10);
-
-
-}
-
-
-
 
 
 function mostrarToast(
 mensaje,
 error=false
 ){
+
 
 
 const toast =
@@ -1771,17 +1392,8 @@ return;
 
 
 
-toast.innerText =
+toast.textContent =
 mensaje;
-
-
-
-toast.style.background =
-error
-?
-"#991b1b"
-:
-"#0b2744";
 
 
 
@@ -1793,196 +1405,13 @@ toast.classList.remove(
 
 setTimeout(()=>{
 
+
 toast.classList.add(
 "hidden"
 );
 
+
 },3000);
 
-
-}
-
-// =======================================
-// INICIO ADMIN
-// =======================================
-
-
-document.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-
-iniciarEventos();
-
-cargarDatos()
-.then(()=>{
-
-    cargarClientesLocal();
-
-    renderTodo();
-
-})
-
-
-
-});
-
-// =======================================
-// BACKUP LOCAL CLIENTES
-// =======================================
-
-
-function guardarClientesLocal(){
-
-
-localStorage.setItem(
-"imvicto_clientes",
-JSON.stringify(clientes)
-);
-
-
-}
-
-
-
-
-function cargarClientesLocal(){
-
-
-const data =
-localStorage.getItem(
-"imvicto_clientes"
-);
-
-
-
-if(data){
-
-
-clientes =
-JSON.parse(data);
-
-
-}
-
-
-}
-
-function renderClientesLocal(){
-
-    const tbody =
-    document.getElementById(
-        "clientesBody"
-    );
-
-
-    if(!tbody)
-    return;
-
-
-    const buscar =
-    document.getElementById(
-        "clienteSearch"
-    );
-
-
-    const texto =
-    buscar ?
-    buscar.value.toLowerCase()
-    :
-    "";
-
-
-
-    const filtrados =
-    clientes.filter(c=>{
-
-
-        return (
-
-            String(c.nombres||"")
-            .toLowerCase()
-            .includes(texto)
-
-            ||
-
-            String(c.apellidos||"")
-            .toLowerCase()
-            .includes(texto)
-
-            ||
-
-            String(c.dni||"")
-            .includes(texto)
-
-        );
-
-
-    });
-
-
-
-    if(!filtrados.length){
-
-        tbody.innerHTML =
-        `
-        <tr>
-        <td colspan="4">
-        No hay clientes registrados
-        </td>
-        </tr>
-        `;
-
-        return;
-
-    }
-
-
-
-    tbody.innerHTML =
-    filtrados.map(c=>{
-
-
-        return `
-
-        <tr>
-
-        <td>
-        ${c.nombres || ""} ${c.apellidos || ""}
-        </td>
-
-        <td>
-        ${c.dni || ""}
-        </td>
-
-        <td>
-        ${c.telefono || ""}
-        </td>
-
-
-        <td>
-
-        <button
-        class="btn mini secondary"
-        onclick="editarCliente('${c.id}')">
-        Editar
-        </button>
-
-
-        <button
-        class="btn mini danger"
-        onclick="eliminarCliente('${c.id}')">
-        Eliminar
-        </button>
-
-        </td>
-
-
-        </tr>
-
-        `;
-
-
-    }).join("");
 
 }
