@@ -1,14 +1,17 @@
-const supabaseClient =
-supabase.createClient(
-window.SUPABASE_URL,
-window.SUPABASE_KEY
-);
+console.log("cargando supabase.js");
 
 
-window.imvictoSupabase =
-supabaseClient;
+if (!window.supabase) {
+    console.error("La librería Supabase no cargó");
+} else {
 
+    window.imvictoSupabase = window.supabase.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_KEY
+    );
 
-console.log(
-"Supabase conectado"
-);
+    console.log(
+        "Supabase conectado correctamente",
+        window.imvictoSupabase
+    );
+}
