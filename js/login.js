@@ -1,18 +1,7 @@
-const USUARIO = "micaela@imvicto.com";
-const PASSWORD = "Chayanne16";
-
-const USUARIO_ADMIN = "micaela@imvicto.com";
-const PASSWORD_ADMIN = "Chayanne16";
-
-
-const VENDEDORES = [
-    {
-        nombre: "Mathias",
-        correo: "mathias@imvicto.com",
-        password: "123456",
-        rol: "vendedor"
-    }
-];
+const ADMIN = {
+    correo: "micaela@imvicto.com",
+    clave: "Chayanne16"
+};
 
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -42,20 +31,22 @@ document.querySelector("#clave").value.trim();
 
 
 
-// LOGIN ADMIN
+
+// ADMIN
 
 if(
-correo===USUARIO_ADMIN &&
-clave===PASSWORD_ADMIN
+correo === ADMIN.correo &&
+clave === ADMIN.clave
 ){
 
+localStorage.setItem(
+    "usuario",
+    "Micaela"
+);
 
 localStorage.setItem(
-"usuario",
-JSON.stringify({
-    nombre:"Micaela",
-    rol:"admin"
-})
+    "rol",
+    "admin"
 );
 
 
@@ -67,8 +58,22 @@ return;
 
 
 
+// VENDEDORES
 
-// LOGIN VENDEDORES
+if(
+correo===USUARIO_ADMIN &&
+clave===PASSWORD_ADMIN
+){
+
+localStorage.setItem("usuario","admin");
+
+window.location.href="./admin.html";
+
+return;
+
+}
+
+
 
 const vendedor = VENDEDORES.find(v =>
     v.correo===correo &&
@@ -76,24 +81,25 @@ const vendedor = VENDEDORES.find(v =>
 );
 
 
-
 if(vendedor){
-
 
 localStorage.setItem(
 "usuario",
-JSON.stringify(vendedor)
+vendedor.nombre
 );
 
+
+localStorage.setItem(
+"rol",
+"vendedor"
+);
 
 
 window.location.href="./vendedor.html";
 
-
 return;
 
 }
-
 
 
 
@@ -108,92 +114,10 @@ if(error){
 error.textContent =
 "Usuario o contraseña incorrectos";
 
-}else{
-
-alert(
-"Usuario o contraseña incorrectos"
-);
-
 }
 
 
-
 });
-
-
-});
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-
-const form = document.querySelector("#loginForm");
-
-
-if(!form) return;
-
-
-
-form.addEventListener("submit",(e)=>{
-
-
-e.preventDefault();
-
-
-
-const correo =
-document.querySelector("#correo").value.trim();
-
-
-
-const clave =
-document.querySelector("#clave").value.trim();
-
-
-
-if(
-correo===USUARIO &&
-clave===PASSWORD
-){
-
-
-localStorage.setItem(
-"usuario",
-"admin"
-);
-
-
-
-window.location.href="./admin.html";
-
-
-
-}else{
-
-
-const error =
-document.querySelector("#loginError");
-
-
-if(error){
-
-error.textContent =
-"Usuario o contraseña incorrectos";
-
-}else{
-
-alert(
-"Usuario o contraseña incorrectos"
-);
-
-}
-
-
-}
-
-
-
-});
-
 
 
 });

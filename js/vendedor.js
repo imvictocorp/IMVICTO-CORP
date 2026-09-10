@@ -79,8 +79,12 @@
     setDefaultDate();
     renderAll();
 
-    console.log("[IMVICTO] Usuario activo:", state.user);
-    console.log("[IMVICTO] Nombres válidos vendedor:", getSellerNames());
+  const nombreVendedor =
+localStorage.getItem("usuario");
+
+
+sessionLabel.textContent =
+"Sesión: " + nombreVendedor;
   }
 
   function bindEvents() {
