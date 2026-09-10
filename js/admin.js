@@ -145,20 +145,22 @@ if(refresh){
 
 
 
-    const buscar =
-    document.getElementById(
-        "clienteSearch"
+const buscar =
+document.getElementById(
+    "clienteSearch"
+);
+
+
+if(buscar){
+
+    buscar.addEventListener(
+        "input",
+        ()=>{
+            renderClientesLocal();
+        }
     );
 
-
-    if(buscar){
-
-        buscar.addEventListener(
-        "input",
-        renderClientes
-        );
-
-    }
+}
 
 
 
@@ -376,18 +378,13 @@ async function cargarDatos(){
 
 function renderTodo(){
 
+    renderStats();
 
-renderStats();
+    renderClientesLocal();
 
+    renderVentas();
 
-renderClientes();
-
-
-renderVentas();
-
-
-renderCuotas();
-
+    renderCuotas();
 
 }
 
@@ -1868,5 +1865,124 @@ JSON.parse(data);
 
 }
 
+
+}
+
+function renderClientesLocal(){
+
+    const tbody =
+    document.getElementById(
+        "clientesBody"
+    );
+
+
+    if(!tbody)
+    return;
+
+
+    const buscar =
+    document.getElementById(
+        "clienteSearch"
+    );
+
+
+    const texto =
+    buscar ?
+    buscar.value.toLowerCase()
+    :
+    "";
+
+
+
+    const filtrados =
+    clientes.filter(c=>{
+
+
+        return (
+
+            String(c.nombres||"")
+            .toLowerCase()
+            .includes(texto)
+
+            ||
+
+            String(c.apellidos||"")
+            .toLowerCase()
+            .includes(texto)
+
+            ||
+
+            String(c.dni||"")
+            .includes(texto)
+
+        );
+
+
+    });
+
+
+
+    if(!filtrados.length){
+
+        tbody.innerHTML =
+        `
+        <tr>
+        <td colspan="4">
+        No hay clientes registrados
+        </td>
+        </tr>
+        `;
+
+        return;
+
+    }
+
+
+
+    tbody.innerHTML =
+    filtrados.map(c=>{
+
+
+        return `
+
+        <tr>
+
+        <td>
+        ${c.nombres || ""} ${c.apellidos || ""}
+        </td>
+
+        <td>
+        ${c.dni || ""}
+        </td>
+
+        <td>
+        ${c.telefono || ""}
+        </td>
+
+
+        <td>
+
+        <button
+        class="btn mini secondary"
+        onclick="editarCliente('${c.id}')">
+        Editar
+        </button>
+
+
+        <button
+        class="btn mini danger"
+        onclick="eliminarCliente('${c.id}')">
+        Eliminar
+        </button>
+
+        </td>
+
+
+        </tr>
+
+        `;
+
+
+    }).join("");
 
 }
