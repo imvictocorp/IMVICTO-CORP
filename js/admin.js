@@ -1,121 +1,85 @@
-// ==============================
-// ADMIN PANEL
-// ==============================
+// =====================================
+// ADMIN IMVICTO CORP
+// =====================================
 
-let clientes=[];
-let ventas=[];
-let cuotas=[];
-
-let editandoCliente=null;
-
-
-// ==============================
-// INICIO
-// ==============================
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-cargarStorage();
 
-activarMenu();
-
-cargarTodo();
-
-document
-.getElementById("refreshBtn")
-?.addEventListener("click",cargarTodo);
-
-
-document
-.getElementById("clienteVentaForm")
-?.addEventListener("submit",guardarClienteVenta);
-
-
-document
-.getElementById("clienteSearch")
-?.addEventListener("input",renderClientes);
-
-
-document
-.getElementById("ventaSearch")
-?.addEventListener("input",renderVentas);
-
-
-document
-.getElementById("exportExcelBtn")
-?.addEventListener("click",exportarExcel);
+iniciarAdmin();
 
 
 });
 
 
 
-// ==============================
-// STORAGE
-// ==============================
+function iniciarAdmin(){
 
 
-function cargarStorage(){
-
-clientes=
-JSON.parse(localStorage.getItem("clientes")) || [];
-
-ventas=
-JSON.parse(localStorage.getItem("ventas")) || [];
-
-cuotas=
-JSON.parse(localStorage.getItem("cuotas")) || [];
-
-}
+const botones=document.querySelectorAll(".nav-btn");
 
 
-
-function guardarStorage(){
-
-localStorage.setItem(
-"clientes",
-JSON.stringify(clientes)
-);
-
-
-localStorage.setItem(
-"ventas",
-JSON.stringify(ventas)
-);
-
-
-localStorage.setItem(
-"cuotas",
-JSON.stringify(cuotas)
-);
-
-}
-
-
-
-
-// ==============================
-// MENU
-// ==============================
-
-
-function activarMenu(){
-
-
-document.querySelectorAll(".nav-btn")
-.forEach(btn=>{
+botones.forEach(btn=>{
 
 
 btn.addEventListener("click",()=>{
 
 
-document
-.querySelectorAll(".nav-btn")
-.forEach(x=>x.classList.remove("active"));
-
+botones.forEach(b=>b.classList.remove("active"));
 
 btn.classList.add("active");
 
+
+mostrarVista(btn.dataset.view);
+
+
+});
+
+
+});
+
+
+
+document
+.getElementById("refreshBtn")
+?.addEventListener("click",actualizarTodo);
+
+
+
+document
+.getElementById("logoutBtn")
+?.addEventListener("click",()=>{
+
+
+localStorage.removeItem("usuario");
+
+location.href="login.html";
+
+
+});
+
+
+
+document
+.getElementById("clienteForm")
+?.addEventListener("submit",guardarClienteVenta);
+
+
+
+renderTodo();
+
+
+}
+
+
+
+
+// =====================================
+// CAMBIO DE VISTA
+// =====================================
+
+
+function mostrarVista(id){
 
 
 document
@@ -124,9 +88,7 @@ document
 
 
 
-let vista=
-document.getElementById(btn.dataset.view);
-
+const vista=document.getElementById(id);
 
 
 if(vista)
@@ -134,127 +96,62 @@ vista.classList.add("active");
 
 
 
-});
+const titulos={
 
-});
+inicio:["Inicio","Control general del negocio"],
 
+clientes:["Clientes","Clientes y pedidos registrados"],
 
-}
+ventas:["Ventas","Registro general de ventas"],
 
+cuotas:["Cuotas","Seguimiento de pagos"],
 
+excel:["Exportar","Base de datos"]
 
-// ==============================
-// CARGAR TODO
-// ==============================
-
-
-function cargarTodo(){
-
-cargarStorage();
-
-
-actualizarDashboard();
-
-
-renderClientes();
-
-
-renderVentas();
-
-
-renderCuotas();
-
-
-}
-
-
-// ==============================
-// DASHBOARD
-// ==============================
-
-
-function actualizarDashboard(){
-
-
-let clientesBox=
-document.getElementById("statClientes");
-
-
-let ventasBox=
-document.getElementById("statVentas");
-
-
-let cuotasBox=
-document.getElementById("statVencidas");
-
-
-let pendienteBox=
-document.getElementById("statPendiente");
+};
 
 
 
-if(clientesBox)
-clientesBox.textContent=clientes.length;
+if(titulos[id]){
 
 
+document.getElementById("viewTitle").textContent=titulos[id][0];
 
-if(ventasBox)
-ventasBox.textContent=ventas.length;
-
-
-
-let vencidas=
-cuotas.filter(
-c=>c.estado==="VENCIDA"
-).length;
-
-
-
-if(cuotasBox)
-cuotasBox.textContent=vencidas;
-
-
-
-let pendiente=
-cuotas
-.filter(c=>c.estado!=="PAGADA")
-.reduce(
-(a,b)=>a+Number(b.monto),
-0
-);
-
-
-
-if(pendienteBox)
-pendienteBox.textContent=
-"S/"+pendiente;
+document.getElementById("viewSubtitle").textContent=titulos[id][1];
 
 
 }
 
 
 
-// ==============================
+renderTodo();
+
+
+}
+
+
+
+
+// =====================================
 // GUARDAR CLIENTE + VENTA
-// ==============================
+// =====================================
 
 
 function guardarClienteVenta(e){
+
 
 e.preventDefault();
 
 
 
-let f=
-new FormData(e.target);
+const f=new FormData(e.target);
 
 
 
-let cliente={
+const cliente={
 
 
-id:Date.now(),
-
+id:nuevoID(),
 
 nombres:f.get("nombres"),
 
@@ -266,28 +163,33 @@ telefono:f.get("telefono"),
 
 correo:f.get("correo"),
 
-direccion:f.get("direccion")
+direccion:f.get("direccion"),
+
+
+fecha:new Date().toISOString()
 
 
 };
 
 
 
-let venta={
+const venta={
 
 
-id:Date.now()+1,
+id:nuevoID(),
+
+clienteID:cliente.id,
+
+cliente:
+cliente.nombres+" "+cliente.apellidos,
 
 
-clienteId:cliente.id,
+dni:cliente.dni,
 
 
-producto:f.get("mercaderia"),
+producto:f.get("producto"),
 
-
-monto:Number(
-f.get("monto_total")
-),
+monto:Number(f.get("monto_total")),
 
 
 contrato:f.get("tipo_contrato"),
@@ -299,72 +201,65 @@ estado:f.get("estado_pedido") || "ACTUAL",
 orden:f.get("orden"),
 
 
-regalo:f.get("regalo"),
-
-
 vendedor:f.get("vendedor"),
 
 
-fecha:new Date().toLocaleDateString()
+regalo:f.get("regalo"),
+
+
+notas:f.get("observaciones"),
+
+
+fecha:new Date().toISOString()
 
 
 };
 
 
 
-clientes.push(cliente);
+DB.clientes.push(cliente);
 
 
-ventas.push(venta);
+DB.ventas.push(venta);
+
 
 
 
 // CREAR CUOTAS
 
-
-if(
-venta.contrato==="FINANCIADO"
-){
+if(venta.contrato==="FINANCIADO"){
 
 
 let cantidad=
-Number(f.get("cantidad_cuotas"));
+Number(f.get("numero_cuotas")) || 12;
 
 
 let monto=
-Number(f.get("monto_cuota"));
+Number(f.get("monto_cuota")) || 
+(
+venta.monto / cantidad
+);
 
 
 
-for(
-let i=1;
-i<=cantidad;
-i++
-){
+for(let i=1;i<=cantidad;i++){
 
 
-cuotas.push({
+DB.cuotas.push({
 
+id:nuevoID(),
 
-id:Date.now()+i,
+ventaID:venta.id,
 
-
-ventaId:venta.id,
-
-
-clienteId:cliente.id,
-
+cliente:venta.cliente,
 
 numero:i,
 
-
 monto:monto,
 
+fecha:new Date().toISOString(),
 
-estado:"PENDIENTE",
-
-
-fecha:null
+estado:"PENDIENTE"
 
 
 });
@@ -377,16 +272,16 @@ fecha:null
 
 
 
-guardarStorage();
-
-
-alert("Cliente y venta guardados");
+guardarDB();
 
 
 e.target.reset();
 
 
-cargarTodo();
+alert("Cliente y venta registrados");
+
+
+renderTodo();
 
 
 }
@@ -395,101 +290,57 @@ cargarTodo();
 
 
 
-// ==============================
+// =====================================
 // CLIENTES
-// ==============================
+// =====================================
 
 
 function renderClientes(){
 
 
-let tabla=
-document.getElementById("clientesBody");
+const tabla=document.getElementById("clientesBody");
 
 
 if(!tabla)return;
-
-
-
-let buscar=
-document.getElementById("clienteSearch")
-?.value
-.toLowerCase() || "";
-
 
 
 tabla.innerHTML="";
 
 
 
-clientes
-.filter(c=>
-
-(
-c.nombres+
-c.apellidos+
-c.dni+
-c.telefono
-
-)
-.toLowerCase()
-.includes(buscar)
-
-)
-.forEach(c=>{
+DB.clientes.forEach(c=>{
 
 
 let compras=
-ventas.filter(
-v=>v.clienteId===c.id
-).length;
+DB.ventas.filter(v=>v.clienteID===c.id).length;
 
 
 
 tabla.innerHTML+=`
 
-
 <tr>
 
-<td>
-${c.nombres} ${c.apellidos}
-</td>
+<td>${c.nombres} ${c.apellidos}</td>
 
+<td>${c.dni}</td>
 
-<td>
-${c.dni}
-</td>
+<td>${c.telefono}</td>
 
-
-<td>
-${c.telefono}
-</td>
-
-
-<td>
-${compras}
-</td>
-
+<td>${compras}</td>
 
 <td>
 
-
-<button 
-class="btn-edit"
-onclick="editarCliente(${c.id})">
+<button onclick="editarCliente(${c.id})">
 Editar
 </button>
 
 
-<button
-class="btn-delete"
-onclick="eliminarCliente(${c.id})">
+<button onclick="eliminarCliente(${c.id})">
 Eliminar
 </button>
 
 
 </td>
-
 
 </tr>
 
@@ -501,6 +352,7 @@ Eliminar
 
 
 }
+
 
 
 
@@ -508,37 +360,35 @@ Eliminar
 function editarCliente(id){
 
 
-let c=
-clientes.find(x=>x.id===id);
+const c=DB.clientes.find(x=>x.id===id);
 
 
 if(!c)return;
 
 
 
-let form=
-document.getElementById("clienteVentaForm");
+let form=document.getElementById("clienteForm");
 
 
-for(
-let campo in c
-){
+form.nombres.value=c.nombres;
 
-let input=
-form.elements[campo];
+form.apellidos.value=c.apellidos;
+
+form.dni.value=c.dni;
+
+form.telefono.value=c.telefono;
+
+form.correo.value=c.correo;
+
+form.direccion.value=c.direccion;
 
 
-if(input)
-input.value=c[campo];
+
+alert("Edita los datos y vuelve a guardar");
 
 
 }
 
-
-editandoCliente=id;
-
-
-}
 
 
 
@@ -546,33 +396,34 @@ editandoCliente=id;
 function eliminarCliente(id){
 
 
-if(!confirm("Eliminar cliente?"))
+if(!confirm("Eliminar cliente y ventas?"))
 return;
 
 
 
-clientes=
-clientes.filter(
-c=>c.id!==id
-);
-
-
-ventas=
-ventas.filter(
-v=>v.clienteId!==id
-);
-
-
-cuotas=
-cuotas.filter(
-c=>c.clienteId!==id
-);
+DB.clientes=
+DB.clientes.filter(c=>c.id!==id);
 
 
 
-guardarStorage();
+DB.ventas=
+DB.ventas.filter(v=>v.clienteID!==id);
 
-cargarTodo();
+
+
+DB.cuotas=
+DB.cuotas.filter(q=>{
+
+return DB.ventas.some(v=>v.id===q.ventaID)
+
+});
+
+
+
+guardarDB();
+
+
+renderTodo();
 
 
 }
@@ -581,75 +432,49 @@ cargarTodo();
 
 
 
-// ==============================
+// =====================================
 // VENTAS
-// ==============================
+// =====================================
 
 
 function renderVentas(){
 
 
-let tabla=
-document.getElementById("ventasBody");
+const tabla=document.getElementById("ventasBody");
 
 
 if(!tabla)return;
-
 
 
 tabla.innerHTML="";
 
 
 
-ventas.forEach(v=>{
-
-
-let c=
-clientes.find(
-x=>x.id===v.clienteId
-);
-
+DB.ventas.forEach(v=>{
 
 
 tabla.innerHTML+=`
 
-
 <tr>
 
 
-<td>
-${c?.nombres || ""}
-${c?.apellidos || ""}
-</td>
+<td>${v.cliente}</td>
 
+<td>${v.producto}</td>
 
-<td>
-${v.producto}
-</td>
+<td>S/${v.monto}</td>
 
+<td>${v.contrato}</td>
 
-<td>
-S/${v.monto}
-</td>
-
-
-<td>
-${v.contrato}
-</td>
-
-
-<td>
-${v.vendedor || "-"}
-</td>
+<td>${v.vendedor||"-"}</td>
 
 
 <td>
 
-<button
-class="btn-view"
-onclick="verVenta(${v.id})">
+<button onclick="verVenta(${v.id})">
 Ver
 </button>
+
 
 </td>
 
@@ -664,6 +489,7 @@ Ver
 
 
 }
+
 
 
 
@@ -671,118 +497,56 @@ Ver
 function verVenta(id){
 
 
-let v=
-ventas.find(
-x=>x.id===id
-);
+const v=DB.ventas.find(x=>x.id===id);
 
 
+alert(JSON.stringify(v,null,2));
 
-let c=
-clientes.find(
-x=>x.id===v.clienteId
-);
-
-
-
-alert(`
-
-CLIENTE:
-
-${c.nombres} ${c.apellidos}
-
-
-PRODUCTO:
-
-${v.producto}
-
-
-MONTO:
-
-S/${v.monto}
-
-
-CONTRATO:
-
-${v.contrato}
-
-
-VENDEDOR:
-
-${v.vendedor || "-"}
-
-`);
 
 }
 
 
 
-// ==============================
+
+// =====================================
 // CUOTAS
-// ==============================
+// =====================================
 
 
 function renderCuotas(){
 
 
-let tabla=
-document.getElementById("cuotasBody");
+const tabla=document.getElementById("cuotasBody");
 
 
 if(!tabla)return;
 
 
-
 tabla.innerHTML="";
 
 
-
-cuotas.forEach(q=>{
-
-
-let c=
-clientes.find(
-x=>x.id===q.clienteId
-);
-
+DB.cuotas.forEach(q=>{
 
 
 tabla.innerHTML+=`
 
-
 <tr>
 
-<td>
-${c?.nombres}
-${c?.apellidos}
-</td>
+<td>${q.cliente}</td>
 
+<td>${q.numero}</td>
 
-<td>
-Cuota ${q.numero}
-</td>
+<td>S/${q.monto}</td>
 
+<td>${q.fecha.slice(0,10)}</td>
 
-<td>
-S/${q.monto}
-</td>
-
-
-<td>
-${q.fecha || "-"}
-</td>
-
-
-<td>
-${q.estado}
-</td>
+<td>${q.estado}</td>
 
 
 </tr>
 
 
 `;
-
 
 
 });
@@ -794,48 +558,79 @@ ${q.estado}
 
 
 
-// ==============================
-// EXPORTAR
-// ==============================
+// =====================================
+// DASHBOARD
+// =====================================
 
 
-function exportarExcel(){
+function renderInicio(){
 
 
-let data={
-
-clientes,
-
-ventas,
-
-cuotas
-
-};
+let clientes=
+document.getElementById("statClientes");
 
 
-
-let hoja=
-XLSX.utils.json_to_sheet(clientes);
-
-
-let libro=
-XLSX.utils.book_new();
+let ventas=
+document.getElementById("statVentas");
 
 
+let total=
+document.getElementById("statPendiente");
 
-XLSX.utils.book_append_sheet(
-libro,
-hoja,
-"Clientes"
-);
+
+if(clientes)
+clientes.textContent=DB.clientes.length;
+
+
+if(ventas)
+ventas.textContent=DB.ventas.length;
 
 
 
-XLSX.writeFile(
-libro,
-"IMVICTO_BASE.xlsx"
-);
+let suma=
+DB.ventas.reduce((a,b)=>a+b.monto,0);
 
+
+
+if(total)
+total.textContent="S/"+suma;
+
+
+
+}
+
+
+
+
+// =====================================
+// TODO
+// =====================================
+
+
+function renderTodo(){
+
+
+renderInicio();
+
+renderClientes();
+
+renderVentas();
+
+renderCuotas();
+
+
+}
+
+
+
+
+function actualizarTodo(){
+
+cargarDB();
+
+renderTodo();
+
+alert("Actualizado");
 
 
 }

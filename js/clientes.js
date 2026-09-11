@@ -1,30 +1,33 @@
+// =====================================
+// CLIENTES IMVICTO CORP
+// =====================================
+
+
 document.addEventListener("DOMContentLoaded",()=>{
 
 
-const form=document.querySelector("#clienteForm");
+const form=
+document.getElementById("clienteVentaForm");
 
 
 if(form){
 
 form.addEventListener(
 "submit",
-guardarCliente
+registrarCliente
 );
 
 }
 
 
-const buscar=document.querySelector("#buscarCliente");
 
-
-if(buscar){
-
-buscar.addEventListener(
+document
+.getElementById("buscarCliente")
+?.addEventListener(
 "input",
 cargarClientes
 );
 
-}
 
 
 cargarClientes();
@@ -36,32 +39,167 @@ cargarClientes();
 
 
 
-function guardarCliente(e){
+// =====================================
+// REGISTRAR CLIENTE + VENTA
+// =====================================
+
+
+function registrarCliente(e){
+
 
 e.preventDefault();
 
 
-let cliente=
-Object.fromEntries(
-new FormData(e.target)
+
+const f=
+new FormData(e.target);
+
+
+
+const cliente={
+
+
+nombres:
+f.get("nombres"),
+
+
+apellidos:
+f.get("apellidos"),
+
+
+dni:
+f.get("dni"),
+
+
+telefono:
+f.get("telefono"),
+
+
+correo:
+f.get("correo"),
+
+
+direccion:
+f.get("direccion")
+
+
+
+};
+
+
+
+const nuevoCliente=
+saveCliente(cliente);
+
+
+
+
+
+const venta={
+
+
+clienteId:
+nuevoCliente.id,
+
+
+producto:
+f.get("mercaderia"),
+
+
+montoTotal:
+Number(
+f.get("monto_total")
+),
+
+
+tipoContrato:
+f.get("tipo_contrato"),
+
+
+estado:
+f.get("estado_pedido"),
+
+
+orden:
+f.get("numero_orden"),
+
+
+regalo:
+f.get("regalo"),
+
+
+vendedor:
+f.get("vendedor"),
+
+
+
+inicial:
+Number(
+f.get("inicial") || 0
+),
+
+
+
+numeroCuotas:
+Number(
+f.get("cantidad_cuotas") || 0
+),
+
+
+
+montoCuota:
+Number(
+f.get("monto_cuota") || 0
+),
+
+
+
+observaciones:
+f.get("observaciones")
+
+
+
+};
+
+
+
+
+
+const nuevaVenta=
+saveVenta(venta);
+
+
+
+crearCuotasVenta({
+
+...venta,
+
+id:nuevaVenta.id
+
+});
+
+
+
+
+
+guardarArchivos(
+nuevoCliente.id
 );
 
 
 
-STORAGE.crear(
-STORAGE.clientes,
-cliente
+alert(
+"Cliente y venta registrados"
 );
 
-
-
-alert("Cliente registrado");
 
 
 e.target.reset();
 
 
+
 cargarClientes();
+
 
 
 }
@@ -70,12 +208,18 @@ cargarClientes();
 
 
 
+// =====================================
+// LISTAR CLIENTES
+// =====================================
+
 
 function cargarClientes(){
 
 
 const tabla=
-document.querySelector("#clientesTabla");
+document.getElementById(
+"clientesTabla"
+);
 
 
 if(!tabla)return;
@@ -83,15 +227,32 @@ if(!tabla)return;
 
 
 const texto=
-document.querySelector("#buscarCliente")?.value || "";
+document.getElementById(
+"buscarCliente"
+)?.value
+.toLowerCase()
+||"";
 
 
 
-let clientes=
-STORAGE.buscar(
-STORAGE.clientes,
-texto
-);
+const clientes=
+getClientes()
+.filter(c=>{
+
+
+let buscar=
+`${c.nombres}
+${c.apellidos}
+${c.dni}
+${c.telefono}`
+.toLowerCase();
+
+
+
+return buscar.includes(texto);
+
+
+});
 
 
 
@@ -99,43 +260,54 @@ tabla.innerHTML="";
 
 
 
-clientes.forEach(cliente=>{
+clientes.forEach(c=>{
+
+
+const compras=
+getVentas()
+.filter(
+v=>v.clienteId===c.id
+)
+.length;
+
 
 
 tabla.innerHTML+=`
 
 <tr>
 
+
 <td>
-${cliente.nombres || ""} 
-${cliente.apellidos || ""}
+${c.nombres}
+${c.apellidos}
 </td>
 
 
+
 <td>
-${cliente.dni || ""}
+${c.dni}
 </td>
 
 
+
 <td>
-${cliente.telefono || ""}
+${c.telefono}
 </td>
 
 
+
+<td>
+${compras}
+</td>
+
+
+
 <td>
 
 
-<button class="btn small"
-onclick="verCliente(${cliente.id})">
-
-Ver
-
-</button>
-
-
-
-<button class="btn small"
-onclick="editarCliente(${cliente.id})">
+<button
+class="btn-edit"
+onclick="editarCliente(${c.id})">
 
 Editar
 
@@ -143,8 +315,9 @@ Editar
 
 
 
-<button class="btn danger small"
-onclick="eliminarCliente(${cliente.id})">
+<button
+class="btn-delete"
+onclick="eliminarCliente(${c.id})">
 
 Eliminar
 
@@ -169,66 +342,88 @@ Eliminar
 
 
 
-function eliminarCliente(id){
-
-
-if(!confirm("¿Eliminar cliente?"))
-return;
-
-
-STORAGE.eliminar(
-STORAGE.clientes,
-id
-);
-
-
-cargarClientes();
-
-
-}
-
-
-
-
-
+// =====================================
+// EDITAR
+// =====================================
 
 
 function editarCliente(id){
 
 
-let cliente=
-STORAGE.get(
-STORAGE.clientes
-)
+const cliente=
+getClientes()
 .find(
-c=>c.id==id
+c=>c.id===id
 );
 
 
 
-let nombre=
-prompt(
-"Nombres",
-cliente.nombres
+if(!cliente)return;
+
+
+
+const form=
+document.getElementById(
+"clienteVentaForm"
 );
 
 
 
-if(nombre){
+form.nombres.value=
+cliente.nombres;
 
 
-STORAGE.actualizar(
+form.apellidos.value=
+cliente.apellidos;
 
-STORAGE.clientes,
 
-id,
+form.dni.value=
+cliente.dni;
 
-{
-nombres:nombre
+
+form.telefono.value=
+cliente.telefono;
+
+
+form.correo.value=
+cliente.correo;
+
+
+form.direccion.value=
+cliente.direccion;
+
+
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+
 }
 
-);
 
+
+
+
+// =====================================
+// ELIMINAR
+// =====================================
+
+
+function eliminarCliente(id){
+
+
+if(
+!confirm(
+"¿Eliminar cliente y ventas?"
+)
+
+)return;
+
+
+
+deleteCliente(id);
 
 
 cargarClientes();
@@ -237,24 +432,50 @@ cargarClientes();
 }
 
 
-}
 
 
 
+// =====================================
+// ARCHIVOS
+// =====================================
 
 
+function guardarArchivos(clienteId){
 
 
-function verCliente(id){
-
-
-localStorage.setItem(
-"cliente_actual",
-id
+const input=
+document.querySelector(
+'input[name="archivos"]'
 );
 
 
-location.href="./ventas.html";
+
+if(
+!input ||
+!input.files.length
+)return;
+
+
+
+Array.from(input.files)
+.forEach(file=>{
+
+
+saveDocumento({
+
+clienteId,
+
+nombre:file.name,
+
+tipo:file.type,
+
+fecha:new Date().toISOString()
+
+
+});
+
+
+});
 
 
 }
@@ -262,6 +483,10 @@ location.href="./ventas.html";
 
 
 
-window.eliminarCliente=eliminarCliente;
-window.editarCliente=editarCliente;
-window.verCliente=verCliente;
+
+window.editarCliente=
+editarCliente;
+
+
+window.eliminarCliente=
+eliminarCliente;

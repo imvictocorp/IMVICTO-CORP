@@ -1,26 +1,17 @@
-let clienteSeleccionado=null;
-
+// =====================================
+// VENTAS IMVICTO CORP
+// =====================================
 
 
 document.addEventListener("DOMContentLoaded",()=>{
 
 
 document
-.querySelector("#buscarClienteVenta")
+.getElementById("buscarVenta")
 ?.addEventListener(
 "input",
-buscarClientes
+cargarVentas
 );
-
-
-
-document
-.querySelector("#ventaForm")
-?.addEventListener(
-"submit",
-guardarVenta
-);
-
 
 
 cargarVentas();
@@ -32,185 +23,18 @@ cargarVentas();
 
 
 
-
-
-function buscarClientes(){
-
-
-let texto=
-document.querySelector("#buscarClienteVenta")
-.value;
-
-
-
-let clientes=
-STORAGE.buscar(
-STORAGE.clientes,
-texto
-);
-
-
-
-let box=
-document.querySelector("#resultadoClientes");
-
-
-
-if(!box)return;
-
-
-
-box.innerHTML="";
-
-
-
-clientes.forEach(c=>{
-
-
-box.innerHTML+=`
-
-<div class="cliente-card">
-
-
-<strong>
-${c.nombres} ${c.apellidos}
-</strong>
-
-
-<br>
-
-DNI:
-${c.dni}
-
-
-<button onclick="seleccionarCliente(${c.id})">
-
-Seleccionar
-
-</button>
-
-
-</div>
-
-`;
-
-});
-
-
-}
-
-
-
-
-
-
-
-
-function seleccionarCliente(id){
-
-
-clienteSeleccionado=
-STORAGE.get(
-STORAGE.clientes
-)
-.find(
-c=>c.id==id
-);
-
-
-
-document.querySelector("#cliente_id").value=id;
-
-
-document.querySelector("#clienteNombre").value=
-
-clienteSeleccionado.nombres+" "+
-clienteSeleccionado.apellidos;
-
-
-
-document.querySelector("#formVentaBox")
-.style.display="block";
-
-
-}
-
-
-
-
-
-
-
-function guardarVenta(e){
-
-
-e.preventDefault();
-
-
-
-if(!clienteSeleccionado){
-
-alert(
-"Selecciona un cliente"
-);
-
-return;
-
-}
-
-
-
-let venta=
-Object.fromEntries(
-new FormData(e.target)
-);
-
-
-
-venta.cliente_id=
-clienteSeleccionado.id;
-
-
-
-venta.cliente_nombre=
-clienteSeleccionado.nombres+" "+
-clienteSeleccionado.apellidos;
-
-
-
-STORAGE.crear(
-STORAGE.ventas,
-venta
-);
-
-
-
-alert(
-"Venta registrada"
-);
-
-
-
-e.target.reset();
-
-
-cargarVentas();
-
-
-}
-
-
-
-
-
-
+// =====================================
+// CARGAR VENTAS
+// =====================================
 
 
 function cargarVentas(){
 
 
-let tabla=
-document.querySelector("#ventasTabla");
+const tabla=
+document.getElementById(
+"ventasTabla"
+);
 
 
 
@@ -218,10 +42,54 @@ if(!tabla)return;
 
 
 
-let ventas=
-STORAGE.get(
-STORAGE.ventas
+const texto=
+document
+.getElementById("buscarVenta")
+?.value
+.toLowerCase()
+||
+"";
+
+
+
+const ventas=
+getVentas()
+.filter(v=>{
+
+
+const cliente=
+getClientes()
+.find(
+c=>c.id===v.clienteId
 );
+
+
+
+let datos=
+`
+
+${cliente?.nombres || ""}
+
+${cliente?.apellidos || ""}
+
+${cliente?.dni || ""}
+
+${v.producto || ""}
+
+${v.orden || ""}
+
+${v.vendedor || ""}
+
+`
+
+.toLowerCase();
+
+
+
+return datos.includes(texto);
+
+
+});
 
 
 
@@ -232,38 +100,85 @@ tabla.innerHTML="";
 ventas.forEach(v=>{
 
 
+const cliente=
+getClientes()
+.find(
+c=>c.id===v.clienteId
+);
+
+
+
 tabla.innerHTML+=`
 
 <tr>
 
 
 <td>
-${v.cliente_nombre}
+
+${cliente?.nombres || ""}
+${cliente?.apellidos || ""}
+
+<br>
+
+<small>
+${cliente?.dni || ""}
+</small>
+
 </td>
 
 
+
 <td>
+
 ${v.producto}
+
 </td>
 
 
+
 <td>
-S/${v.monto_total}
+
+S/ ${Number(v.montoTotal).toFixed(2)}
+
 </td>
 
 
+
 <td>
-${v.tipo_contrato}
+
+${v.tipoContrato}
+
 </td>
 
 
+
 <td>
-${new Date(v.fecha_creacion)
-.toLocaleDateString()}
+
+${v.vendedor || "-"}
+
+</td>
+
+
+
+<td>
+
+
+<button
+
+class="btn-view"
+
+onclick="verVenta(${v.id})">
+
+Ver
+
+</button>
+
+
 </td>
 
 
 </tr>
+
 
 `;
 
@@ -275,5 +190,111 @@ ${new Date(v.fecha_creacion)
 
 
 
-window.seleccionarCliente=
-seleccionarCliente;
+
+// =====================================
+// VER DETALLE
+// =====================================
+
+
+function verVenta(id){
+
+
+const venta=
+getVentas()
+.find(
+v=>v.id===id
+);
+
+
+
+if(!venta)return;
+
+
+
+const cliente=
+getClientes()
+.find(
+c=>c.id===venta.clienteId
+);
+
+
+
+const cuotas=
+getCuotas()
+.filter(
+q=>q.ventaId===venta.id
+);
+
+
+
+let detalle=`
+
+
+CLIENTE
+
+${cliente.nombres}
+${cliente.apellidos}
+
+
+DNI:
+${cliente.dni}
+
+
+TELÉFONO:
+${cliente.telefono}
+
+
+
+PEDIDO
+
+Producto:
+${venta.producto}
+
+
+Monto:
+S/ ${venta.montoTotal}
+
+
+Contrato:
+${venta.tipoContrato}
+
+
+Estado:
+${venta.estado}
+
+
+
+`;
+
+
+if(cuotas.length){
+
+
+detalle+=`
+
+CUOTAS
+
+Cantidad:
+${cuotas.length}
+
+
+`;
+
+
+
+}
+
+
+
+alert(detalle);
+
+
+
+}
+
+
+
+
+
+window.verVenta=
+verVenta;
