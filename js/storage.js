@@ -352,3 +352,49 @@ function exportDB(){
     };
 
 }
+
+function migrarVentas(){
+
+let ventas=getVentas();
+
+
+ventas=ventas.map(v=>{
+
+
+return {
+
+...v,
+
+montoTotal:
+v.montoTotal ??
+v.monto ??
+0,
+
+
+tipoContrato:
+v.tipoContrato ??
+v.contrato ??
+"AL CONTADO",
+
+
+clienteId:
+v.clienteId ??
+v.cliente ??
+null
+
+
+};
+
+
+});
+
+
+saveData(
+DB_KEYS.ventas,
+ventas
+);
+
+
+console.log("Ventas migradas");
+
+}
