@@ -215,42 +215,35 @@ cargarClientes();
 
 function cargarClientes(){
 
-
 const tabla=
-document.getElementById(
-"clientesTabla"
-);
-
+document.getElementById("clientesBody");
 
 if(!tabla)return;
 
 
-
 const texto=
-document.getElementById(
-"buscarCliente"
-)?.value
+document
+.getElementById("clienteSearch")
+?.value
 .toLowerCase()
 ||"";
-
 
 
 const clientes=
 getClientes()
 .filter(c=>{
 
+let buscar=`
 
-let buscar=
-`${c.nombres}
+${c.nombres}
 ${c.apellidos}
 ${c.dni}
-${c.telefono}`
-.toLowerCase();
+${c.telefono}
 
+`.toLowerCase();
 
 
 return buscar.includes(texto);
-
 
 });
 
@@ -265,8 +258,8 @@ clientes.forEach(c=>{
 
 const compras=
 getVentas()
-.filter(
-v=>v.clienteId===c.id
+.filter(v=>
+v.clienteId===c.id
 )
 .length;
 
@@ -276,12 +269,10 @@ tabla.innerHTML+=`
 
 <tr>
 
-
 <td>
 ${c.nombres}
 ${c.apellidos}
 </td>
-
 
 
 <td>
@@ -289,11 +280,9 @@ ${c.dni}
 </td>
 
 
-
 <td>
 ${c.telefono}
 </td>
-
 
 
 <td>
@@ -301,28 +290,20 @@ ${compras}
 </td>
 
 
-
 <td>
 
-
 <button
-class="btn-edit"
+class="btn-view"
 onclick="editarCliente(${c.id})">
-
 Editar
-
 </button>
-
 
 
 <button
 class="btn-delete"
 onclick="eliminarCliente(${c.id})">
-
 Eliminar
-
 </button>
-
 
 </td>
 
@@ -335,7 +316,6 @@ Eliminar
 
 
 }
-
 
 
 
