@@ -1,12 +1,14 @@
-// =====================================
-// CUOTAS IMVICTO CORP
-// =====================================
+// ==========================================
+// IMVICTO CORP - CUOTAS
+// ==========================================
 
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
 
 
-cargarCuotas();
+renderCuotas();
 
 
 });
@@ -14,19 +16,16 @@ cargarCuotas();
 
 
 
-// =====================================
-// LISTAR CUOTAS
-// =====================================
+// ==========================================
+// RENDER CUOTAS AGRUPADAS
+// ==========================================
 
 
-function cargarCuotas(){
+function renderCuotas(){
 
 
-const tabla=
-document.getElementById(
-"cuotasTabla"
-);
-
+let tabla=
+document.getElementById("cuotasBody");
 
 
 if(!tabla)return;
@@ -37,27 +36,48 @@ tabla.innerHTML="";
 
 
 
-const cuotas=
-getCuotas();
+let cuotas=getCuotas();
 
 
 
-cuotas.forEach(q=>{
-
-
-const cliente=
-getClientes()
-.find(
-c=>c.id===q.clienteId
-);
+let grupos={};
 
 
 
-const venta=
-getVentas()
-.find(
-v=>v.id===q.ventaId
-);
+cuotas.forEach(c=>{
+
+
+if(!grupos[c.ventaId]){
+
+grupos[c.ventaId]=[];
+
+}
+
+
+grupos[c.ventaId].push(c);
+
+
+});
+
+
+
+Object.keys(grupos)
+.forEach(id=>{
+
+
+let venta=
+buscarVenta(id);
+
+
+
+let cliente=
+venta?
+buscarCliente(venta.clienteId):
+null;
+
+
+
+let lista=grupos[id];
 
 
 
@@ -66,87 +86,145 @@ tabla.innerHTML+=`
 <tr>
 
 
-<td>
-
-${cliente?.nombres || ""}
-${cliente?.apellidos || ""}
-
-</td>
+<td colspan="6">
 
 
-
-<td>
-
-${venta?.producto || "-"}
-
-</td>
+<details class="cuota-card">
 
 
-
-<td>
-
-${q.numero}
-
-</td>
+<summary>
 
 
-
-<td>
-
-S/ ${Number(q.monto).toFixed(2)}
-
-</td>
+<div class="cuota-header">
 
 
+<div>
 
-<td>
+<strong>
+${cliente?
+cliente.nombres+" "+cliente.apellidos:
+"Cliente"}
+</strong>
 
-${q.fecha || "-"}
 
-</td>
-
-
-
-<td>
+<br>
 
 
 <span>
+${venta?.producto || ""}
+</span>
+
+
+</div>
+
+
+
+<div>
+
+<strong>
+S/${Number(venta?.montoTotal||0).toFixed(2)}
+</strong>
+
+<br>
+
+<small>
+${venta?.tipoContrato || ""}
+</small>
+
+
+</div>
+
+
+</div>
+
+
+</summary>
+
+
+
+
+<div class="cuota-list">
+
+
+${lista.map(q=>`
+
+
+<div class="cuota-item">
+
+
+<div>
+
+<strong>
+Cuota ${q.numero}
+</strong>
+
+
+<br>
+
+<span>
+Monto:
+S/${Number(q.monto).toFixed(2)}
+</span>
+
+
+</div>
+
+
+
+<div>
+
+
+<span class="${q.estado==="PAGADA"?"pagada":"pendiente"}">
 
 ${q.estado}
 
 </span>
 
 
-</td>
-
-
-
-<td>
-
 
 <button
 
-class="btn-view"
+class="btn-small"
 
-onclick="pagarCuota(${q.id})">
+onclick="cambiarEstadoCuota(${q.id})">
 
 
-Marcar pagada
-
+${q.estado==="PAGADA"
+?"Reabrir"
+:"Pagar"}
 
 </button>
 
 
-</td>
+</div>
 
+
+
+</div>
+
+
+`).join("")}
+
+
+
+</div>
+
+
+
+</details>
+
+
+</td>
 
 
 </tr>
 
-
 `;
 
+
+
 });
+
 
 
 }
@@ -154,24 +232,21 @@ Marcar pagada
 
 
 
+// ==========================================
+// CAMBIAR ESTADO
+// ==========================================
 
 
-// =====================================
-// PAGAR CUOTA
-// =====================================
+function cambiarEstadoCuota(id){
 
 
-function pagarCuota(id){
-
-
-const cuotas=
-getCuotas();
+let cuotas=getCuotas();
 
 
 
-const cuota=
+let cuota=
 cuotas.find(
-c=>c.id===id
+q=>q.id==id
 );
 
 
@@ -180,31 +255,42 @@ if(!cuota)return;
 
 
 
-cuota.estado="PAGADA";
+cuota.estado=
+cuota.estado==="PAGADA"
+?
+"PENDIENTE"
+:
+"PAGADA";
 
+
+
+if(cuota.estado==="PAGADA"){
 
 cuota.fechaPago=
-new Date()
-.toISOString();
+new Date().toISOString();
+
+}
+else{
+
+cuota.fechaPago=null;
+
+}
 
 
 
-saveData(
-DB_KEYS.cuotas,
-cuotas
-);
+guardarCuotas(cuotas);
 
 
 
-cargarCuotas();
+renderCuotas();
+
+
+renderInicio();
 
 
 }
 
 
 
-
-
-
-window.pagarCuota=
-pagarCuota;
+window.cambiarEstadoCuota=
+cambiarEstadoCuota;

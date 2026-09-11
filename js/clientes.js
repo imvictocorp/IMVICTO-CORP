@@ -1,36 +1,50 @@
-// =====================================
-// CLIENTES IMVICTO CORP
-// =====================================
+// ==========================================
+// IMVICTO CORP - CLIENTES
+// ==========================================
 
 
-document.addEventListener("DOMContentLoaded",()=>{
+let clienteEditando=null;
+
+
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
 
 
 const form=
-document.getElementById("clienteVentaForm");
+document.getElementById("clienteForm");
 
 
 if(form){
 
+
 form.addEventListener(
 "submit",
-registrarCliente
+guardarCliente
+);
+
+
+}
+
+
+
+const buscar=
+document.getElementById("clienteSearch");
+
+
+if(buscar){
+
+buscar.addEventListener(
+"input",
+renderClientes
 );
 
 }
 
 
 
-document
-.getElementById("buscarCliente")
-?.addEventListener(
-"input",
-cargarClientes
-);
-
-
-
-cargarClientes();
+renderClientes();
 
 
 });
@@ -38,143 +52,160 @@ cargarClientes();
 
 
 
+// ==========================================
+// GUARDAR CLIENTE + VENTA
+// ==========================================
 
-// =====================================
-// REGISTRAR CLIENTE + VENTA
-// =====================================
 
-
-function registrarCliente(e){
+function guardarCliente(e){
 
 
 e.preventDefault();
 
 
 
-const f=
+const data=
 new FormData(e.target);
 
 
 
-const cliente={
+let nombres=data.get("nombres");
 
+let apellidos=data.get("apellidos");
 
-nombres:
-f.get("nombres"),
+let dni=data.get("dni");
 
+let telefono=data.get("telefono");
 
-apellidos:
-f.get("apellidos"),
+let producto=data.get("mercaderia");
 
-
-dni:
-f.get("dni"),
-
-
-telefono:
-f.get("telefono"),
-
-
-correo:
-f.get("correo"),
-
-
-direccion:
-f.get("direccion")
+let monto=
+Number(data.get("monto_total"));
 
 
 
-};
+if(
+!nombres ||
+!apellidos ||
+!dni ||
+!telefono ||
+!producto ||
+!monto
+){
+
+
+alert(
+"Completa todos los campos obligatorios"
+);
+
+
+return;
+
+}
 
 
 
-const nuevoCliente=
-saveCliente(cliente);
+
+
+let cliente;
+
+
+
+if(clienteEditando){
+
+
+
+let clientes=getClientes();
+
+
+cliente=
+clientes.find(
+c=>c.id==clienteEditando
+);
+
+
+
+cliente.nombres=nombres;
+
+cliente.apellidos=apellidos;
+
+cliente.dni=dni;
+
+cliente.telefono=telefono;
+
+cliente.correo=data.get("correo");
+
+cliente.direccion=data.get("direccion");
+
+
+
+guardarClientes(clientes);
+
+
+
+}
+else{
+
+
+cliente=crearCliente({
+
+nombres,
+
+apellidos,
+
+dni,
+
+telefono,
+
+correo:data.get("correo"),
+
+direccion:data.get("direccion")
+
+
+});
+
+
+}
 
 
 
 
-
-const venta={
-
-
-clienteId:
-nuevoCliente.id,
+let venta=
+crearVenta({
 
 
-producto:
-f.get("mercaderia"),
+clienteId:cliente.id,
 
 
-montoTotal:
-Number(
-f.get("monto_total")
-),
+producto,
+
+
+montoTotal:monto,
 
 
 tipoContrato:
-f.get("tipo_contrato"),
+data.get("tipo_contrato"),
 
 
 estado:
-f.get("estado_pedido"),
+data.get("estado_pedido") || "ACTUAL",
 
 
 orden:
-f.get("numero_orden"),
-
-
-regalo:
-f.get("regalo"),
+data.get("numero_orden"),
 
 
 vendedor:
-f.get("vendedor"),
+data.get("vendedor"),
 
 
-
-inicial:
-Number(
-f.get("inicial") || 0
-),
-
-
-
-numeroCuotas:
-Number(
-f.get("cantidad_cuotas") || 0
-),
-
-
-
-montoCuota:
-Number(
-f.get("monto_cuota") || 0
-),
-
+regalo:
+data.get("regalo"),
 
 
 observaciones:
-f.get("observaciones")
+data.get("observaciones")
 
-
-
-};
-
-
-
-
-
-const nuevaVenta=
-saveVenta(venta);
-
-
-
-crearCuotasVenta({
-
-...venta,
-
-id:nuevaVenta.id
 
 });
 
@@ -182,24 +213,31 @@ id:nuevaVenta.id
 
 
 
-guardarArchivos(
-nuevoCliente.id
+if(
+venta.tipoContrato==="FINANCIADO"
+){
+
+
+let cantidad=
+Number(data.get("numero_cuotas"));
+
+
+let cuota=
+Number(data.get("monto_cuota"));
+
+
+
+if(cantidad>0){
+
+
+crearCuotas(
+venta,
+cantidad,
+cuota
 );
 
 
-
-alert(
-"Cliente y venta registrados"
-);
-
-
-
-e.target.reset();
-
-
-
-cargarClientes();
-
+}
 
 
 }
@@ -208,44 +246,52 @@ cargarClientes();
 
 
 
-// =====================================
+e.target.reset();
+
+
+clienteEditando=null;
+
+
+
+e.target
+.querySelector("button")
+.textContent=
+"Guardar cliente y venta";
+
+
+
+renderClientes();
+
+
+renderInicio();
+
+
+
+alert(
+"Registro guardado correctamente"
+);
+
+
+}
+
+
+
+
+
+// ==========================================
 // LISTAR CLIENTES
-// =====================================
+// ==========================================
 
 
-function cargarClientes(){
+function renderClientes(){
 
-const tabla=
+
+let tabla=
 document.getElementById("clientesBody");
 
+
+
 if(!tabla)return;
-
-
-const texto=
-document
-.getElementById("clienteSearch")
-?.value
-.toLowerCase()
-||"";
-
-
-const clientes=
-getClientes()
-.filter(c=>{
-
-let buscar=`
-
-${c.nombres}
-${c.apellidos}
-${c.dni}
-${c.telefono}
-
-`.toLowerCase();
-
-
-return buscar.includes(texto);
-
-});
 
 
 
@@ -253,13 +299,45 @@ tabla.innerHTML="";
 
 
 
-clientes.forEach(c=>{
+let texto=
+document
+.getElementById("clienteSearch")
+?.value
+.toLowerCase()
+||
+"";
 
 
-const compras=
+
+getClientes()
+.filter(c=>{
+
+
+let datos=`
+
+${c.nombres}
+
+${c.apellidos}
+
+${c.dni}
+
+${c.telefono}
+
+`.toLowerCase();
+
+
+
+return datos.includes(texto);
+
+
+})
+.forEach(c=>{
+
+
+let ventas=
 getVentas()
-.filter(v=>
-v.clienteId===c.id
+.filter(
+v=>v.clienteId==c.id
 )
 .length;
 
@@ -269,10 +347,12 @@ tabla.innerHTML+=`
 
 <tr>
 
+
 <td>
 ${c.nombres}
 ${c.apellidos}
 </td>
+
 
 
 <td>
@@ -280,38 +360,52 @@ ${c.dni}
 </td>
 
 
+
 <td>
 ${c.telefono}
 </td>
 
 
+
 <td>
-${compras}
+${ventas}
 </td>
 
 
+
 <td>
 
+
 <button
-class="btn-view"
+class="btn-small"
 onclick="editarCliente(${c.id})">
+
 Editar
+
 </button>
+
 
 
 <button
-class="btn-delete"
-onclick="eliminarCliente(${c.id})">
+class="btn-small danger"
+onclick="eliminarClienteVista(${c.id})">
+
 Eliminar
+
 </button>
 
+
+
 </td>
+
 
 
 </tr>
 
 `;
 
+
+
 });
 
 
@@ -320,64 +414,55 @@ Eliminar
 
 
 
-
-
-// =====================================
+// ==========================================
 // EDITAR
-// =====================================
+// ==========================================
 
 
 function editarCliente(id){
 
 
-const cliente=
-getClientes()
-.find(
-c=>c.id===id
-);
+let c=
+buscarCliente(id);
 
 
 
-if(!cliente)return;
+if(!c)return;
 
 
 
-const form=
-document.getElementById(
-"clienteVentaForm"
-);
+clienteEditando=id;
 
 
 
-form.nombres.value=
-cliente.nombres;
-
-
-form.apellidos.value=
-cliente.apellidos;
-
-
-form.dni.value=
-cliente.dni;
-
-
-form.telefono.value=
-cliente.telefono;
-
-
-form.correo.value=
-cliente.correo;
-
-
-form.direccion.value=
-cliente.direccion;
+let form=
+document.getElementById("clienteForm");
 
 
 
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
+form.nombres.value=c.nombres;
+
+form.apellidos.value=c.apellidos;
+
+form.dni.value=c.dni;
+
+form.telefono.value=c.telefono;
+
+form.correo.value=c.correo||"";
+
+form.direccion.value=c.direccion||"";
+
+
+
+form.querySelector("button")
+.textContent=
+"Actualizar cliente";
+
+
+
+document
+.getElementById("clientes")
+.scrollIntoView();
 
 
 }
@@ -386,87 +471,36 @@ behavior:"smooth"
 
 
 
-// =====================================
+// ==========================================
 // ELIMINAR
-// =====================================
+// ==========================================
 
 
-function eliminarCliente(id){
+function eliminarClienteVista(id){
 
 
 if(
-!confirm(
-"¿Eliminar cliente y ventas?"
+confirm(
+"¿Eliminar cliente y toda su información?"
 )
-
-)return;
-
+){
 
 
-deleteCliente(id);
+eliminarCliente(id);
 
 
-cargarClientes();
+renderClientes();
+
+renderInicio();
+
+
+}
 
 
 }
 
 
 
+window.editarCliente=editarCliente;
 
-
-// =====================================
-// ARCHIVOS
-// =====================================
-
-
-function guardarArchivos(clienteId){
-
-
-const input=
-document.querySelector(
-'input[name="archivos"]'
-);
-
-
-
-if(
-!input ||
-!input.files.length
-)return;
-
-
-
-Array.from(input.files)
-.forEach(file=>{
-
-
-saveDocumento({
-
-clienteId,
-
-nombre:file.name,
-
-tipo:file.type,
-
-fecha:new Date().toISOString()
-
-
-});
-
-
-});
-
-
-}
-
-
-
-
-
-window.editarCliente=
-editarCliente;
-
-
-window.eliminarCliente=
-eliminarCliente;
+window.eliminarClienteVista=eliminarClienteVista;

@@ -1,20 +1,29 @@
-// =====================================
-// VENTAS IMVICTO CORP
-// =====================================
+// ==========================================
+// IMVICTO CORP - VENTAS
+// ==========================================
 
 
-document.addEventListener("DOMContentLoaded",()=>{
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
 
 
-document
-.getElementById("buscarVenta")
-?.addEventListener(
+let buscar=
+document.getElementById("buscarVenta");
+
+
+if(buscar){
+
+buscar.addEventListener(
 "input",
-cargarVentas
+renderVentas
 );
 
+}
 
-cargarVentas();
+
+renderVentas();
 
 
 });
@@ -23,26 +32,25 @@ cargarVentas();
 
 
 
-// =====================================
-// CARGAR VENTAS
-// =====================================
+// ==========================================
+// TABLA VENTAS
+// ==========================================
 
 
-function cargarVentas(){
+function renderVentas(){
 
 
-const tabla=
-document.getElementById(
-"ventasTabla"
-);
-
+let tabla=
+document.getElementById("ventasBody");
 
 
 if(!tabla)return;
 
 
+tabla.innerHTML="";
 
-const texto=
+
+let texto=
 document
 .getElementById("buscarVenta")
 ?.value
@@ -52,21 +60,20 @@ document
 
 
 
-const ventas=
-getVentas()
+let ventas=getVentas();
+
+
+
+ventas
 .filter(v=>{
 
 
-const cliente=
-getClientes()
-.find(
-c=>c.id===v.clienteId
-);
+let cliente=
+buscarCliente(v.clienteId);
 
 
 
-let datos=
-`
+let datos=`
 
 ${cliente?.nombres || ""}
 
@@ -80,31 +87,19 @@ ${v.orden || ""}
 
 ${v.vendedor || ""}
 
-`
-
-.toLowerCase();
+`.toLowerCase();
 
 
 
 return datos.includes(texto);
 
 
-});
+})
+.forEach(v=>{
 
 
-
-tabla.innerHTML="";
-
-
-
-ventas.forEach(v=>{
-
-
-const cliente=
-getClientes()
-.find(
-c=>c.id===v.clienteId
-);
+let cliente=
+buscarCliente(v.clienteId);
 
 
 
@@ -115,22 +110,33 @@ tabla.innerHTML+=`
 
 <td>
 
-${cliente?.nombres || ""}
-${cliente?.apellidos || ""}
+<strong>
+${cliente?
+cliente.nombres+" "+cliente.apellidos:
+"Sin cliente"}
+</strong>
 
 <br>
 
 <small>
-${cliente?.dni || ""}
+DNI:
+${cliente?.dni || "-"}
 </small>
 
+
+</td>
+
+
+<td>
+${v.producto || "-"}
 </td>
 
 
 
 <td>
 
-${v.producto}
+S/
+${Number(v.montoTotal || 0).toFixed(2)}
 
 </td>
 
@@ -138,15 +144,7 @@ ${v.producto}
 
 <td>
 
-S/ ${Number(v.montoTotal).toFixed(2)}
-
-</td>
-
-
-
-<td>
-
-${v.tipoContrato}
+${v.tipoContrato || "-"}
 
 </td>
 
@@ -164,9 +162,7 @@ ${v.vendedor || "-"}
 
 
 <button
-
 class="btn-view"
-
 onclick="verVenta(${v.id})">
 
 Ver
@@ -174,13 +170,16 @@ Ver
 </button>
 
 
+
 </td>
+
 
 
 </tr>
 
-
 `;
+
+
 
 });
 
@@ -191,76 +190,88 @@ Ver
 
 
 
-// =====================================
-// VER DETALLE
-// =====================================
+
+// ==========================================
+// DETALLE VENTA
+// ==========================================
 
 
 function verVenta(id){
 
 
-const venta=
-getVentas()
-.find(
-v=>v.id===id
+let venta=
+buscarVenta(id);
+
+
+
+if(!venta){
+
+alert("No se encontró la venta");
+
+return;
+
+}
+
+
+
+let cliente=
+buscarCliente(
+venta.clienteId
 );
 
 
 
-if(!venta)return;
-
-
-
-const cliente=
-getClientes()
-.find(
-c=>c.id===venta.clienteId
-);
-
-
-
-const cuotas=
+let cuotas=
 getCuotas()
 .filter(
-q=>q.ventaId===venta.id
+q=>q.ventaId==venta.id
 );
 
 
 
-let detalle=`
+let texto=`
+
+DETALLE DE VENTA
 
 
-CLIENTE
+CLIENTE:
 
-${cliente.nombres}
-${cliente.apellidos}
+${cliente?.nombres || ""}
+${cliente?.apellidos || ""}
 
 
 DNI:
-${cliente.dni}
+
+${cliente?.dni || "-"}
 
 
 TELÉFONO:
-${cliente.telefono}
+
+${cliente?.telefono || "-"}
 
 
 
-PEDIDO
+PEDIDO:
 
-Producto:
 ${venta.producto}
 
 
-Monto:
+
+MONTO:
+
 S/ ${venta.montoTotal}
 
 
-Contrato:
+
+CONTRATO:
+
 ${venta.tipoContrato}
 
 
-Estado:
-${venta.estado}
+
+VENDEDOR:
+
+${venta.vendedor || "-"}
 
 
 
@@ -270,31 +281,26 @@ ${venta.estado}
 if(cuotas.length){
 
 
-detalle+=`
+texto+=`
 
-CUOTAS
+CUOTAS:
 
-Cantidad:
 ${cuotas.length}
-
 
 `;
 
 
+}
+
+
+
+alert(texto);
+
 
 }
 
 
 
-alert(detalle);
 
 
-
-}
-
-
-
-
-
-window.verVenta=
-verVenta;
+window.verVenta=verVenta;

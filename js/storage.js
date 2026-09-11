@@ -1,400 +1,332 @@
-// ===============================
-// STORAGE LOCAL IMVICTO CORP
-// ===============================
+// ==========================================
+// IMVICTO CORP - STORAGE CENTRAL
+// ==========================================
 
 console.log("Storage local cargado");
 
-const DB_KEYS = {
-    clientes:"imvicto_clientes",
-    ventas:"imvicto_ventas",
-    cuotas:"imvicto_cuotas",
-    usuarios:"imvicto_usuarios",
-    documentos:"imvicto_documentos"
+const DB_KEY="IMVICTO_DB";
+
+function obtenerDB(){
+
+let db=JSON.parse(localStorage.getItem(DB_KEY));
+
+if(!db){
+
+db={
+clientes:[],
+ventas:[],
+cuotas:[],
+usuarios:[]
 };
 
+localStorage.setItem(DB_KEY,JSON.stringify(db));
 
-// ===============================
-// HELPERS
-// ===============================
+}
 
-function getData(key){
-    return JSON.parse(localStorage.getItem(key)) || [];
+return db;
+
 }
 
 
-function saveData(key,data){
-    localStorage.setItem(key,JSON.stringify(data));
+function guardarDB(db){
+
+localStorage.setItem(
+DB_KEY,
+JSON.stringify(db)
+);
+
 }
 
 
-function generateId(){
-    return Date.now()+Math.floor(Math.random()*1000);
-}
-
-
-// ===============================
+// ==============================
 // CLIENTES
-// ===============================
+// ==============================
 
 function getClientes(){
-    return getData(DB_KEYS.clientes);
+
+return obtenerDB().clientes || [];
+
 }
 
 
-function saveCliente(cliente){
+function guardarClientes(data){
 
-    let clientes=getClientes();
+let db=obtenerDB();
 
-    cliente.id=generateId();
-    cliente.fecha=new Date().toISOString();
+db.clientes=data;
 
-    clientes.push(cliente);
-
-    saveData(DB_KEYS.clientes,clientes);
-
-    return cliente;
-}
-
-
-function updateCliente(id,data){
-
-    let clientes=getClientes();
-
-    clientes=clientes.map(c=>{
-        if(c.id==id){
-            return {
-                ...c,
-                ...data
-            };
-        }
-
-        return c;
-    });
-
-
-    saveData(DB_KEYS.clientes,clientes);
-}
-
-
-
-function deleteCliente(id){
-
-    let clientes=getClientes();
-
-    clientes=clientes.filter(c=>c.id!=id);
-
-    saveData(DB_KEYS.clientes,clientes);
-
-
-    // borrar ventas relacionadas
-
-    let ventas=getVentas();
-
-    ventas=ventas.filter(v=>v.clienteId!=id);
-
-    saveData(DB_KEYS.ventas,ventas);
-
-
-
-    // borrar cuotas
-
-    let cuotas=getCuotas();
-
-    cuotas=cuotas.filter(c=>c.clienteId!=id);
-
-    saveData(DB_KEYS.cuotas,cuotas);
+guardarDB(db);
 
 }
 
 
 
-// ===============================
+// ==============================
 // VENTAS
-// ===============================
+// ==============================
 
 function getVentas(){
-    return getData(DB_KEYS.ventas);
+
+return obtenerDB().ventas || [];
+
 }
 
 
+function guardarVentas(data){
 
-function saveVenta(venta){
+let db=obtenerDB();
 
-    let ventas=getVentas();
+db.ventas=data;
 
-
-    venta.id=generateId();
-    venta.fecha=new Date().toISOString();
-
-
-    ventas.push(venta);
-
-
-    saveData(DB_KEYS.ventas,ventas);
-
-
-    return venta;
-}
-
-
-
-function updateVenta(id,data){
-
-    let ventas=getVentas();
-
-
-    ventas=ventas.map(v=>{
-
-        if(v.id==id){
-
-            return {
-                ...v,
-                ...data
-            };
-
-        }
-
-
-        return v;
-
-    });
-
-
-    saveData(DB_KEYS.ventas,ventas);
+guardarDB(db);
 
 }
 
 
 
-function deleteVenta(id){
-
-    let ventas=getVentas();
-
-    ventas=ventas.filter(v=>v.id!=id);
-
-
-    saveData(DB_KEYS.ventas,ventas);
-
-
-
-    let cuotas=getCuotas();
-
-    cuotas=cuotas.filter(c=>c.ventaId!=id);
-
-
-    saveData(DB_KEYS.cuotas,cuotas);
-
-}
-
-
-
-
-// ===============================
+// ==============================
 // CUOTAS
-// ===============================
+// ==============================
 
 function getCuotas(){
 
-    return getData(DB_KEYS.cuotas);
+return obtenerDB().cuotas || [];
+
+}
+
+
+function guardarCuotas(data){
+
+let db=obtenerDB();
+
+db.cuotas=data;
+
+guardarDB(db);
 
 }
 
 
 
-function crearCuotasVenta(venta){
+// ==============================
+// USUARIOS
+// ==============================
+
+function getUsuarios(){
+
+return obtenerDB().usuarios || [];
+
+}
 
 
-    if(
-        venta.tipoContrato!=="FINANCIADO"
-        ||
-        !venta.numeroCuotas
-    ){
+function guardarUsuarios(data){
 
-        return;
+let db=obtenerDB();
 
-    }
+db.usuarios=data;
 
-
-    let cuotas=getCuotas();
-
-
-
-    let saldo=
-        Number(venta.montoTotal)
-        -
-        Number(venta.inicial || 0);
-
-
-
-    let montoCuota=
-        Number(venta.montoCuota)
-        ||
-        (
-            saldo /
-            Number(venta.numeroCuotas)
-        );
-
-
-
-    for(
-        let i=1;
-        i<=Number(venta.numeroCuotas);
-        i++
-    ){
-
-
-        cuotas.push({
-
-            id:generateId(),
-
-            clienteId:venta.clienteId,
-
-            ventaId:venta.id,
-
-            numero:i,
-
-            monto:Number(montoCuota.toFixed(2)),
-
-            fecha:null,
-
-            estado:"PENDIENTE"
-
-        });
-
-
-    }
-
-
-
-    saveData(DB_KEYS.cuotas,cuotas);
-
+guardarDB(db);
 
 }
 
 
 
+// ==============================
+// GENERADOR ID
+// ==============================
 
-function updateCuota(id,data){
+function nuevoID(){
 
-    let cuotas=getCuotas();
-
-
-    cuotas=cuotas.map(c=>{
-
-        if(c.id==id){
-
-            return {
-                ...c,
-                ...data
-            };
-
-        }
-
-        return c;
-
-    });
-
-
-    saveData(DB_KEYS.cuotas,cuotas);
+return Date.now()+Math.floor(Math.random()*999);
 
 }
 
 
 
+// ==============================
+// CREAR CLIENTE
+// ==============================
 
-// ===============================
-// DOCUMENTOS
-// ===============================
+function crearCliente(data){
 
-function saveDocumento(doc){
+let clientes=getClientes();
 
-    let docs=getData(DB_KEYS.documentos);
+let cliente={
 
+id:nuevoID(),
 
-    docs.push(doc);
+nombres:data.nombres,
 
+apellidos:data.apellidos,
 
-    saveData(
-        DB_KEYS.documentos,
-        docs
-    );
+dni:data.dni,
 
-}
+telefono:data.telefono,
 
+correo:data.correo || "",
 
+direccion:data.direccion || "",
 
-function getDocumentos(){
+fecha:new Date().toISOString()
 
-    return getData(
-        DB_KEYS.documentos
-    );
-
-}
+};
 
 
+clientes.push(cliente);
 
-// ===============================
-// EXPORT
-// ===============================
+guardarClientes(clientes);
 
-function exportDB(){
 
-    return {
-
-        clientes:getClientes(),
-
-        ventas:getVentas(),
-
-        cuotas:getCuotas(),
-
-        documentos:getDocumentos()
-
-    };
+return cliente;
 
 }
 
-function migrarVentas(){
+
+
+// ==============================
+// CREAR VENTA
+// ==============================
+
+function crearVenta(data){
 
 let ventas=getVentas();
 
 
-ventas=ventas.map(v=>{
+let venta={
 
+id:nuevoID(),
 
-return {
+clienteId:data.clienteId,
 
-...v,
+producto:data.producto,
 
-montoTotal:
-v.montoTotal ??
-v.monto ??
-0,
+montoTotal:Number(data.montoTotal)||0,
 
+tipoContrato:data.tipoContrato,
 
-tipoContrato:
-v.tipoContrato ??
-v.contrato ??
-"AL CONTADO",
+estado:data.estado || "ACTIVA",
 
+orden:data.orden || "",
 
-clienteId:
-v.clienteId ??
-v.cliente ??
-null
+vendedor:data.vendedor || "",
 
+regalo:data.regalo || "",
+
+documentos:data.documentos || [],
+
+observaciones:data.observaciones || "",
+
+fecha:new Date().toISOString()
 
 };
 
 
+ventas.push(venta);
+
+guardarVentas(ventas);
+
+
+return venta;
+
+}
+
+
+
+// ==============================
+// CREAR CUOTAS
+// ==============================
+
+function crearCuotas(venta,numero,monto){
+
+
+let cuotas=getCuotas();
+
+
+for(let i=1;i<=numero;i++){
+
+
+cuotas.push({
+
+id:nuevoID(),
+
+ventaId:venta.id,
+
+clienteId:venta.clienteId,
+
+numero:i,
+
+monto:Number(monto),
+
+fecha:null,
+
+estado:"PENDIENTE"
+
 });
 
 
-saveData(
-DB_KEYS.ventas,
-ventas
-);
+}
 
 
-console.log("Ventas migradas");
+guardarCuotas(cuotas);
+
+
+}
+
+
+
+// ==============================
+// ELIMINAR CLIENTE
+// ==============================
+
+function eliminarCliente(id){
+
+
+let clientes=getClientes()
+.filter(c=>c.id!=id);
+
+
+guardarClientes(clientes);
+
+
+
+let ventas=getVentas()
+.filter(v=>v.clienteId!=id);
+
+
+guardarVentas(ventas);
+
+
+
+let cuotas=getCuotas()
+.filter(c=>c.clienteId!=id);
+
+
+guardarCuotas(cuotas);
+
+
+}
+
+
+
+// ==============================
+// BUSCAR CLIENTE
+// ==============================
+
+function buscarCliente(id){
+
+return getClientes()
+.find(c=>c.id==id);
+
+}
+
+
+
+// ==============================
+// BUSCAR VENTA
+// ==============================
+
+function buscarVenta(id){
+
+return getVentas()
+.find(v=>v.id==id);
 
 }
