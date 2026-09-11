@@ -9,7 +9,9 @@ document.addEventListener(
 
 
 const buscador =
-document.getElementById("buscarVenta");
+document.getElementById(
+"buscarVenta"
+);
 
 
 
@@ -28,6 +30,45 @@ renderVentas();
 
 
 });
+
+
+
+
+
+// ==========================================
+// RESALTAR BUSQUEDA
+// ==========================================
+
+
+function resaltar(
+texto,
+busqueda
+){
+
+
+if(!busqueda)
+return texto;
+
+
+
+const regex =
+new RegExp(
+`(${busqueda})`,
+"gi"
+);
+
+
+
+return String(texto)
+.replace(
+regex,
+"<mark>$1</mark>"
+);
+
+
+}
+
+
 
 
 
@@ -57,7 +98,9 @@ tabla.innerHTML="";
 
 const texto =
 document
-.getElementById("buscarVenta")
+.getElementById(
+"buscarVenta"
+)
 ?.value
 .toLowerCase()
 ||
@@ -65,8 +108,9 @@ document
 
 
 
-getVentas()
 
+
+getVentas()
 .filter(v=>{
 
 
@@ -77,8 +121,7 @@ v.clienteId
 
 
 
-const datos =
-`
+const datos = `
 
 ${cliente?.nombres || ""}
 
@@ -99,9 +142,11 @@ ${v.vendedor || ""}
 return datos.includes(texto);
 
 
+
 })
 
 .forEach(v=>{
+
 
 
 const cliente =
@@ -113,60 +158,103 @@ v.clienteId
 
 tabla.innerHTML += `
 
+
 <tr>
 
 
+
 <td>
 
+
 <strong>
-${cliente ?
-cliente.nombres+" "+cliente.apellidos :
-"Sin cliente"}
+
+${resaltar(
+
+(cliente?
+cliente.nombres+" "+cliente.apellidos
+:
+"Sin cliente"),
+
+texto
+
+)}
 
 </strong>
 
+
 <br>
 
+
 <small>
+
 DNI:
-${cliente?.dni || "-"}
+${resaltar(
+cliente?.dni || "-",
+texto
+)}
+
 </small>
 
-</td>
 
-
-
-<td>
-
-${v.producto || "-"}
 
 </td>
 
 
 
+
+
 <td>
+
+
+${resaltar(
+v.producto || "-",
+texto
+)}
+
+
+</td>
+
+
+
+
+
+<td>
+
 
 S/
-${Number(v.montoTotal || 0)
+${Number(
+v.montoTotal || 0
+)
 .toFixed(2)}
+
 
 </td>
 
 
 
+
+
 <td>
+
 
 ${v.tipoContrato || "-"}
 
+
 </td>
+
+
 
 
 
 <td>
 
+
 ${v.vendedor || "-"}
 
+
 </td>
+
+
 
 
 
@@ -174,8 +262,14 @@ ${v.vendedor || "-"}
 
 
 <button
+
 class="btn-small"
-onclick="verVenta(${v.id})">
+
+onclick="
+verVenta(${v.id})
+"
+
+>
 
 Ver
 
@@ -185,7 +279,9 @@ Ver
 </td>
 
 
+
 </tr>
+
 
 `;
 
@@ -194,6 +290,7 @@ Ver
 });
 
 
+
 }
 
 
@@ -201,12 +298,16 @@ Ver
 
 
 
+
+
+
 // ==========================================
-// DETALLE DE VENTA
+// DETALLE VENTA
 // ==========================================
 
 
 function verVenta(id){
+
 
 
 const venta =
@@ -214,15 +315,8 @@ buscarVenta(id);
 
 
 
-if(!venta){
-
-alert(
-"No existe la venta"
-);
-
+if(!venta)
 return;
-
-}
 
 
 
@@ -241,72 +335,284 @@ q=>q.ventaId==venta.id
 
 
 
-let detalle = `
+const compras =
+getVentas()
+.filter(
+v=>v.clienteId==venta.clienteId
+);
 
-CLIENTE:
+
+
+
+
+const html = `
+
+
+<div 
+id="modalVenta"
+class="modal-overlay">
+
+
+<div class="modal-card venta-modal">
+
+
+
+<h2>
+Detalle de venta
+</h2>
+
+
+
+
+<div class="venta-section">
+
+
+<h4>
+Cliente
+</h4>
+
+
+
+<strong>
 
 ${cliente?.nombres || ""}
 ${cliente?.apellidos || ""}
 
+</strong>
+
+
+<p>
 
 DNI:
-
 ${cliente?.dni || "-"}
 
+</p>
 
-TELÉFONO:
 
+<p>
+
+Teléfono:
 ${cliente?.telefono || "-"}
 
+</p>
 
-PRODUCTO:
+
+</div>
+
+
+
+
+
+
+<div class="venta-section">
+
+
+<h4>
+Compra actual
+</h4>
+
+
+
+<p>
+
+Orden:
+
+<strong>
+#${venta.numeroOrden || "-"}
+</strong>
+
+
+</p>
+
+
+
+<p>
+
+Producto:
 
 ${venta.producto}
 
-
-MONTO:
-
-S/${venta.montoTotal}
+</p>
 
 
-CONTRATO:
+
+<p>
+
+Monto:
+
+S/
+${Number(
+venta.montoTotal
+)
+.toFixed(2)}
+
+</p>
+
+
+
+<p>
+
+Contrato:
 
 ${venta.tipoContrato}
 
-
-VENDEDOR:
-
-${venta.vendedor || "-"}
+</p>
 
 
-`;
+</div>
 
 
 
-if(cuotas.length){
 
 
-detalle += `
 
-CUOTAS:
+
+<div class="venta-section">
+
+
+<h4>
+Cuotas
+</h4>
+
+
+<p>
 
 ${cuotas.length}
+cuotas generadas
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="venta-section">
+
+
+<h4>
+Historial del cliente
+</h4>
+
+
+
+${
+compras.map(v=>`
+
+
+<div class="venta-mini">
+
+
+<strong>
+
+Orden #${v.numeroOrden}
+
+</strong>
+
+
+<br>
+
+
+${v.producto}
+
+
+<br>
+
+
+S/
+${Number(
+v.montoTotal
+)
+.toFixed(2)}
+
+
+</div>
+
+
+
+`).join("")
+}
+
+
+
+</div>
+
+
+
+
+
+
+<button
+
+class="btn primary"
+
+onclick="cerrarVenta()"
+
+>
+
+Cerrar
+
+</button>
+
+
+
+
+</div>
+
+</div>
+
+
 
 `;
 
 
 
+
+document.body.insertAdjacentHTML(
+"beforeend",
+html
+);
+
+
+
 }
 
 
 
-alert(detalle);
+
+function cerrarVenta(){
+
+
+
+const modal =
+document.getElementById(
+"modalVenta"
+);
+
+
+
+if(modal){
+
+modal.remove();
+
+}
 
 
 
 }
+
 
 
 
 window.verVenta =
 verVenta;
+
+
+window.cerrarVenta =
+cerrarVenta;

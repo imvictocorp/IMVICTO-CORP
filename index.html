@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IMVICTO CORP</title>
+    <script>
+        const usuario = localStorage.getItem("usuario");
+
+        if(usuario){
+            const data = JSON.parse(usuario);
+
+            if(data.rol === "admin"){
+                window.location.href = "admin.html";
+            } else {
+                window.location.href = "vendedor.html";
+            }
+        } else {
+            window.location.href = "login.html";
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

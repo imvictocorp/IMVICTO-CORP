@@ -26,13 +26,86 @@ const ventas =
 getVentas();
 
 
-const cuotas =
-getCuotas();
 
 
 
-const total =
-ventas.reduce(
+const ahora =
+new Date();
+
+
+
+const inicioSemana =
+new Date();
+
+
+inicioSemana.setDate(
+ahora.getDate() -
+ahora.getDay()
+);
+
+inicioSemana.setHours(
+0,0,0,0
+);
+
+
+
+const inicioMes =
+new Date(
+ahora.getFullYear(),
+ahora.getMonth(),
+1
+);
+
+
+
+
+
+const clientesSemana =
+clientes.filter(c=>{
+
+
+const fecha =
+new Date(c.fecha);
+
+
+return fecha >= inicioSemana;
+
+
+}).length;
+
+
+
+
+const clientesMes =
+clientes.filter(c=>{
+
+
+const fecha =
+new Date(c.fecha);
+
+
+return fecha >= inicioMes;
+
+
+}).length;
+
+
+
+
+
+const ventasSemana =
+ventas.filter(v=>{
+
+
+const fecha =
+new Date(v.fecha);
+
+
+return fecha >= inicioSemana;
+
+
+})
+.reduce(
 (total,v)=>
 total+
 Number(v.montoTotal||0),
@@ -41,10 +114,30 @@ Number(v.montoTotal||0),
 
 
 
-const pendientes =
-cuotas.filter(
-q=>q.estado==="PENDIENTE"
-).length;
+
+
+const ventasMes =
+ventas.filter(v=>{
+
+
+const fecha =
+new Date(v.fecha);
+
+
+return fecha >= inicioMes;
+
+
+})
+.reduce(
+(total,v)=>
+total+
+Number(v.montoTotal||0),
+0
+);
+
+
+
+
 
 
 
@@ -60,9 +153,9 @@ document.getElementById(
 );
 
 
-const statCuotas =
+const statVentasSemana =
 document.getElementById(
-"statCuotas"
+"statVentasSemana"
 );
 
 
@@ -73,126 +166,37 @@ document.getElementById(
 
 
 
+
 if(statClientes)
 statClientes.textContent =
-clientes.length;
+clientesSemana;
+
 
 
 
 if(statVentas)
 statVentas.textContent =
-ventas.length;
+clientesMes;
 
 
 
-if(statCuotas)
-statCuotas.textContent =
-pendientes;
+
+if(statVentasSemana)
+statVentasSemana.textContent =
+"S/"+ventasSemana.toFixed(2);
+
 
 
 
 if(statMonto)
 statMonto.textContent =
-"S/"+total.toFixed(2);
+"S/"+ventasMes.toFixed(2);
 
 
-
-
-renderInicioTabla();
 
 
 
 }
-
-
-
-// ===============================
-// TABLA INICIO
-// ===============================
-
-
-function renderInicioTabla(){
-
-
-const tabla =
-document.getElementById(
-"inicioTabla"
-);
-
-
-
-if(!tabla)return;
-
-
-
-tabla.innerHTML="";
-
-
-
-getVentas()
-.slice()
-.reverse()
-.slice(0,5)
-.forEach(v=>{
-
-
-const cliente =
-buscarCliente(
-v.clienteId
-);
-
-
-
-tabla.innerHTML += `
-
-<tr>
-
-<td>
-
-${cliente?
-cliente.nombres+" "+cliente.apellidos:
-"-"}
-
-</td>
-
-
-<td>
-
-${v.producto||"-"}
-
-</td>
-
-
-<td>
-
-S/${Number(v.montoTotal||0)
-.toFixed(2)}
-
-</td>
-
-
-<td>
-
-${v.estado||"-"}
-
-</td>
-
-
-</tr>
-
-`;
-
-
-
-});
-
-
-
-}
-
-
-
-
 
 
 
@@ -247,21 +251,29 @@ vendedores[nombre]++;
 
 
 
+
+
 Object.keys(vendedores)
 .forEach(nombre=>{
 
 
 tabla.innerHTML += `
 
+
 <tr>
 
+
 <td>
+
 ${nombre}
+
 </td>
 
 
 <td>
+
 ${vendedores[nombre]}
+
 </td>
 
 
@@ -282,6 +294,7 @@ ${vendedores[nombre]}
 
 </tr>
 
+
 `;
 
 
@@ -289,10 +302,7 @@ ${vendedores[nombre]}
 });
 
 
-
 }
-
-
 
 
 
@@ -316,6 +326,7 @@ v.classList.remove("active")
 
 
 
+
 const vista =
 document.getElementById(id);
 
@@ -331,10 +342,11 @@ vista.classList.add(
 
 
 
+
+
 document
 .querySelectorAll(".nav-btn")
-.forEach(
-(btn)=>{
+.forEach(btn=>{
 
 
 btn.classList.remove(
@@ -352,8 +364,8 @@ btn.classList.add(
 }
 
 
-
 });
+
 
 
 
@@ -364,9 +376,7 @@ actualizarTitulo(id);
 renderTodo();
 
 
-
 }
-
 
 
 
@@ -381,7 +391,7 @@ const titulos={
 
 inicio:[
 "Inicio",
-"Control general del negocio"
+"Resumen comercial"
 ],
 
 
@@ -419,6 +429,7 @@ exportar:[
 
 
 
+
 const data =
 titulos[id];
 
@@ -443,16 +454,19 @@ document.getElementById(
 
 
 if(titulo)
-titulo.textContent=data[0];
+titulo.textContent =
+data[0];
 
 
 
 if(subtitulo)
-subtitulo.textContent=data[1];
+subtitulo.textContent =
+data[1];
 
 
 
 }
+
 
 
 
@@ -467,16 +481,24 @@ subtitulo.textContent=data[1];
 function renderTodo(){
 
 
+
 renderInicio();
 
 
+
+if(typeof renderClientes==="function")
 renderClientes();
 
 
+
+if(typeof renderVentas==="function")
 renderVentas();
 
 
+
+if(typeof renderCuotas==="function")
 renderCuotas();
+
 
 
 renderSeguimiento();
@@ -499,7 +521,6 @@ renderSeguimiento();
 function cerrarSesion(){
 
 
-
 localStorage.removeItem(
 "usuario"
 );
@@ -516,9 +537,8 @@ localStorage.removeItem(
 
 
 
-window.location.href=
+window.location.href =
 "./login.html";
-
 
 
 }
@@ -538,10 +558,10 @@ document.addEventListener(
 ()=>{
 
 
+
 document
 .querySelectorAll(".nav-btn")
-.forEach(
-(btn)=>{
+.forEach(btn=>{
 
 
 btn.addEventListener(
@@ -554,11 +574,12 @@ btn.dataset.view
 );
 
 
-
 });
 
 
 });
+
+
 
 
 
@@ -578,6 +599,7 @@ cerrarSesion;
 
 
 
+
 const refresh =
 document.getElementById(
 "refreshBtn"
@@ -591,6 +613,7 @@ refresh.onclick =
 renderTodo;
 
 }
+
 
 
 

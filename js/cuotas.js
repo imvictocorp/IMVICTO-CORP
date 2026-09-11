@@ -3,44 +3,68 @@
 // ==========================================
 
 
+let cuotaSeleccionada = null;
+
+
+
 document.addEventListener(
 "DOMContentLoaded",
 ()=>{
 
-
 renderCuotas();
 
 
-});
+}
+);
+
 
 
 
 
 // ==========================================
-// LISTAR CUOTAS
+// RENDER CUOTAS
 // ==========================================
 
 
 function renderCuotas(){
 
 
-const tabla =
+const contenedor =
 document.getElementById(
 "cuotasTabla"
 );
 
 
 
-if(!tabla)return;
+if(!contenedor)return;
 
 
 
-tabla.innerHTML="";
+contenedor.innerHTML="";
 
 
 
 const cuotas =
 getCuotas();
+
+
+
+if(!cuotas.length){
+
+contenedor.innerHTML = `
+
+<div class="empty-row">
+
+No existen cuotas registradas
+
+</div>
+
+`;
+
+return;
+
+}
+
 
 
 
@@ -59,7 +83,6 @@ grupos[c.ventaId]=[];
 
 
 grupos[c.ventaId].push(c);
-
 
 
 });
@@ -84,57 +107,88 @@ buscarVenta(id);
 
 
 const cliente =
-venta
-?
 buscarCliente(
-venta.clienteId
-)
-:
-null;
+venta?.clienteId
+);
+
+
+
+if(!venta)return;
 
 
 
 
-
-tabla.innerHTML += `
-
-<tr>
+contenedor.innerHTML += `
 
 
-<td colspan="5">
+<div class="cuota-venta">
 
 
-<details class="cuota-box">
+
+<details>
 
 
 <summary>
 
 
+<div class="cuota-header">
+
+
+<div>
+
+
 <strong>
 
-${cliente
-?
-cliente.nombres+" "+cliente.apellidos
-:
-"Sin cliente"}
+${cliente?.nombres || ""}
+${cliente?.apellidos || ""}
 
 </strong>
 
 
-<br>
+<p>
+
+Orden:
+${venta.numeroOrden || "-"}
+
+</p>
+
+
+<p>
+
+${venta.producto || "-"}
+
+-
+S/${Number(
+venta.montoTotal||0
+).toFixed(2)}
+
+</p>
+
+
+</div>
+
+
+
+<div class="cuota-resumen">
 
 
 <span>
 
-${venta?.producto || "-"}
+${lista.filter(
+q=>q.estado==="PAGADA"
+).length}
 
--
+/${lista.length}
 
-S/${Number(
-venta?.montoTotal || 0
-).toFixed(2)}
+pagadas
 
 </span>
+
+
+</div>
+
+
+</div>
 
 
 </summary>
@@ -146,26 +200,64 @@ venta?.montoTotal || 0
 <div class="cuotas-list">
 
 
-${lista.map(c=>`
+${
+lista.map(c=>{
+
+
+return `
 
 
 <div class="cuota-item">
+
 
 
 <div>
 
 
 <strong>
+
 Cuota ${c.numero}
+
 </strong>
 
 
-<br>
+
+<p>
+
+S/${Number(c.monto)
+.toFixed(2)}
+
+</p>
 
 
-<span>
-S/${Number(c.monto).toFixed(2)}
-</span>
+
+<p>
+
+Vence:
+
+${formatearFecha(
+c.fechaVencimiento
+)}
+
+</p>
+
+
+
+${
+c.fechaPago
+
+?
+
+`<p class="fecha-pago">
+Pagado:
+${formatearFecha(c.fechaPago)}
+</p>`
+
+:
+
+""
+
+}
 
 
 </div>
@@ -173,39 +265,36 @@ S/${Number(c.monto).toFixed(2)}
 
 
 
+
 <div>
 
 
-<span class="
-${c.estado==="PAGADA"
-?
-"estado-pagada"
-:
-"estado-pendiente"}
-">
-
+<span class="badge ${
+c.estado==="PAGADA"
+?"pagado"
+:"pendiente"
+}">
 
 ${c.estado}
-
 
 </span>
 
 
 
-
 <button
 
-class="btn-small"
+class="btn-cuota"
 
 onclick="
-cambiarEstadoCuota(${c.id})
+abrirPago(${c.id})
 ">
 
-${c.estado==="PAGADA"
-?
-"Reabrir"
-:
-"Pagar"}
+${
+c.estado==="PAGADA"
+?"Editar"
+:"Pagar"
+}
+
 
 </button>
 
@@ -213,26 +302,30 @@ ${c.estado==="PAGADA"
 </div>
 
 
-</div>
-
-
-
-`).join("")}
-
 
 </div>
 
+
+`
+
+
+}).join("")
+
+}
+
+
+
+</div>
 
 
 </details>
 
 
-</td>
+</div>
 
-
-</tr>
 
 `;
+
 
 
 
@@ -245,15 +338,117 @@ ${c.estado==="PAGADA"
 
 
 
+// ==========================================
+// FECHAS
+// ==========================================
+
+
+function formatearFecha(fecha){
+
+
+if(!fecha)return "-";
+
+
+const d =
+new Date(fecha);
+
+
+
+return d.toLocaleDateString(
+"es-PE"
+);
+
+
+}
+
+
 
 
 
 // ==========================================
-// CAMBIAR ESTADO
+// MODAL PAGO
 // ==========================================
 
 
-function cambiarEstadoCuota(id){
+function abrirPago(id){
+
+
+cuotaSeleccionada=id;
+
+
+
+const modal =
+document.getElementById(
+"modalPago"
+);
+
+
+
+if(!modal)return;
+
+
+
+modal.classList.remove(
+"hidden"
+);
+
+
+
+}
+
+
+
+function cerrarPago(){
+
+
+const modal =
+document.getElementById(
+"modalPago"
+);
+
+
+
+if(modal){
+
+modal.classList.add(
+"hidden"
+);
+
+}
+
+
+cuotaSeleccionada=null;
+
+
+}
+
+
+
+
+function guardarPago(){
+
+
+if(!cuotaSeleccionada)return;
+
+
+
+const fecha =
+document.getElementById(
+"fechaPago"
+).value;
+
+
+
+if(!fecha){
+
+alert(
+"Seleccione fecha de pago"
+);
+
+return;
+
+}
+
 
 
 const cuotas =
@@ -263,7 +458,7 @@ getCuotas();
 
 const cuota =
 cuotas.find(
-c=>c.id==id
+q=>q.id==cuotaSeleccionada
 );
 
 
@@ -272,29 +467,10 @@ if(!cuota)return;
 
 
 
-if(
-cuota.estado==="PAGADA"
-){
-
-
-cuota.estado="PENDIENTE";
-
-cuota.fechaPago=null;
-
-
-
-}else{
-
-
 cuota.estado="PAGADA";
 
-cuota.fechaPago=
-new Date()
-.toISOString();
-
-
-
-}
+cuota.fechaPago =
+fecha;
 
 
 
@@ -302,6 +478,9 @@ actualizarCuotas(
 cuotas
 );
 
+
+
+cerrarPago();
 
 
 renderCuotas();
@@ -320,5 +499,20 @@ renderInicio();
 
 
 
-window.cambiarEstadoCuota =
-cambiarEstadoCuota;
+
+
+// ==========================================
+// GLOBAL
+// ==========================================
+
+
+window.abrirPago =
+abrirPago;
+
+
+window.cerrarPago =
+cerrarPago;
+
+
+window.guardarPago =
+guardarPago;

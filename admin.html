@@ -162,15 +162,13 @@ id="inicio"
 class="view active">
 
 
-
 <div class="admin-stats">
-
 
 
 <div class="admin-stat">
 
 <span>
-Clientes
+Clientes esta semana
 </span>
 
 <strong id="statClientes">
@@ -184,7 +182,7 @@ Clientes
 <div class="admin-stat">
 
 <span>
-Ventas
+Clientes este mes
 </span>
 
 <strong id="statVentas">
@@ -195,14 +193,13 @@ Ventas
 
 
 
-
 <div class="admin-stat">
 
 <span>
-Cuotas pendientes
+Vendido esta semana
 </span>
 
-<strong id="statCuotas">
+<strong id="statVentasSemana">
 0
 </strong>
 
@@ -210,11 +207,10 @@ Cuotas pendientes
 
 
 
-
 <div class="admin-stat money">
 
 <span>
-Venta total
+Vendido este mes
 </span>
 
 <strong id="statMonto">
@@ -227,63 +223,7 @@ S/0
 </div>
 
 
-
-
-
-
-
-<section class="admin-panel">
-
-
-<h3>
-Últimos movimientos
-</h3>
-
-
-
-<table>
-
-
-<thead>
-
-<tr>
-
-<th>
-Cliente
-</th>
-
-<th>
-Venta
-</th>
-
-<th>
-Monto
-</th>
-
-<th>
-Estado
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-<tbody id="inicioTabla">
-
-</tbody>
-
-
-</table>
-
-
 </section>
-
-
-</section>
-
 
 
 
@@ -822,88 +762,30 @@ Acción
 
 
 
-
-
-
-
-
-
 <!-- ================= CUOTAS ================= -->
-
 
 <section 
 id="cuotas"
 class="view">
 
 
-
 <section class="admin-panel">
 
 
 <h3>
-Cuotas
+Control de cuotas
 </h3>
 
 
+<div id="cuotasTabla" class="cuotas-container">
 
-
-<table>
-
-
-<thead>
-
-
-<tr>
-
-<th>
-Cliente
-</th>
-
-
-<th>
-Venta
-</th>
-
-
-<th>
-Monto
-</th>
-
-
-<th>
-Fecha
-</th>
-
-
-<th>
-Estado
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-<tbody id="cuotasTabla">
-
-</tbody>
-
-
-</table>
-
+</div>
 
 
 </section>
 
 
 </section>
-
-
-
-
 
 
 
@@ -970,11 +852,59 @@ class="toast hidden">
 
 </div>
 
+<!-- MODAL PAGO -->
+
+<div id="modalPago" class="modal hidden">
+
+
+<div class="modal-content">
+
+
+<h3>
+Registrar pago
+</h3>
+
+
+<label>
+Fecha real de pago
+</label>
+
+
+<input
+type="date"
+id="fechaPago">
 
 
 
+<div class="modal-actions">
 
 
+<button
+onclick="guardarPago()"
+class="btn primary">
+
+Guardar
+
+</button>
+
+
+
+<button
+onclick="cerrarPago()"
+class="btn ghost">
+
+Cancelar
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -985,6 +915,5 @@ class="toast hidden">
 <script src="./js/cuotas.js"></script>
 <script src="./js/admin.js"></script>
 </body>
-
 
 </html>

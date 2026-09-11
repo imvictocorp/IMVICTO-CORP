@@ -13,7 +13,9 @@ document.addEventListener(
 
 
 const form =
-document.getElementById("clienteVentaForm");
+document.getElementById(
+"clienteVentaForm"
+);
 
 
 
@@ -29,7 +31,9 @@ guardarCliente
 
 
 const buscador =
-document.getElementById("buscarCliente");
+document.getElementById(
+"buscarCliente"
+);
 
 
 
@@ -64,7 +68,9 @@ e.preventDefault();
 
 
 
-const form = e.target;
+const form =
+e.target;
+
 
 
 const datos =
@@ -123,38 +129,46 @@ direccion:datos.get("direccion")
 });
 
 
+
 }
 
 
 
 
-// Crear venta obligatoria
 
 const venta =
 crearVenta({
 
 clienteId:cliente.id,
 
+
 producto:
 datos.get("mercaderia"),
+
 
 montoTotal:
 datos.get("monto_total"),
 
+
 tipoContrato:
 datos.get("tipo_contrato"),
+
 
 estado:
 datos.get("estado_pedido"),
 
+
 numeroOrden:
 datos.get("numero_orden"),
+
 
 vendedor:
 datos.get("vendedor"),
 
+
 regalo:
 datos.get("regalo"),
+
 
 observaciones:
 datos.get("observaciones")
@@ -164,8 +178,6 @@ datos.get("observaciones")
 
 
 
-
-// Crear cuotas si no es contado
 
 if(
 venta.tipoContrato !== "AL CONTADO"
@@ -187,9 +199,10 @@ datos.get("monto_cuota")
 
 
 if(
-cantidad > 0 &&
-monto > 0
+cantidad>0 &&
+monto>0
 ){
+
 
 crearCuotas(
 venta,
@@ -197,10 +210,12 @@ cantidad,
 monto
 );
 
+
 }
 
 
 }
+
 
 
 
@@ -213,7 +228,9 @@ clienteEditando=null;
 
 
 const boton =
-form.querySelector("button");
+form.querySelector(
+"button"
+);
 
 
 
@@ -262,14 +279,12 @@ alert(
 
 
 
-
 // ==========================================
-// TABLA CLIENTES
+// LISTAR CLIENTES
 // ==========================================
 
 
 function renderClientes(){
-
 
 
 const tabla =
@@ -287,13 +302,17 @@ tabla.innerHTML="";
 
 
 
-let texto =
+const texto =
 document
-.getElementById("buscarCliente")
+.getElementById(
+"buscarCliente"
+)
 ?.value
 .toLowerCase()
 ||
 "";
+
+
 
 
 
@@ -302,8 +321,22 @@ getClientes()
 .filter(c=>{
 
 
-const datos =
-`
+const ventas =
+getVentas()
+.filter(
+v=>v.clienteId==c.id
+);
+
+
+
+const ordenes =
+ventas
+.map(v=>v.numeroOrden)
+.join(" ");
+
+
+
+const datos = `
 
 ${c.nombres}
 
@@ -312,6 +345,8 @@ ${c.apellidos}
 ${c.dni}
 
 ${c.telefono}
+
+${ordenes}
 
 `.toLowerCase();
 
@@ -320,72 +355,194 @@ ${c.telefono}
 return datos.includes(texto);
 
 
+
 })
 
 
 .forEach(c=>{
 
 
-const compras =
+const ventasCliente =
 getVentas()
 .filter(
 v=>v.clienteId==c.id
-)
-.length;
+);
 
 
 
-tabla.innerHTML +=
-`
+
+
+tabla.innerHTML += `
+
 
 <tr>
 
-<td>
+
+<td colspan="5">
+
+
+
+<details class="cliente-box">
+
+
+<summary>
+
+
+
+<div class="cliente-header">
+
+
+<div>
+
+
+<strong>
+
 ${c.nombres}
 ${c.apellidos}
-</td>
+
+</strong>
 
 
-<td>
+<br>
+
+
+<small>
+
+DNI:
 ${c.dni}
-</td>
+
+</small>
 
 
-<td>
+<br>
+
+
+<small>
+
+Tel:
 ${c.telefono}
-</td>
+
+</small>
 
 
-<td>
-${compras}
-</td>
+
+</div>
 
 
-<td>
+<div>
+
+
+${ventasCliente.length}
+
+compras
+
+
+</div>
+
+
+
+</div>
+
+
+
+</summary>
+
+
+
+
+
+<div class="cliente-ordenes">
+
+
+${ventasCliente.map(v=>`
+
+
+<div class="orden-card">
+
+
+<strong>
+
+Orden #${v.numeroOrden || "-"}
+
+</strong>
+
+
+<br>
+
+
+Producto:
+
+${v.producto}
+
+
+<br>
+
+
+Monto:
+
+S/
+${Number(v.montoTotal)
+.toFixed(2)}
+
+
+
+</div>
+
+
+`).join("")}
+
+
+
+</div>
+
+
+
+
+<div class="cliente-actions">
 
 
 <button
+
 class="btn-small"
-onclick="editarCliente(${c.id})">
+
+onclick="editarCliente(${c.id})"
+
+>
 
 Editar
 
 </button>
 
 
+
 <button
+
 class="btn-small danger"
-onclick="eliminarClienteVista(${c.id})">
+
+onclick="eliminarClienteVista(${c.id})"
+
+>
 
 Eliminar
 
 </button>
 
 
+
+</div>
+
+
+
+
+</details>
+
+
+
 </td>
 
 
 </tr>
+
 
 `;
 
@@ -394,17 +551,10 @@ Eliminar
 });
 
 
-
 }
 
-
-
-
-
-
-
 // ==========================================
-// EDITAR
+// EDITAR CLIENTE
 // ==========================================
 
 
@@ -435,28 +585,37 @@ if(!form)return;
 
 
 
+
+
 form.nombres.value =
 cliente.nombres;
+
 
 
 form.apellidos.value =
 cliente.apellidos;
 
 
+
 form.dni.value =
 cliente.dni;
+
 
 
 form.telefono.value =
 cliente.telefono;
 
 
+
 form.correo.value =
 cliente.correo || "";
 
 
+
 form.direccion.value =
 cliente.direccion || "";
+
+
 
 
 
@@ -466,10 +625,15 @@ form.querySelector("button")
 
 
 
-mostrarVista("clientes");
+mostrarVista(
+"clientes"
+);
+
 
 
 }
+
+
 
 
 
@@ -481,8 +645,9 @@ editarCliente;
 
 
 
+
 // ==========================================
-// ELIMINAR
+// ELIMINAR CLIENTE
 // ==========================================
 
 
@@ -491,7 +656,7 @@ function eliminarClienteVista(id){
 
 if(
 confirm(
-"¿Eliminar cliente y sus ventas?"
+"¿Eliminar cliente y todas sus ventas?"
 )
 ){
 
@@ -522,8 +687,9 @@ renderInicio();
 }
 
 
-
 }
+
+
 
 
 

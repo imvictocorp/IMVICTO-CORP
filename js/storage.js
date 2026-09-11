@@ -34,9 +34,7 @@ function getDB(){
 
 
     if(!db){
-
         return crearBase();
-
     }
 
 
@@ -85,7 +83,7 @@ function crearCliente(data){
 
     const cliente={
 
-        id: Date.now(),
+        id:Date.now(),
 
         nombres:data.nombres,
 
@@ -187,7 +185,6 @@ function eliminarCliente(id){
 
 
 
-
 // ===============================
 // VENTAS
 // ===============================
@@ -208,13 +205,18 @@ function crearVenta(data){
 
     const venta={
 
+
         id:Date.now(),
+
 
         clienteId:data.clienteId,
 
+
         producto:data.producto,
 
+
         modelo:data.modelo || "",
+
 
         montoTotal:Number(data.montoTotal),
 
@@ -238,6 +240,7 @@ function crearVenta(data){
 
 
         fecha:new Date().toISOString()
+
 
     };
 
@@ -268,7 +271,6 @@ function buscarVenta(id){
 
 
 
-
 // ===============================
 // CUOTAS
 // ===============================
@@ -283,13 +285,22 @@ function getCuotas(){
 
 
 
+
 function crearCuotas(
 venta,
 cantidad,
 monto
 ){
 
+
     const db=getDB();
+
+
+    // primera fecha: un mes después de la venta
+
+    let fechaBase =
+    new Date(venta.fecha);
+
 
 
     for(
@@ -298,23 +309,58 @@ monto
         i++
     ){
 
+
+        let vencimiento =
+        new Date(fechaBase);
+
+
+
+        vencimiento.setMonth(
+            vencimiento.getMonth()+i
+        );
+
+
+
         db.cuotas.push({
 
-            id:Date.now()+i,
 
-            ventaId:venta.id,
+            id:
+            Date.now()+i,
 
-            clienteId:venta.clienteId,
 
-            numero:i,
+            ventaId:
+            venta.id,
 
-            monto:Number(monto),
 
-            estado:"PENDIENTE",
+            clienteId:
+            venta.clienteId,
 
-            fechaPago:null
+
+            numero:
+            i,
+
+
+            monto:
+            Number(monto),
+
+
+
+            estado:
+            "PENDIENTE",
+
+
+
+            fechaVencimiento:
+            vencimiento.toISOString(),
+
+
+
+            fechaPago:
+            null
+
 
         });
+
 
     }
 
@@ -322,12 +368,16 @@ monto
 
     saveDB(db);
 
+
 }
 
 
 
 
+
+
 function actualizarCuotas(lista){
+
 
     const db=getDB();
 
@@ -342,9 +392,64 @@ function actualizarCuotas(lista){
 
 
 // ===============================
-// LIMPIEZA
+// UTILIDADES FECHAS
 // ===============================
 
+
+function formatoFecha(fecha){
+
+
+    if(!fecha)return "-";
+
+
+    const f =
+    new Date(fecha);
+
+
+    return (
+        String(f.getDate()).padStart(2,"0")
+        +"/"+
+        String(f.getMonth()+1).padStart(2,"0")
+        +"/"+
+        f.getFullYear()
+    );
+
+}
+
+
+
+function estadoCuota(cuota){
+
+
+    if(cuota.estado==="PAGADA"){
+
+        return "PAGADA";
+
+    }
+
+
+
+    if(
+        cuota.fechaVencimiento &&
+        new Date(cuota.fechaVencimiento)
+        <
+        new Date()
+    ){
+
+        return "VENCIDA";
+
+    }
+
+
+    return "PENDIENTE";
+
+
+}
+
+
+
+
+
 console.log(
-"IMVICTO STORAGE OK"
+"IMVICTO STORAGE ACTUALIZADO"
 );
