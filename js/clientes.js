@@ -246,7 +246,7 @@ cuota
 
 
 
-e.target.reset();
+window.location.href="admin.html#clientes";
 
 
 clienteEditando=null;

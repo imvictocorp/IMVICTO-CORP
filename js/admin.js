@@ -12,85 +12,70 @@ console.log("Admin funcionando");
 
 function renderInicio(){
 
-let clientes=getClientes();
-let ventas=getVentas();
-let cuotas=getCuotas();
+
+let clientes =
+JSON.parse(
+localStorage.getItem("clientes")
+||"[]"
+);
 
 
-let total=ventas.reduce(
-(a,b)=>a+Number(b.montoTotal||0),
+let ventas =
+JSON.parse(
+localStorage.getItem("ventas")
+||"[]"
+);
+
+
+let cuotas =
+JSON.parse(
+localStorage.getItem("cuotas")
+||"[]"
+);
+
+
+
+document.getElementById("statClientes").textContent =
+clientes.length;
+
+
+
+document.getElementById("statVentas").textContent =
+ventas.length;
+
+
+
+let total =
+ventas.reduce(
+(a,v)=>
+a+Number(
+v.montoTotal ||
+v.monto ||
+0
+),
 0
 );
 
 
-let pendientes=cuotas.filter(
-(c)=>c.estado==="PENDIENTE"
+
+document.getElementById("statPendiente").textContent =
+"S/"+total.toFixed(2);
+
+
+
+let pendientes =
+cuotas.filter(
+q=>q.estado!=="PAGADA"
 ).length;
 
 
 
-let el=document.getElementById("statClientes");
-if(el) el.textContent=clientes.length;
+document.getElementById("statVencidas").textContent =
+pendientes;
 
-
-el=document.getElementById("statVentas");
-if(el) el.textContent=ventas.length;
-
-
-el=document.getElementById("statVencidas");
-if(el) el.textContent=pendientes;
-
-
-el=document.getElementById("statPendiente");
-if(el) el.textContent="S/"+total.toFixed(2);
-
-
-
-let tabla=document.getElementById("homeMovimientosBody");
-
-if(tabla){
-
-tabla.innerHTML="";
-
-
-ventas.slice(-5).reverse()
-.forEach(v=>{
-
-
-let cliente=buscarCliente(v.clienteId);
-
-
-tabla.innerHTML+=`
-
-<tr>
-
-<td>
-${cliente ? cliente.nombres+" "+cliente.apellidos:"-"}
-</td>
-
-<td>
-${v.producto||"-"}
-</td>
-
-<td>
-S/${Number(v.montoTotal).toFixed(2)}
-</td>
-
-<td>
-${v.estado||"-"}
-</td>
-
-</tr>
-
-`;
-
-});
 
 
 }
-
-}
-
 
 
 // ===============================
