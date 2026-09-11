@@ -23,19 +23,11 @@ const url =
 window.IMVICTO_CONFIG.FORMS_URL;
 
 
-
-if(!url){
-
-throw new Error(
-"No existe FORMS_URL"
-);
-
-}
-
-
-
 const respuesta =
-await fetch(url);
+await fetch(
+"https://api.allorigins.win/raw?url=" 
++ encodeURIComponent(url)
+);
 
 
 
@@ -114,10 +106,9 @@ error
 );
 
 
-mostrarToast(
+console.error(
 "No se pudo cargar IMVICTO FORMS"
 );
-
 
 
 return [];
