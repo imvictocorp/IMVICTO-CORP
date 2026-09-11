@@ -18,10 +18,11 @@ async function cargarForms(){
 try{
 
 
-if(
-!window.IMVICTO_CONFIG ||
-!window.IMVICTO_CONFIG.FORMS_URL
-){
+const url =
+window.IMVICTO_CONFIG?.FORMS_URL;
+
+
+if(!url){
 
 throw new Error(
 "No existe configuración"
@@ -33,7 +34,7 @@ throw new Error(
 
 const respuesta =
 await fetch(
-window.IMVICTO_CONFIG.FORMS_URL
+fetch(url)
 );
 
 
