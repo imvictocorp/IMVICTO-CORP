@@ -17,15 +17,18 @@ renderCuotas();
 
 
 // ==========================================
-// RENDER CUOTAS AGRUPADAS
+// LISTAR CUOTAS
 // ==========================================
 
 
 function renderCuotas(){
 
 
-let tabla=
-document.getElementById("cuotasBody");
+const tabla =
+document.getElementById(
+"cuotasTabla"
+);
+
 
 
 if(!tabla)return;
@@ -36,11 +39,12 @@ tabla.innerHTML="";
 
 
 
-let cuotas=getCuotas();
+const cuotas =
+getCuotas();
 
 
 
-let grupos={};
+const grupos={};
 
 
 
@@ -57,7 +61,10 @@ grupos[c.ventaId]=[];
 grupos[c.ventaId].push(c);
 
 
+
 });
+
+
 
 
 
@@ -65,45 +72,52 @@ Object.keys(grupos)
 .forEach(id=>{
 
 
-let venta=
+
+const lista =
+grupos[id];
+
+
+
+const venta =
 buscarVenta(id);
 
 
 
-let cliente=
-venta?
-buscarCliente(venta.clienteId):
+const cliente =
+venta
+?
+buscarCliente(
+venta.clienteId
+)
+:
 null;
 
 
 
-let lista=grupos[id];
 
 
-
-tabla.innerHTML+=`
+tabla.innerHTML += `
 
 <tr>
 
 
-<td colspan="6">
+<td colspan="5">
 
 
-<details class="cuota-card">
+<details class="cuota-box">
 
 
 <summary>
 
 
-<div class="cuota-header">
-
-
-<div>
-
 <strong>
-${cliente?
-cliente.nombres+" "+cliente.apellidos:
-"Cliente"}
+
+${cliente
+?
+cliente.nombres+" "+cliente.apellidos
+:
+"Sin cliente"}
+
 </strong>
 
 
@@ -111,31 +125,16 @@ cliente.nombres+" "+cliente.apellidos:
 
 
 <span>
-${venta?.producto || ""}
+
+${venta?.producto || "-"}
+
+-
+
+S/${Number(
+venta?.montoTotal || 0
+).toFixed(2)}
+
 </span>
-
-
-</div>
-
-
-
-<div>
-
-<strong>
-S/${Number(venta?.montoTotal||0).toFixed(2)}
-</strong>
-
-<br>
-
-<small>
-${venta?.tipoContrato || ""}
-</small>
-
-
-</div>
-
-
-</div>
 
 
 </summary>
@@ -143,10 +142,11 @@ ${venta?.tipoContrato || ""}
 
 
 
-<div class="cuota-list">
+
+<div class="cuotas-list">
 
 
-${lista.map(q=>`
+${lista.map(c=>`
 
 
 <div class="cuota-item">
@@ -154,16 +154,17 @@ ${lista.map(q=>`
 
 <div>
 
+
 <strong>
-Cuota ${q.numero}
+Cuota ${c.numero}
 </strong>
 
 
 <br>
 
+
 <span>
-Monto:
-S/${Number(q.monto).toFixed(2)}
+S/${Number(c.monto).toFixed(2)}
 </span>
 
 
@@ -171,14 +172,24 @@ S/${Number(q.monto).toFixed(2)}
 
 
 
+
 <div>
 
 
-<span class="${q.estado==="PAGADA"?"pagada":"pendiente"}">
+<span class="
+${c.estado==="PAGADA"
+?
+"estado-pagada"
+:
+"estado-pendiente"}
+">
 
-${q.estado}
+
+${c.estado}
+
 
 </span>
+
 
 
 
@@ -186,12 +197,15 @@ ${q.estado}
 
 class="btn-small"
 
-onclick="cambiarEstadoCuota(${q.id})">
+onclick="
+cambiarEstadoCuota(${c.id})
+">
 
-
-${q.estado==="PAGADA"
-?"Reabrir"
-:"Pagar"}
+${c.estado==="PAGADA"
+?
+"Reabrir"
+:
+"Pagar"}
 
 </button>
 
@@ -199,12 +213,11 @@ ${q.estado==="PAGADA"
 </div>
 
 
-
 </div>
 
 
-`).join("")}
 
+`).join("")}
 
 
 </div>
@@ -232,6 +245,9 @@ ${q.estado==="PAGADA"
 
 
 
+
+
+
 // ==========================================
 // CAMBIAR ESTADO
 // ==========================================
@@ -240,13 +256,14 @@ ${q.estado==="PAGADA"
 function cambiarEstadoCuota(id){
 
 
-let cuotas=getCuotas();
+const cuotas =
+getCuotas();
 
 
 
-let cuota=
+const cuota =
 cuotas.find(
-q=>q.id==id
+c=>c.id==id
 );
 
 
@@ -255,42 +272,53 @@ if(!cuota)return;
 
 
 
-cuota.estado=
+if(
 cuota.estado==="PAGADA"
-?
-"PENDIENTE"
-:
-"PAGADA";
+){
 
 
-
-if(cuota.estado==="PAGADA"){
-
-cuota.fechaPago=
-new Date().toISOString();
-
-}
-else{
+cuota.estado="PENDIENTE";
 
 cuota.fechaPago=null;
 
+
+
+}else{
+
+
+cuota.estado="PAGADA";
+
+cuota.fechaPago=
+new Date()
+.toISOString();
+
+
+
 }
 
 
 
-guardarCuotas(cuotas);
+actualizarCuotas(
+cuotas
+);
 
 
 
 renderCuotas();
 
 
+
+if(typeof renderInicio==="function"){
+
 renderInicio();
+
+}
+
 
 
 }
 
 
 
-window.cambiarEstadoCuota=
+window.cambiarEstadoCuota =
 cambiarEstadoCuota;

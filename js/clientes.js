@@ -13,7 +13,7 @@ document.addEventListener(
 
 
 const form =
-document.getElementById("clienteForm");
+document.getElementById("clienteVentaForm");
 
 
 
@@ -28,14 +28,14 @@ guardarCliente
 
 
 
-const buscar =
-document.getElementById("clienteSearch");
+const buscador =
+document.getElementById("buscarCliente");
 
 
 
-if(buscar){
+if(buscador){
 
-buscar.addEventListener(
+buscador.addEventListener(
 "input",
 renderClientes
 );
@@ -47,9 +47,7 @@ renderClientes
 renderClientes();
 
 
-
 });
-
 
 
 
@@ -66,8 +64,11 @@ e.preventDefault();
 
 
 
-const data =
-new FormData(e.target);
+const form = e.target;
+
+
+const datos =
+new FormData(form);
 
 
 
@@ -78,23 +79,22 @@ let cliente;
 if(clienteEditando){
 
 
-
 cliente =
 actualizarCliente(
 clienteEditando,
 {
 
-nombres:data.get("nombres"),
+nombres:datos.get("nombres"),
 
-apellidos:data.get("apellidos"),
+apellidos:datos.get("apellidos"),
 
-dni:data.get("dni"),
+dni:datos.get("dni"),
 
-telefono:data.get("telefono"),
+telefono:datos.get("telefono"),
 
-correo:data.get("correo"),
+correo:datos.get("correo"),
 
-direccion:data.get("direccion")
+direccion:datos.get("direccion")
 
 }
 
@@ -108,17 +108,17 @@ direccion:data.get("direccion")
 cliente =
 crearCliente({
 
-nombres:data.get("nombres"),
+nombres:datos.get("nombres"),
 
-apellidos:data.get("apellidos"),
+apellidos:datos.get("apellidos"),
 
-dni:data.get("dni"),
+dni:datos.get("dni"),
 
-telefono:data.get("telefono"),
+telefono:datos.get("telefono"),
 
-correo:data.get("correo"),
+correo:datos.get("correo"),
 
-direccion:data.get("direccion")
+direccion:datos.get("direccion")
 
 });
 
@@ -128,24 +128,36 @@ direccion:data.get("direccion")
 
 
 
-let venta =
+// Crear venta obligatoria
+
+const venta =
 crearVenta({
 
 clienteId:cliente.id,
 
-producto:data.get("mercaderia"),
+producto:
+datos.get("mercaderia"),
 
-montoTotal:data.get("monto_total"),
+montoTotal:
+datos.get("monto_total"),
 
-tipoContrato:data.get("tipo_contrato"),
+tipoContrato:
+datos.get("tipo_contrato"),
 
-estado:data.get("estado_pedido"),
+estado:
+datos.get("estado_pedido"),
 
-orden:data.get("numero_orden"),
+numeroOrden:
+datos.get("numero_orden"),
 
-vendedor:data.get("vendedor"),
+vendedor:
+datos.get("vendedor"),
 
-regalo:data.get("regalo")
+regalo:
+datos.get("regalo"),
+
+observaciones:
+datos.get("observaciones")
 
 });
 
@@ -153,27 +165,31 @@ regalo:data.get("regalo")
 
 
 
+// Crear cuotas si no es contado
 
 if(
-venta.tipoContrato==="FINANCIADO"
+venta.tipoContrato !== "AL CONTADO"
 ){
 
 
-let cantidad =
+const cantidad =
 Number(
-data.get("numero_cuotas")
+datos.get("cantidad_cuotas")
 );
 
 
 
-let monto =
+const monto =
 Number(
-data.get("monto_cuota")
+datos.get("monto_cuota")
 );
 
 
 
-if(cantidad>0){
+if(
+cantidad > 0 &&
+monto > 0
+){
 
 crearCuotas(
 venta,
@@ -189,25 +205,15 @@ monto
 
 
 
-alert(
-"Registro guardado correctamente"
-);
-
-
-
+form.reset();
 
 
 clienteEditando=null;
 
 
 
-e.target.reset();
-
-
-
-
-let boton =
-e.target.querySelector("button");
+const boton =
+form.querySelector("button");
 
 
 
@@ -220,16 +226,18 @@ boton.textContent =
 
 
 
-
 renderClientes();
+
 
 
 if(typeof renderVentas==="function")
 renderVentas();
 
 
+
 if(typeof renderCuotas==="function")
 renderCuotas();
+
 
 
 if(typeof renderInicio==="function")
@@ -237,11 +245,12 @@ renderInicio();
 
 
 
+mostrarVista("clientes");
 
-// quedarse en clientes
 
-mostrarVista(
-"clientes"
+
+alert(
+"Cliente registrado correctamente"
 );
 
 
@@ -255,7 +264,7 @@ mostrarVista(
 
 
 // ==========================================
-// LISTADO
+// TABLA CLIENTES
 // ==========================================
 
 
@@ -263,9 +272,9 @@ function renderClientes(){
 
 
 
-let tabla =
+const tabla =
 document.getElementById(
-"clientesBody"
+"clientesTabla"
 );
 
 
@@ -279,13 +288,12 @@ tabla.innerHTML="";
 
 
 let texto =
-document.getElementById(
-"clienteSearch"
-)?.value
+document
+.getElementById("buscarCliente")
+?.value
 .toLowerCase()
 ||
 "";
-
 
 
 
@@ -294,7 +302,7 @@ getClientes()
 .filter(c=>{
 
 
-let datos =
+const datos =
 `
 
 ${c.nombres}
@@ -312,13 +320,13 @@ ${c.telefono}
 return datos.includes(texto);
 
 
-
 })
+
 
 .forEach(c=>{
 
 
-let compras =
+const compras =
 getVentas()
 .filter(
 v=>v.clienteId==c.id
@@ -332,12 +340,10 @@ tabla.innerHTML +=
 
 <tr>
 
-
 <td>
 ${c.nombres}
 ${c.apellidos}
 </td>
-
 
 
 <td>
@@ -345,17 +351,14 @@ ${c.dni}
 </td>
 
 
-
 <td>
 ${c.telefono}
 </td>
 
 
-
 <td>
 ${compras}
 </td>
-
 
 
 <td>
@@ -370,7 +373,6 @@ Editar
 </button>
 
 
-
 <button
 class="btn-small danger"
 onclick="eliminarClienteVista(${c.id})">
@@ -378,7 +380,6 @@ onclick="eliminarClienteVista(${c.id})">
 Eliminar
 
 </button>
-
 
 
 </td>
@@ -402,7 +403,6 @@ Eliminar
 
 
 
-
 // ==========================================
 // EDITAR
 // ==========================================
@@ -411,12 +411,12 @@ Eliminar
 function editarCliente(id){
 
 
-let c =
+const cliente =
 buscarCliente(id);
 
 
 
-if(!c)return;
+if(!cliente)return;
 
 
 
@@ -424,9 +424,9 @@ clienteEditando=id;
 
 
 
-let form =
+const form =
 document.getElementById(
-"clienteForm"
+"clienteVentaForm"
 );
 
 
@@ -436,28 +436,27 @@ if(!form)return;
 
 
 form.nombres.value =
-c.nombres;
+cliente.nombres;
 
 
 form.apellidos.value =
-c.apellidos;
+cliente.apellidos;
 
 
 form.dni.value =
-c.dni;
+cliente.dni;
 
 
 form.telefono.value =
-c.telefono;
+cliente.telefono;
 
 
 form.correo.value =
-c.correo || "";
+cliente.correo || "";
 
 
 form.direccion.value =
-c.direccion || "";
-
+cliente.direccion || "";
 
 
 
@@ -467,10 +466,7 @@ form.querySelector("button")
 
 
 
-mostrarVista(
-"clientes"
-);
-
+mostrarVista("clientes");
 
 
 }
@@ -485,8 +481,6 @@ editarCliente;
 
 
 
-
-
 // ==========================================
 // ELIMINAR
 // ==========================================
@@ -495,13 +489,11 @@ editarCliente;
 function eliminarClienteVista(id){
 
 
-
 if(
 confirm(
-"¿Eliminar cliente y ventas?"
+"¿Eliminar cliente y sus ventas?"
 )
 ){
-
 
 
 eliminarCliente(id);
@@ -512,15 +504,18 @@ renderClientes();
 
 
 
+if(typeof renderVentas==="function")
+renderVentas();
+
+
+
+if(typeof renderCuotas==="function")
+renderCuotas();
+
+
+
+if(typeof renderInicio==="function")
 renderInicio();
-
-
-
-renderVentas?.();
-
-
-
-renderCuotas?.();
 
 
 

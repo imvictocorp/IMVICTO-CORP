@@ -1,46 +1,54 @@
 // ==========================================
-// IMVICTO CORP - STORAGE CENTRAL
+// IMVICTO CORP - STORAGE ÚNICO
 // ==========================================
 
 const DB_KEY = "IMVICTO_DB";
 
 
 // ===============================
-// CREAR / CARGAR BASE
+// BASE
 // ===============================
 
-function iniciarDB(){
+function crearBase(){
 
-    let db = JSON.parse(
-        localStorage.getItem(DB_KEY)
+    const base = {
+        clientes: [],
+        ventas: [],
+        cuotas: [],
+        usuarios: []
+    };
+
+    localStorage.setItem(
+        DB_KEY,
+        JSON.stringify(base)
     );
 
-
-    if(!db){
-
-        db = {
-            clientes: [],
-            ventas: [],
-            cuotas: [],
-            usuarios: []
-        };
-
-
-        localStorage.setItem(
-            DB_KEY,
-            JSON.stringify(db)
-        );
-    }
-
-
-    return db;
+    return base;
 }
 
 
 
 function getDB(){
 
-    return iniciarDB();
+    let db = localStorage.getItem(DB_KEY);
+
+
+    if(!db){
+
+        return crearBase();
+
+    }
+
+
+    try{
+
+        return JSON.parse(db);
+
+    }catch{
+
+        return crearBase();
+
+    }
 
 }
 
@@ -64,19 +72,7 @@ function saveDB(db){
 
 function getClientes(){
 
-    return getDB().clientes || [];
-
-}
-
-
-
-function guardarClientes(lista){
-
-    let db = getDB();
-
-    db.clientes = lista;
-
-    saveDB(db);
+    return getDB().clientes;
 
 }
 
@@ -84,26 +80,26 @@ function guardarClientes(lista){
 
 function crearCliente(data){
 
-    let db = getDB();
+    const db=getDB();
 
 
-    let cliente = {
+    const cliente={
 
         id: Date.now(),
 
-        nombres: data.nombres || "",
+        nombres:data.nombres,
 
-        apellidos: data.apellidos || "",
+        apellidos:data.apellidos,
 
-        dni: data.dni || "",
+        dni:data.dni,
 
-        telefono: data.telefono || "",
+        telefono:data.telefono,
 
-        correo: data.correo || "",
+        correo:data.correo || "",
 
-        direccion: data.direccion || "",
+        direccion:data.direccion || "",
 
-        fecha: new Date().toISOString()
+        fecha:new Date().toISOString()
 
     };
 
@@ -120,10 +116,13 @@ function crearCliente(data){
 
 
 
+
 function buscarCliente(id){
 
     return getClientes()
-    .find(c=>c.id==id);
+    .find(
+        c=>c.id==id
+    );
 
 }
 
@@ -131,17 +130,16 @@ function buscarCliente(id){
 
 function actualizarCliente(id,data){
 
+    const db=getDB();
 
-    let db=getDB();
 
-
-    let cliente=db.clientes.find(
+    const cliente =
+    db.clientes.find(
         c=>c.id==id
     );
 
 
-    if(!cliente)return null;
-
+    if(!cliente)return;
 
 
     Object.assign(
@@ -159,10 +157,10 @@ function actualizarCliente(id,data){
 
 
 
+
 function eliminarCliente(id){
 
-
-    let db=getDB();
+    const db=getDB();
 
 
     db.clientes =
@@ -197,7 +195,7 @@ function eliminarCliente(id){
 
 function getVentas(){
 
-    return getDB().ventas || [];
+    return getDB().ventas;
 
 }
 
@@ -205,33 +203,29 @@ function getVentas(){
 
 function crearVenta(data){
 
-
-    let db=getDB();
-
+    const db=getDB();
 
 
-    let venta={
-
+    const venta={
 
         id:Date.now(),
 
-
         clienteId:data.clienteId,
 
+        producto:data.producto,
 
-        producto:data.producto || "",
+        modelo:data.modelo || "",
+
+        montoTotal:Number(data.montoTotal),
 
 
-        montoTotal:Number(data.montoTotal)||0,
-
-
-        tipoContrato:data.tipoContrato || "AL CONTADO",
+        tipoContrato:data.tipoContrato,
 
 
         estado:data.estado || "ACTUAL",
 
 
-        orden:data.orden || "",
+        numeroOrden:data.numeroOrden || "",
 
 
         vendedor:data.vendedor || "",
@@ -252,9 +246,7 @@ function crearVenta(data){
     db.ventas.push(venta);
 
 
-
     saveDB(db);
-
 
 
     return venta;
@@ -263,10 +255,13 @@ function crearVenta(data){
 
 
 
+
 function buscarVenta(id){
 
     return getVentas()
-    .find(v=>v.id==id);
+    .find(
+        v=>v.id==id
+    );
 
 }
 
@@ -281,38 +276,20 @@ function buscarVenta(id){
 
 function getCuotas(){
 
-    return getDB().cuotas || [];
+    return getDB().cuotas;
 
 }
-
-
-
-
-function guardarCuotas(lista){
-
-
-    let db=getDB();
-
-
-    db.cuotas=lista;
-
-
-    saveDB(db);
-
-}
-
 
 
 
 
 function crearCuotas(
-    venta,
-    cantidad,
-    monto
+venta,
+cantidad,
+monto
 ){
 
-
-    let db=getDB();
+    const db=getDB();
 
 
     for(
@@ -320,7 +297,6 @@ function crearCuotas(
         i<=cantidad;
         i++
     ){
-
 
         db.cuotas.push({
 
@@ -340,25 +316,35 @@ function crearCuotas(
 
         });
 
-
     }
 
 
 
     saveDB(db);
 
-
 }
 
 
 
 
+function actualizarCuotas(lista){
 
-// iniciar
+    const db=getDB();
 
-iniciarDB();
 
+    db.cuotas=lista;
+
+
+    saveDB(db);
+
+}
+
+
+
+// ===============================
+// LIMPIEZA
+// ===============================
 
 console.log(
-"Storage central cargado"
+"IMVICTO STORAGE OK"
 );

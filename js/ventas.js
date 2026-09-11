@@ -8,16 +8,14 @@ document.addEventListener(
 ()=>{
 
 
-const buscar =
-document.getElementById(
-"buscarVenta"
-);
+const buscador =
+document.getElementById("buscarVenta");
 
 
 
-if(buscar){
+if(buscador){
 
-buscar.addEventListener(
+buscador.addEventListener(
 "input",
 renderVentas
 );
@@ -29,25 +27,22 @@ renderVentas
 renderVentas();
 
 
-
 });
 
 
 
 
-
 // ==========================================
-// TABLA VENTAS
+// LISTAR VENTAS
 // ==========================================
 
 
 function renderVentas(){
 
 
-
 const tabla =
 document.getElementById(
-"ventasBody"
+"ventasTabla"
 );
 
 
@@ -60,7 +55,7 @@ tabla.innerHTML="";
 
 
 
-let texto =
+const texto =
 document
 .getElementById("buscarVenta")
 ?.value
@@ -75,14 +70,14 @@ getVentas()
 .filter(v=>{
 
 
-let cliente =
+const cliente =
 buscarCliente(
 v.clienteId
 );
 
 
 
-let datos =
+const datos =
 `
 
 ${cliente?.nombres || ""}
@@ -91,9 +86,9 @@ ${cliente?.apellidos || ""}
 
 ${cliente?.dni || ""}
 
-${v.producto || ""}
+${v.numeroOrden || ""}
 
-${v.orden || ""}
+${v.producto || ""}
 
 ${v.vendedor || ""}
 
@@ -104,22 +99,19 @@ ${v.vendedor || ""}
 return datos.includes(texto);
 
 
-
 })
-
 
 .forEach(v=>{
 
 
-let cliente =
+const cliente =
 buscarCliente(
 v.clienteId
 );
 
 
 
-tabla.innerHTML +=
-`
+tabla.innerHTML += `
 
 <tr>
 
@@ -127,23 +119,18 @@ tabla.innerHTML +=
 <td>
 
 <strong>
-${cliente
-?
-cliente.nombres+" "+cliente.apellidos
-:
+${cliente ?
+cliente.nombres+" "+cliente.apellidos :
 "Sin cliente"}
 
 </strong>
 
-
 <br>
-
 
 <small>
 DNI:
 ${cliente?.dni || "-"}
 </small>
-
 
 </td>
 
@@ -187,9 +174,7 @@ ${v.vendedor || "-"}
 
 
 <button
-
 class="btn-small"
-
 onclick="verVenta(${v.id})">
 
 Ver
@@ -198,7 +183,6 @@ Ver
 
 
 </td>
-
 
 
 </tr>
@@ -210,7 +194,6 @@ Ver
 });
 
 
-
 }
 
 
@@ -218,16 +201,15 @@ Ver
 
 
 
-
 // ==========================================
-// DETALLE
+// DETALLE DE VENTA
 // ==========================================
 
 
 function verVenta(id){
 
 
-let venta =
+const venta =
 buscarVenta(id);
 
 
@@ -235,7 +217,7 @@ buscarVenta(id);
 if(!venta){
 
 alert(
-"Venta no encontrada"
+"No existe la venta"
 );
 
 return;
@@ -244,14 +226,14 @@ return;
 
 
 
-let cliente =
+const cliente =
 buscarCliente(
 venta.clienteId
 );
 
 
 
-let cuotas =
+const cuotas =
 getCuotas()
 .filter(
 q=>q.ventaId==venta.id
@@ -259,11 +241,7 @@ q=>q.ventaId==venta.id
 
 
 
-
 let detalle = `
-
-DETALLE DE VENTA
-
 
 CLIENTE:
 
@@ -271,11 +249,9 @@ ${cliente?.nombres || ""}
 ${cliente?.apellidos || ""}
 
 
-
 DNI:
 
 ${cliente?.dni || "-"}
-
 
 
 TELÉFONO:
@@ -283,11 +259,9 @@ TELÉFONO:
 ${cliente?.telefono || "-"}
 
 
-
 PRODUCTO:
 
 ${venta.producto}
-
 
 
 MONTO:
@@ -295,17 +269,14 @@ MONTO:
 S/${venta.montoTotal}
 
 
-
 CONTRATO:
 
 ${venta.tipoContrato}
 
 
-
 VENDEDOR:
 
 ${venta.vendedor || "-"}
-
 
 
 `;

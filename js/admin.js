@@ -2,127 +2,178 @@
 // IMVICTO CORP - ADMIN
 // ==========================================
 
-console.log("Admin funcionando");
+
+console.log(
+"Admin cargado"
+);
+
 
 
 
 // ===============================
-// INICIO
+// DASHBOARD
 // ===============================
+
 
 function renderInicio(){
 
 
-let clientes = getClientes();
-
-let ventas = getVentas();
-
-let cuotas = getCuotas();
+const clientes =
+getClientes();
 
 
-
-document.getElementById("statClientes").textContent =
-clientes.length;
-
+const ventas =
+getVentas();
 
 
-document.getElementById("statVentas").textContent =
-ventas.length;
+const cuotas =
+getCuotas();
 
 
 
-let total =
+const total =
 ventas.reduce(
-(a,v)=>
-a+Number(
-v.montoTotal ||
-v.monto ||
-0
-),
+(total,v)=>
+total+
+Number(v.montoTotal||0),
 0
 );
 
 
 
-document.getElementById("statPendiente").textContent =
-"S/"+total.toFixed(2);
-
-
-
-let pendientes =
+const pendientes =
 cuotas.filter(
-q=>q.estado!=="PAGADA"
+q=>q.estado==="PENDIENTE"
 ).length;
 
 
 
-document.getElementById("statVencidas").textContent =
+const statClientes =
+document.getElementById(
+"statClientes"
+);
+
+
+const statVentas =
+document.getElementById(
+"statVentas"
+);
+
+
+const statCuotas =
+document.getElementById(
+"statCuotas"
+);
+
+
+const statMonto =
+document.getElementById(
+"statMonto"
+);
+
+
+
+if(statClientes)
+statClientes.textContent =
+clientes.length;
+
+
+
+if(statVentas)
+statVentas.textContent =
+ventas.length;
+
+
+
+if(statCuotas)
+statCuotas.textContent =
 pendientes;
+
+
+
+if(statMonto)
+statMonto.textContent =
+"S/"+total.toFixed(2);
+
+
+
+
+renderInicioTabla();
 
 
 
 }
 
 
+
 // ===============================
-// CLIENTES
+// TABLA INICIO
 // ===============================
 
-function renderClientes(){
+
+function renderInicioTabla(){
 
 
-let tabla=document.getElementById("clientesBody");
+const tabla =
+document.getElementById(
+"inicioTabla"
+);
+
+
 
 if(!tabla)return;
+
 
 
 tabla.innerHTML="";
 
 
-let clientes=getClientes();
+
+getVentas()
+.slice()
+.reverse()
+.slice(0,5)
+.forEach(v=>{
 
 
-clientes.forEach(c=>{
+const cliente =
+buscarCliente(
+v.clienteId
+);
 
 
-let compras=getVentas()
-.filter(v=>v.clienteId==c.id)
-.length;
 
-
-tabla.innerHTML+=`
+tabla.innerHTML += `
 
 <tr>
 
 <td>
-${c.nombres} ${c.apellidos}
+
+${cliente?
+cliente.nombres+" "+cliente.apellidos:
+"-"}
+
 </td>
 
-<td>
-${c.dni}
-</td>
-
-<td>
-${c.telefono}
-</td>
-
-<td>
-${compras}
-</td>
 
 <td>
 
-<button class="btn-small"
-onclick="editarCliente(${c.id})">
-Editar
-</button>
+${v.producto||"-"}
+
+</td>
 
 
-<button class="btn-small danger"
-onclick="eliminarClienteVista(${c.id})">
-Eliminar
-</button>
+<td>
 
+S/${Number(v.montoTotal||0)
+.toFixed(2)}
+
+</td>
+
+
+<td>
+
+${v.estado||"-"}
 
 </td>
 
@@ -132,259 +183,104 @@ Eliminar
 `;
 
 
+
 });
 
 
-}
-
-
-
-function eliminarClienteVista(id){
-
-if(confirm("¿Eliminar cliente?")){
-
-eliminarCliente(id);
-
-renderClientes();
-renderInicio();
-
-}
 
 }
 
 
 
 
-function editarCliente(id){
-
-
-let cliente=buscarCliente(id);
-
-
-if(!cliente)return;
-
-
-let form=document.getElementById("clienteForm");
-
-
-if(!form)return;
-
-
-form.nombres.value=cliente.nombres;
-form.apellidos.value=cliente.apellidos;
-form.dni.value=cliente.dni;
-form.telefono.value=cliente.telefono;
-form.correo.value=cliente.correo;
-form.direccion.value=cliente.direccion;
-
-
-
-}
 
 
 
 // ===============================
-// VENTAS
+// SEGUIMIENTO
 // ===============================
 
-function renderVentas(){
+
+function renderSeguimiento(){
 
 
-let tabla=document.getElementById("ventasBody");
+const tabla =
+document.getElementById(
+"seguimientoTabla"
+);
+
 
 
 if(!tabla)return;
 
 
+
 tabla.innerHTML="";
+
+
+
+const vendedores={};
+
 
 
 getVentas()
 .forEach(v=>{
 
 
-let cliente=buscarCliente(v.clienteId);
-
-
-tabla.innerHTML+=`
-
-<tr>
-
-<td>
-
-${cliente?
-cliente.nombres+" "+cliente.apellidos:
-"-"}
-
-</td>
-
-
-<td>
-${v.producto||"-"}
-</td>
-
-
-<td>
-S/${Number(v.montoTotal||0).toFixed(2)}
-</td>
-
-
-<td>
-${v.tipoContrato||"-"}
-</td>
-
-
-<td>
-${v.vendedor||"-"}
-</td>
-
-
-<td>
-
-<button
-onclick="verVenta(${v.id})">
-Ver
-</button>
-
-</td>
-
-
-</tr>
-
-`;
+let nombre =
+v.vendedor || "Sin vendedor";
 
 
 
-});
+if(!vendedores[nombre]){
 
-
+vendedores[nombre]=0;
 
 }
 
 
+vendedores[nombre]++;
 
-// ===============================
-// CUOTAS
-// ===============================
-
-
-function renderCuotas(){
-
-
-let tabla=document.getElementById("cuotasBody");
-
-
-if(!tabla)return;
-
-
-tabla.innerHTML="";
-
-
-let grupos={};
-
-
-
-getCuotas()
-.forEach(c=>{
-
-
-if(!grupos[c.ventaId])
-grupos[c.ventaId]=[];
-
-
-grupos[c.ventaId].push(c);
 
 
 });
 
 
 
-Object.keys(grupos)
-.forEach(id=>{
+Object.keys(vendedores)
+.forEach(nombre=>{
 
 
-let cuotas=grupos[id];
-
-
-let venta=buscarVenta(id);
-
-
-let cliente=venta?
-buscarCliente(venta.clienteId):
-null;
-
-
-
-tabla.innerHTML+=`
+tabla.innerHTML += `
 
 <tr>
 
-<td colspan="5">
+<td>
+${nombre}
+</td>
 
 
-<details>
+<td>
+${vendedores[nombre]}
+</td>
 
 
-<summary>
-
-${cliente?
-cliente.nombres+" "+cliente.apellidos:
-"-"}
-
+<td>
 -
-${venta?.producto||""}
-
-</summary>
-
-
-
-<table class="subtable">
-
-${cuotas.map(c=>`
-
-<tr>
-
-<td>
-Cuota ${c.numero}
 </td>
 
 
 <td>
-S/${c.monto}
+-
 </td>
 
 
 <td>
-${c.estado}
-</td>
-
-
-<td>
-
-<button onclick="pagarCuota(${c.id})">
-Marcar pagada
-</button>
-
+-
 </td>
 
 
 </tr>
-
-`).join("")}
-
-
-</table>
-
-
-
-</details>
-
-
-</td>
-
-
-</tr>
-
 
 `;
 
@@ -398,63 +294,70 @@ Marcar pagada
 
 
 
-function pagarCuota(id){
 
-
-let cuotas=getCuotas();
-
-
-let c=cuotas.find(x=>x.id==id);
-
-
-if(c){
-
-c.estado="PAGADA";
-
-guardarCuotas(cuotas);
-
-renderCuotas();
-
-renderInicio();
-
-}
-
-
-}
 
 
 
 // ===============================
-// NAVEGACION
+// NAVEGACIÓN
 // ===============================
 
 
 function mostrarVista(id){
 
 
-document.querySelectorAll(".view")
-.forEach(v=>v.classList.remove("active"));
 
-
-let vista=document.getElementById(id);
-
-
-if(vista)
-vista.classList.add("active");
+document
+.querySelectorAll(".view")
+.forEach(
+(v)=>
+v.classList.remove("active")
+);
 
 
 
-document.querySelectorAll(".nav-btn")
-.forEach(b=>{
-
-b.classList.remove("active");
+const vista =
+document.getElementById(id);
 
 
-if(b.dataset.view==id)
-b.classList.add("active");
+
+if(vista){
+
+vista.classList.add(
+"active"
+);
+
+}
+
+
+
+document
+.querySelectorAll(".nav-btn")
+.forEach(
+(btn)=>{
+
+
+btn.classList.remove(
+"active"
+);
+
+
+
+if(btn.dataset.view===id){
+
+btn.classList.add(
+"active"
+);
+
+}
+
 
 
 });
+
+
+
+actualizarTitulo(id);
 
 
 
@@ -466,38 +369,167 @@ renderTodo();
 
 
 
-function renderTodo(){
 
-renderInicio();
-renderClientes();
-renderVentas();
-renderCuotas();
+
+
+function actualizarTitulo(id){
+
+
+
+const titulos={
+
+
+inicio:[
+"Inicio",
+"Control general del negocio"
+],
+
+
+seguimiento:[
+"Seguimiento",
+"Rendimiento de vendedores"
+],
+
+
+clientes:[
+"Clientes",
+"Registro e historial"
+],
+
+
+ventas:[
+"Ventas",
+"Registro general"
+],
+
+
+cuotas:[
+"Cuotas",
+"Control de pagos"
+],
+
+
+exportar:[
+"Exportar",
+"Descarga información"
+]
+
+
+};
+
+
+
+const data =
+titulos[id];
+
+
+
+if(!data)return;
+
+
+
+const titulo =
+document.getElementById(
+"viewTitle"
+);
+
+
+
+const subtitulo =
+document.getElementById(
+"viewSubtitle"
+);
+
+
+
+if(titulo)
+titulo.textContent=data[0];
+
+
+
+if(subtitulo)
+subtitulo.textContent=data[1];
+
+
 
 }
 
 
 
+
+
+
 // ===============================
-// LOGOUT
+// ACTUALIZAR TODO
 // ===============================
+
+
+function renderTodo(){
+
+
+renderInicio();
+
+
+renderClientes();
+
+
+renderVentas();
+
+
+renderCuotas();
+
+
+renderSeguimiento();
+
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// SESIÓN
+// ===============================
+
 
 function cerrarSesion(){
 
 
-localStorage.removeItem("usuarioActivo");
 
-sessionStorage.clear();
+localStorage.removeItem(
+"usuario"
+);
 
 
-window.location.href="login.html";
+localStorage.removeItem(
+"rol"
+);
+
+
+localStorage.removeItem(
+"vendedor_id"
+);
+
+
+
+window.location.href=
+"./login.html";
+
 
 
 }
 
 
 
+
+
+
 // ===============================
-// INICIO APP
+// INICIO
 // ===============================
 
 
@@ -506,34 +538,59 @@ document.addEventListener(
 ()=>{
 
 
-document.querySelectorAll(".nav-btn")
-.forEach(btn=>{
+document
+.querySelectorAll(".nav-btn")
+.forEach(
+(btn)=>{
 
 
-btn.onclick=()=>{
+btn.addEventListener(
+"click",
+()=>{
 
-mostrarVista(btn.dataset.view);
 
-};
+mostrarVista(
+btn.dataset.view
+);
+
+
+
+});
 
 
 });
 
 
 
-let logout=document.getElementById("logoutBtn");
+const logout =
+document.getElementById(
+"logoutBtn"
+);
 
 
-if(logout)
-logout.onclick=cerrarSesion;
+
+if(logout){
+
+logout.onclick =
+cerrarSesion;
+
+}
 
 
 
-let refresh=document.getElementById("refreshBtn");
+const refresh =
+document.getElementById(
+"refreshBtn"
+);
 
 
-if(refresh)
-refresh.onclick=renderTodo;
+
+if(refresh){
+
+refresh.onclick =
+renderTodo;
+
+}
 
 
 
