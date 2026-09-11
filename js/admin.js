@@ -1,6 +1,4 @@
-let clientes=[];
-let ventas=[];
-let cuotas=[];
+console.log("Admin iniciado");
 
 
 
@@ -9,104 +7,93 @@ document.addEventListener(
 ()=>{
 
 
-iniciar();
-
-
-});
+cargarClientes();
 
 
 
-async function iniciar(){
+
+const formulario =
+document.querySelector("#clienteForm");
 
 
-navegacion();
+
+if(formulario){
 
 
-const form=document.getElementById("clienteForm");
-
-
-if(form){
-
-form.addEventListener(
+formulario.addEventListener(
 "submit",
 guardarCliente
+);
+
+
+}
+
+
+
+
+const buscar =
+document.querySelector("#clienteSearch");
+
+
+if(buscar){
+
+buscar.addEventListener(
+"input",
+cargarClientes
 );
 
 }
 
 
 
-await cargarDatos();
+const exportar =
+document.querySelector("#exportExcelBtn");
 
 
-}
+if(exportar){
 
-
-
-
-
-async function cargarDatos(){
-
-
-try{
-
-
-clientes=await DB.getClientes();
-
-ventas=await DB.getVentas();
-
-cuotas=await DB.getCuotas();
-
-
-mostrarClientes();
-
-mostrarVentas();
-
-mostrarCuotas();
-
-estadisticas();
-
-
-}
-catch(e){
-
-console.error(e);
-
-toast("Error cargando datos");
+exportar.onclick =
+exportarExcel;
 
 }
 
 
 
 }
+);
 
 
 
 
+// ========================
+// CLIENTES
+// ========================
 
-async function guardarCliente(e){
+
+
+function guardarCliente(e){
 
 
 e.preventDefault();
 
 
 
-const datos=
+const datos =
 Object.fromEntries(
 new FormData(e.target)
 );
 
 
 
-try{
+STORAGE.agregar(
+"imvicto_clientes",
+datos
+);
 
 
-await DB.crearCliente(datos);
 
-
-
-toast(
-"Cliente guardado"
+mostrarToast(
+"Cliente guardado correctamente"
 );
 
 
@@ -114,22 +101,8 @@ toast(
 e.target.reset();
 
 
-await cargarDatos();
 
-
-}
-catch(error){
-
-
-console.error(error);
-
-toast(
-"No se pudo guardar cliente"
-);
-
-
-}
-
+cargarClientes();
 
 
 }
@@ -137,20 +110,40 @@ toast(
 
 
 
+function cargarClientes(){
 
 
-
-function mostrarClientes(){
-
-
-const tabla=
-document.getElementById(
-"clientesBody"
-);
-
+const tabla =
+document.querySelector("#clientesBody");
 
 
 if(!tabla)return;
+
+
+
+let clientes =
+STORAGE.leer(
+"imvicto_clientes"
+);
+
+
+
+const busqueda =
+document.querySelector("#clienteSearch")?.value
+.toLowerCase() || "";
+
+
+
+
+clientes =
+clientes.filter(c=>
+
+JSON.stringify(c)
+.toLowerCase()
+.includes(busqueda)
+
+);
+
 
 
 
@@ -161,26 +154,39 @@ tabla.innerHTML="";
 clientes.forEach(c=>{
 
 
-tabla.innerHTML+=`
+tabla.innerHTML += `
 
 <tr>
 
 <td>
-${c.nombres || ""} ${c.apellidos || ""}
+${c.nombres || ""}
+${c.apellidos || ""}
 </td>
+
 
 <td>
 ${c.dni || ""}
 </td>
 
+
 <td>
 ${c.telefono || ""}
 </td>
 
+
+
 <td>
--
+
+<button onclick="eliminarCliente(${c.id})">
+
+Eliminar
+
+</button>
+
+
 </td>
 
+
 </tr>
 
 `;
@@ -189,110 +195,41 @@ ${c.telefono || ""}
 });
 
 
+
+actualizarContadores();
+
+
 }
 
 
 
 
+function eliminarCliente(id){
 
-function mostrarVentas(){
 
 
-const tabla=
-document.getElementById(
-"ventasBody"
+let clientes =
+STORAGE.leer(
+"imvicto_clientes"
 );
 
 
-if(!tabla)return;
 
-
-tabla.innerHTML="";
-
-
-ventas.forEach(v=>{
-
-
-tabla.innerHTML+=`
-
-<tr>
-
-<td>${v.cliente || ""}</td>
-
-<td>${v.monto || ""}</td>
-
-<td>${v.tipo_contrato || ""}</td>
-
-
-</tr>
-
-`;
-
-});
-
-
-}
-
-
-
-
-
-
-function mostrarCuotas(){
-
-
-const tabla=
-document.getElementById(
-"cuotasBody"
+clientes =
+clientes.filter(
+c=>c.id!==id
 );
 
 
-if(!tabla)return;
+
+STORAGE.guardar(
+"imvicto_clientes",
+clientes
+);
 
 
 
-tabla.innerHTML="";
-
-
-
-cuotas.forEach(c=>{
-
-
-tabla.innerHTML+=`
-
-<tr>
-
-<td>${c.cliente || ""}</td>
-
-<td>${c.monto || ""}</td>
-
-<td>${c.fecha || ""}</td>
-
-<td>${c.estado || ""}</td>
-
-</tr>
-
-
-`;
-
-});
-
-
-}
-
-
-
-
-
-function estadisticas(){
-
-
-document.getElementById("statClientes").textContent=
-clientes.length;
-
-
-document.getElementById("statVentas").textContent=
-ventas.length;
+cargarClientes();
 
 
 
@@ -302,33 +239,46 @@ ventas.length;
 
 
 
-function navegacion(){
+
+// ========================
+// INICIO
+// ========================
 
 
-document
-.querySelectorAll(".nav-btn")
-.forEach(btn=>{
+function actualizarContadores(){
 
 
-btn.onclick=()=>{
-
-
-document
-.querySelectorAll(".view")
-.forEach(v=>v.classList.remove("active"));
-
-
-
-document
-.getElementById(btn.dataset.view)
-.classList.add("active");
+const clientes =
+STORAGE.leer(
+"imvicto_clientes"
+);
 
 
 
-};
+const ventas =
+STORAGE.leer(
+"imvicto_ventas"
+);
 
 
-});
+
+let c =
+document.querySelector("#statClientes");
+
+
+let v =
+document.querySelector("#statVentas");
+
+
+
+if(c)
+c.textContent=clientes.length;
+
+
+
+if(v)
+v.textContent=ventas.length;
+
 
 
 }
@@ -337,32 +287,98 @@ document
 
 
 
-
-function toast(texto){
-
-
-const t=document.getElementById("toast");
+// ========================
+// EXPORTAR EXCEL
+// ========================
 
 
-if(t){
 
-t.textContent=texto;
-
-t.classList.remove("hidden");
+function exportarExcel(){
 
 
-setTimeout(()=>{
 
-t.classList.add("hidden");
+const clientes =
+STORAGE.leer(
+"imvicto_clientes"
+);
 
-},3000);
 
 
-}else{
+if(!clientes.length){
+
+alert(
+"No hay clientes para exportar"
+);
+
+return;
+
+}
+
+
+
+const hoja =
+XLSX.utils.json_to_sheet(
+clientes
+);
+
+
+
+const libro =
+XLSX.utils.book_new();
+
+
+
+XLSX.utils.book_append_sheet(
+libro,
+hoja,
+"Clientes"
+);
+
+
+
+XLSX.writeFile(
+libro,
+"clientes_imvicto.xlsx"
+);
+
+
+
+}
+
+
+
+
+
+function mostrarToast(texto){
+
+
+const toast =
+document.querySelector("#toast");
+
+
+if(!toast){
 
 alert(texto);
+return;
 
 }
+
+
+
+toast.textContent=texto;
+
+
+toast.classList.remove(
+"hidden"
+);
+
+
+
+setTimeout(
+()=>toast.classList.add("hidden"),
+2500
+);
+
 
 
 }
