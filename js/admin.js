@@ -1,11 +1,12 @@
 let clienteEditando = null;
-let clienteVentaSeleccionado = null;
 
 
 document.addEventListener("DOMContentLoaded",()=>{
 
 iniciarSesion();
-configurarNavegacion();
+
+configurarMenu();
+
 configurarEventos();
 
 cargarTodo();
@@ -14,9 +15,9 @@ cargarTodo();
 
 
 
-// =========================
+// ==========================
 // SESION
-// =========================
+// ==========================
 
 function iniciarSesion(){
 
@@ -33,72 +34,63 @@ label.textContent="Sesión: "+usuario;
 }
 
 
-const logout =
-document.getElementById("logoutBtn");
 
+document
+.getElementById("logoutBtn")
+?.addEventListener("click",()=>{
 
-if(logout){
-
-logout.onclick=()=>{
 
 localStorage.removeItem("usuario");
-localStorage.removeItem("rol");
 
 location.href="./login.html";
 
-};
+
+});
+
 
 }
 
-}
 
 
 
+// ==========================
+// MENU
+// ==========================
+
+function configurarMenu(){
 
 
-// =========================
-// NAVEGACION
-// =========================
-
-function configurarNavegacion(){
-
-
-document.querySelectorAll("[data-view]")
+document
+.querySelectorAll(".nav-btn")
 .forEach(btn=>{
 
 
 btn.onclick=()=>{
 
 
-document.querySelectorAll("[data-view]")
+document
+.querySelectorAll(".nav-btn")
 .forEach(b=>b.classList.remove("active"));
+
 
 
 btn.classList.add("active");
 
 
 
-document.querySelectorAll(".view")
+document
+.querySelectorAll(".view")
 .forEach(v=>v.classList.remove("active"));
 
 
 
-let vista =
-document.getElementById(
-btn.dataset.view
-);
+document
+.getElementById(btn.dataset.view)
+?.classList.add("active");
 
 
 
-if(vista){
-vista.classList.add("active");
-}
-
-
-
-cambiarTitulo(
-btn.dataset.view
-);
+cambiarTitulo(btn.dataset.view);
 
 
 };
@@ -112,11 +104,10 @@ btn.dataset.view
 
 
 
-
 function cambiarTitulo(vista){
 
 
-const datos={
+let datos={
 
 inicio:[
 "Inicio",
@@ -125,28 +116,29 @@ inicio:[
 
 seguimiento:[
 "Seguimiento",
-"Gestión de vendedores"
+"Resumen comercial de vendedores"
 ],
 
 clientes:[
 "Clientes",
-"Registro e historial"
+"Clientes y pedidos registrados"
 ],
 
 ventas:[
 "Ventas",
-"Pedidos realizados"
+"Registro general de ventas"
 ],
 
 cuotas:[
 "Cuotas",
-"Pagos pendientes"
+"Seguimiento de pagos"
 ],
 
-excel:[
+exportar:[
 "Exportar",
 "Descargar información"
 ]
+
 
 };
 
@@ -164,12 +156,9 @@ document.getElementById("viewSubtitle");
 if(datos[vista]){
 
 
-titulo.textContent=
-datos[vista][0];
+titulo.textContent=datos[vista][0];
 
-
-subtitulo.textContent=
-datos[vista][1];
+subtitulo.textContent=datos[vista][1];
 
 
 }
@@ -181,10 +170,9 @@ datos[vista][1];
 
 
 
-// =========================
+// ==========================
 // EVENTOS
-// =========================
-
+// ==========================
 
 function configurarEventos(){
 
@@ -199,16 +187,16 @@ cargarTodo
 
 
 document
-.getElementById("clienteForm")
+.getElementById("clienteVentaForm")
 ?.addEventListener(
 "submit",
-guardarCliente
+guardarClienteVenta
 );
 
 
 
 document
-.getElementById("clienteSearch")
+.getElementById("buscarCliente")
 ?.addEventListener(
 "input",
 cargarClientes
@@ -217,25 +205,16 @@ cargarClientes
 
 
 document
-.getElementById("ventaForm")
-?.addEventListener(
-"submit",
-guardarVenta
-);
-
-
-
-document
-.getElementById("buscarClienteVenta")
+.getElementById("buscarVenta")
 ?.addEventListener(
 "input",
-buscarClienteVenta
+cargarVentas
 );
 
 
 
 document
-.getElementById("exportExcelBtn")
+.getElementById("exportarExcelBtn")
 ?.addEventListener(
 "click",
 exportarExcel
@@ -250,11 +229,9 @@ exportarExcel
 
 
 
-
-// =========================
+// ==========================
 // CARGA GENERAL
-// =========================
-
+// ==========================
 
 function cargarTodo(){
 
@@ -279,14 +256,16 @@ cargarSeguimiento();
 
 
 
-// =========================
-// CLIENTES
-// =========================
+// ==========================
+// CLIENTE + VENTA
+// ==========================
 
 
-function guardarCliente(e){
+function guardarClienteVenta(e){
+
 
 e.preventDefault();
+
 
 
 let datos =
@@ -296,65 +275,124 @@ new FormData(e.target)
 
 
 
-if(clienteEditando){
+let cliente={
+
+nombres:datos.nombres,
+
+apellidos:datos.apellidos,
+
+dni:datos.dni,
+
+telefono:datos.telefono,
+
+correo:datos.correo,
+
+direccion:datos.direccion
 
 
-STORAGE.actualizar(
+};
+
+
+
+let venta={
+
+mercaderia:datos.mercaderia,
+
+monto_total:Number(datos.monto_total),
+
+tipo_contrato:datos.tipo_contrato,
+
+estado_pedido:datos.estado_pedido,
+
+numero_orden:datos.numero_orden,
+
+regalo:datos.regalo,
+
+vendedor:datos.vendedor
+
+
+};
+
+
+
+
+// guardar cliente
+
+let nuevoCliente =
+STORAGE.crear(
 STORAGE.clientes,
-clienteEditando,
-datos
+cliente
 );
 
 
-clienteEditando=null;
+
+// guardar venta ligada
+
+venta.cliente_id=
+nuevoCliente.id;
 
 
-}
-else{
+venta.cliente_nombre=
+cliente.nombres+" "+cliente.apellidos;
+
 
 
 STORAGE.crear(
-STORAGE.clientes,
-datos
+STORAGE.ventas,
+venta
 );
 
-
-}
 
 
 e.target.reset();
 
 
-document.getElementById("clienteBtn").textContent=
-"Guardar cliente";
+alert(
+"Cliente y venta registrados"
+);
 
 
-cargarClientes();
+
+cargarTodo();
 
 
 }
 
 
 
+
+
+
+
+
+
+// ==========================
+// CLIENTES
+// ==========================
+
+
 function cargarClientes(){
 
 
-let tabla =
+let tabla=
 document.getElementById(
-"clientesBody"
+"clientesTabla"
 );
+
 
 
 if(!tabla)return;
 
 
 
-let texto =
-document.getElementById("clienteSearch")?.value || "";
+let texto=
+document.getElementById(
+"buscarCliente"
+)?.value || "";
 
 
 
-let clientes =
+let clientes=
 STORAGE.buscar(
 STORAGE.clientes,
 texto
@@ -367,6 +405,16 @@ tabla.innerHTML="";
 
 
 clientes.forEach(c=>{
+
+
+let ventas =
+STORAGE.get(
+STORAGE.ventas
+)
+.filter(
+v=>v.cliente_id==c.id
+);
+
 
 
 tabla.innerHTML+=`
@@ -389,24 +437,31 @@ ${c.telefono}
 
 
 <td>
+${ventas.length}
+</td>
 
 
-<button class="btn small"
+<td>
+
+
+<button 
+class="btn small"
 onclick="editarCliente(${c.id})">
+
 Editar
+
 </button>
 
 
-<button class="btn danger small"
+
+<button 
+class="btn danger small"
 onclick="eliminarCliente(${c.id})">
+
 Eliminar
+
 </button>
 
-
-<button class="btn small"
-onclick="verCliente(${c.id})">
-Ver
-</button>
 
 
 </td>
@@ -424,59 +479,44 @@ Ver
 
 
 
+
+
+
+
 function editarCliente(id){
 
 
 let cliente =
-STORAGE.get(
-STORAGE.clientes
-)
-.find(c=>c.id==id);
-
-
-
-clienteEditando=id;
-
-
-
-let form =
-document.getElementById("clienteForm");
-
-
-
-Object.keys(cliente)
-.forEach(key=>{
-
-
-if(form[key]){
-form[key].value=cliente[key];
-}
-
-
-});
-
-
-
-document.getElementById("clienteBtn").textContent=
-"Actualizar cliente";
-
-
-}
-
-
-
-
-
-function eliminarCliente(id){
-
-
-if(confirm("¿Eliminar cliente?")){
-
-
-STORAGE.eliminar(
-STORAGE.clientes,
-id
+STORAGE.get(STORAGE.clientes)
+.find(
+c=>c.id==id
 );
+
+
+
+if(!cliente)return;
+
+
+
+let nombres =
+prompt(
+"Nombres",
+cliente.nombres
+);
+
+
+
+if(nombres){
+
+
+STORAGE.actualizar(
+STORAGE.clientes,
+id,
+{
+nombres:nombres
+}
+);
+
 
 
 cargarClientes();
@@ -491,184 +531,41 @@ cargarClientes();
 
 
 
-function verCliente(id){
 
 
-let cliente =
-STORAGE.get(STORAGE.clientes)
-.find(c=>c.id==id);
+function eliminarCliente(id){
+
+
+if(!confirm("Eliminar cliente y sus ventas?"))
+return;
+
+
+
+STORAGE.eliminar(
+STORAGE.clientes,
+id
+);
 
 
 
 let ventas =
-STORAGE.get(STORAGE.ventas)
-.filter(v=>v.cliente_id==id);
-
-
-
-alert(
-`
-${cliente.nombres} ${cliente.apellidos}
-
-Ventas:
-${ventas.length}
-`
-);
-
-
-}
-
-
-
-
-
-// =========================
-// VENTAS
-// =========================
-
-
-function buscarClienteVenta(){
-
-
-let texto =
-document.getElementById(
-"buscarClienteVenta"
-).value;
-
-
-
-let clientes =
-STORAGE.buscar(
-STORAGE.clientes,
-texto
-);
-
-
-
-let box =
-document.getElementById(
-"resultadoClientes"
-);
-
-
-
-box.innerHTML="";
-
-
-
-clientes.forEach(c=>{
-
-
-box.innerHTML+=`
-
-<div>
-
-${c.nombres} ${c.apellidos}
-
-<button onclick="seleccionarClienteVenta(${c.id})">
-Elegir
-</button>
-
-</div>
-
-`;
-
-});
-
-
-}
-
-
-
-
-function seleccionarClienteVenta(id){
-
-
-clienteVentaSeleccionado=id;
-
-
-
-let cliente =
 STORAGE.get(
-STORAGE.clientes
+STORAGE.ventas
 )
-.find(c=>c.id==id);
-
-
-
-document.getElementById(
-"ventaClienteId"
-).value=id;
-
-
-
-document.getElementById(
-"ventaClienteNombre"
-).value=
-cliente.nombres+" "+cliente.apellidos;
-
-
-
-}
-
-
-
-
-function guardarVenta(e){
-
-
-e.preventDefault();
-
-
-
-if(!clienteVentaSeleccionado){
-
-alert(
-"Seleccione cliente"
-);
-
-return;
-
-}
-
-
-
-let venta =
-Object.fromEntries(
-new FormData(e.target)
+.filter(
+v=>v.cliente_id!=id
 );
 
 
 
-venta.cliente_id=
-clienteVentaSeleccionado;
-
-
-
-let cliente =
-STORAGE.get(
-STORAGE.clientes
-)
-.find(c=>c.id==clienteVentaSeleccionado);
-
-
-
-venta.cliente_nombre=
-cliente.nombres+" "+cliente.apellidos;
-
-
-
-STORAGE.crear(
+STORAGE.set(
 STORAGE.ventas,
-venta
+ventas
 );
 
 
 
-e.target.reset();
-
-
-cargarVentas();
+cargarTodo();
 
 
 }
@@ -676,14 +573,22 @@ cargarVentas();
 
 
 
+
+
+
+
+
+// ==========================
+// VENTAS
+// ==========================
 
 
 function cargarVentas(){
 
 
-let tabla =
+let tabla=
 document.getElementById(
-"ventasBody"
+"ventasTabla"
 );
 
 
@@ -692,31 +597,66 @@ if(!tabla)return;
 
 
 
+let texto =
+document.getElementById(
+"buscarVenta"
+)?.value || "";
+
+
+
+let ventas =
+STORAGE.buscar(
+STORAGE.ventas,
+texto
+);
+
+
+
 tabla.innerHTML="";
 
 
 
-STORAGE.get(STORAGE.ventas)
-.forEach(v=>{
+ventas.forEach(v=>{
 
 
 tabla.innerHTML+=`
 
 <tr>
 
-<td>${v.cliente_nombre}</td>
-
-<td>${v.producto}</td>
-
-<td>S/${v.monto_total}</td>
-
-<td>${v.tipo_contrato}</td>
 
 <td>
+${v.cliente_nombre}
+</td>
+
+
+<td>
+${v.mercaderia}
+</td>
+
+
+<td>
+S/${v.monto_total}
+</td>
+
+
+<td>
+${v.tipo_contrato}
+</td>
+
+
+<td>
+${v.vendedor || ""}
+</td>
+
+
+<td>
+
 <button class="btn small">
 Ver
 </button>
+
 </td>
+
 
 </tr>
 
@@ -731,17 +671,21 @@ Ver
 
 
 
-// =========================
+
+
+
+
+// ==========================
 // CUOTAS
-// =========================
+// ==========================
 
 
 function cargarCuotas(){
 
 
-let tabla =
+let tabla=
 document.getElementById(
-"cuotasBody"
+"cuotasTabla"
 );
 
 
@@ -754,7 +698,9 @@ tabla.innerHTML="";
 
 
 
-STORAGE.get(STORAGE.cuotas)
+STORAGE.get(
+STORAGE.cuotas
+)
 .forEach(c=>{
 
 
@@ -762,17 +708,28 @@ tabla.innerHTML+=`
 
 <tr>
 
-<td>${c.cliente_nombre}</td>
+<td>
+${c.cliente_nombre}
+</td>
 
-<td>${c.venta}</td>
+<td>
+${c.venta || ""}
+</td>
 
-<td>S/${c.monto}</td>
+<td>
+S/${c.monto}
+</td>
 
-<td>${c.estado}</td>
+<td>
+${c.fecha}
+</td>
 
-<td>${c.fecha}</td>
+<td>
+${c.estado}
+</td>
 
 </tr>
+
 
 `;
 
@@ -785,24 +742,36 @@ tabla.innerHTML+=`
 
 
 
-// =========================
-// INICIO
-// =========================
+
+
+
+
+// ==========================
+// DASHBOARD
+// ==========================
 
 
 function cargarInicio(){
 
 
 let clientes =
-STORAGE.get(STORAGE.clientes);
+STORAGE.get(
+STORAGE.clientes
+);
+
 
 
 let ventas =
-STORAGE.get(STORAGE.ventas);
+STORAGE.get(
+STORAGE.ventas
+);
+
 
 
 let cuotas =
-STORAGE.get(STORAGE.cuotas);
+STORAGE.get(
+STORAGE.cuotas
+);
 
 
 
@@ -819,10 +788,12 @@ cuotas.length;
 
 
 
-let total=ventas.reduce(
+let total =
+ventas.reduce(
 (a,b)=>a+Number(b.monto_total||0),
 0
 );
+
 
 
 document.getElementById("statMonto").textContent=
@@ -835,18 +806,83 @@ document.getElementById("statMonto").textContent=
 
 
 
+
+// ==========================
+// SEGUIMIENTO
+// ==========================
+
+
 function cargarSeguimiento(){
 
-let tabla =
+
+let tabla=
 document.getElementById(
-"seguimientoBody"
+"seguimientoTabla"
 );
+
 
 
 if(!tabla)return;
 
 
+
 tabla.innerHTML="";
+
+
+
+let vendedores={};
+
+
+
+STORAGE.get(
+STORAGE.ventas
+)
+.forEach(v=>{
+
+
+let nombre=
+v.vendedor || "Sin asignar";
+
+
+if(!vendedores[nombre]){
+
+vendedores[nombre]=0;
+
+}
+
+
+vendedores[nombre]++;
+
+
+});
+
+
+
+Object.keys(vendedores)
+.forEach(nombre=>{
+
+
+tabla.innerHTML+=`
+
+<tr>
+
+<td>${nombre}</td>
+
+<td>${vendedores[nombre]}</td>
+
+<td>-</td>
+
+<td>-</td>
+
+<td>-</td>
+
+</tr>
+
+`;
+
+
+});
+
 
 }
 
@@ -854,9 +890,12 @@ tabla.innerHTML="";
 
 
 
-// =========================
+
+
+
+// ==========================
 // EXPORTAR
-// =========================
+// ==========================
 
 
 function exportarExcel(){
@@ -873,12 +912,12 @@ XLSX.utils.book_new();
 ["Cuotas",STORAGE.cuotas]
 
 ]
-.forEach(item=>{
+.forEach(x=>{
 
 
 let hoja =
 XLSX.utils.json_to_sheet(
-STORAGE.get(item[1])
+STORAGE.get(x[1])
 );
 
 
@@ -886,7 +925,7 @@ STORAGE.get(item[1])
 XLSX.utils.book_append_sheet(
 libro,
 hoja,
-item[0]
+x[0]
 );
 
 
@@ -896,18 +935,8 @@ item[0]
 
 XLSX.writeFile(
 libro,
-"IMVICTO_BASE.xlsx"
+"IMVICTO_CORP.xlsx"
 );
 
 
-
 }
-
-
-
-
-
-window.editarCliente=editarCliente;
-window.eliminarCliente=eliminarCliente;
-window.verCliente=verCliente;
-window.seleccionarClienteVenta=seleccionarClienteVenta;

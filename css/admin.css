@@ -340,3 +340,52 @@
     grid-template-columns: 1fr;
   }
 }
+
+.form-section{
+margin-bottom:22px;
+padding:15px;
+background:#f7f9fc;
+border-radius:12px;
+}
+
+
+.form-section h4{
+margin:0 0 15px;
+font-size:15px;
+color:#123;
+}
+
+
+.two-columns{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px;
+}
+
+
+.three-columns{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:14px;
+}
+
+
+.full{
+grid-column:1/-1;
+}
+
+
+textarea{
+width:100%;
+resize:none;
+}
+
+
+@media(max-width:900px){
+
+.two-columns,
+.three-columns{
+grid-template-columns:1fr;
+}
+
+}

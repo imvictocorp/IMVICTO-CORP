@@ -1,8 +1,3 @@
-Voy a empezar con el bloque 1/2 del `admin.html` completo.
-
-No lo pegues todavía hasta recibir el bloque 2.
-
-```html
 <!doctype html>
 <html lang="es">
 
@@ -21,7 +16,7 @@ No lo pegues todavía hasta recibir el bloque 2.
 </head>
 
 
-<body data-role="admin">
+<body>
 
 
 <div class="app-shell">
@@ -36,10 +31,11 @@ No lo pegues todavía hasta recibir el bloque 2.
 
 <div>
 <strong>IMVICTO CORP</strong>
-<span>Administrador</span>
+<span>Panel administrativo</span>
 </div>
 
 </div>
+
 
 
 
@@ -71,7 +67,7 @@ Cuotas
 </button>
 
 
-<button class="nav-btn" data-view="excel">
+<button class="nav-btn" data-view="exportar">
 Exportar
 </button>
 
@@ -80,13 +76,22 @@ Exportar
 
 
 
+
+
 <div class="sidebar-footer">
+
 
 <span id="sessionLabel"></span>
 
-<button id="logoutBtn" class="btn ghost full">
+
+<button 
+id="logoutBtn"
+class="btn ghost full">
+
 Cerrar sesión
+
 </button>
+
 
 </div>
 
@@ -97,12 +102,18 @@ Cerrar sesión
 
 
 
+
+
+
+
 <main class="main">
 
 
 <header class="admin-topbar">
 
+
 <div>
+
 
 <p class="eyebrow">
 PANEL ADMINISTRATIVO
@@ -122,8 +133,14 @@ Control general del negocio
 </div>
 
 
-<button id="refreshBtn" class="btn secondary">
+
+
+<button 
+id="refreshBtn"
+class="btn secondary">
+
 Actualizar
+
 </button>
 
 
@@ -135,17 +152,26 @@ Actualizar
 
 
 
-<!-- INICIO -->
 
-<section id="inicio" class="view active">
+
+<!-- ================= INICIO ================= -->
+
+
+<section 
+id="inicio"
+class="view active">
+
 
 
 <div class="admin-stats">
 
 
+
 <div class="admin-stat">
 
-<span>Clientes</span>
+<span>
+Clientes
+</span>
 
 <strong id="statClientes">
 0
@@ -157,7 +183,9 @@ Actualizar
 
 <div class="admin-stat">
 
-<span>Ventas</span>
+<span>
+Ventas
+</span>
 
 <strong id="statVentas">
 0
@@ -167,9 +195,12 @@ Actualizar
 
 
 
-<div class="admin-stat danger">
 
-<span>Cuotas pendientes</span>
+<div class="admin-stat">
+
+<span>
+Cuotas pendientes
+</span>
 
 <strong id="statCuotas">
 0
@@ -179,9 +210,12 @@ Actualizar
 
 
 
+
 <div class="admin-stat money">
 
-<span>Total vendido</span>
+<span>
+Venta total
+</span>
 
 <strong id="statMonto">
 S/0
@@ -196,16 +230,19 @@ S/0
 
 
 
+
+
 <section class="admin-panel">
 
 
 <h3>
-Últimas cuotas
+Últimos movimientos
 </h3>
 
 
 
 <table>
+
 
 <thead>
 
@@ -230,10 +267,11 @@ Estado
 
 </tr>
 
+
 </thead>
 
 
-<tbody id="homeCuotasBody">
+<tbody id="inicioTabla">
 
 </tbody>
 
@@ -254,10 +292,13 @@ Estado
 
 
 
-<!-- SEGUIMIENTO -->
+<!-- ================= SEGUIMIENTO ================= -->
 
 
-<section id="seguimiento" class="view">
+<section 
+id="seguimiento"
+class="view">
+
 
 
 <section class="admin-panel">
@@ -268,10 +309,17 @@ Seguimiento vendedores
 </h3>
 
 
+<p>
+Resumen de rendimiento comercial.
+</p>
+
+
+
 <table>
 
 
 <thead>
+
 
 <tr>
 
@@ -280,23 +328,29 @@ Vendedor
 </th>
 
 <th>
-Demos
-</th>
-
-<th>
-Mantenimientos
-</th>
-
-<th>
 Ventas
 </th>
 
+<th>
+Clientes
+</th>
+
+<th>
+Citas
+</th>
+
+<th>
+VP
+</th>
+
+
 </tr>
+
 
 </thead>
 
 
-<tbody id="seguimientoBody">
+<tbody id="seguimientoTabla">
 
 </tbody>
 
@@ -317,120 +371,289 @@ Ventas
 
 
 
-<!-- CLIENTES -->
+<!-- ================= CLIENTES ================= -->
 
 
-<section id="clientes" class="view">
+<section 
+id="clientes"
+class="view">
+
 
 
 <div class="admin-grid">
 
 
 
-<form id="clienteForm" class="admin-panel form-grid">
+<form id="clienteVentaForm" class="admin-panel form-grid">
+
+<h3>Nuevo cliente + venta</h3>
 
 
-<h3 id="clienteTitulo">
-Nuevo cliente
-</h3>
+<div class="form-section">
+<h4>1. Datos del cliente</h4>
 
-
-
-<input type="hidden" id="clienteId">
-
-
+<div class="two-columns">
 
 <label>
-
 Nombres *
-
-<input 
-name="nombres"
-required>
-
+<input name="nombres" required>
 </label>
 
-
-
-
 <label>
-
 Apellidos *
-
-<input 
-name="apellidos"
-required>
-
+<input name="apellidos" required>
 </label>
 
 
-
-
 <label>
-
 DNI *
-
-<input 
-name="dni"
-required>
-
+<input name="dni" required>
 </label>
 
 
-
-
 <label>
-
 Teléfono *
-
-<input 
-name="telefono"
-required>
-
+<input name="telefono" required>
 </label>
 
 
-
-
-<label>
-
+<label class="full">
 Correo
-
-<input 
-name="correo">
-
+<input name="correo">
 </label>
 
+
+<label class="full">
+Dirección *
+<input name="direccion" required>
+</label>
+
+
+</div>
+</div>
+
+
+
+
+
+<div class="form-section">
+
+<h4>2. Datos del pedido</h4>
+
+
+<div class="two-columns">
+
+
+<label>
+Mercadería / Producto *
+<input name="mercaderia" required>
+</label>
+
+
+<label>
+Monto total *
+<input 
+name="monto_total"
+type="number"
+required>
+</label>
 
 
 
 <label>
+Tipo contrato *
 
-Dirección
+<select name="tipo_contrato">
 
-<input 
-name="direccion">
+<option>
+AL CONTADO
+</option>
+
+<option>
+FINANCIADO
+</option>
+
+<option>
+DFP
+</option>
+
+<option>
+SIN INTERESES
+</option>
+
+</select>
 
 </label>
+
+
+
+<label>
+Número de orden *
+<input name="numero_orden" required>
+</label>
+
+
+
+<label>
+Estado pedido *
+
+<select name="estado_pedido">
+
+<option>
+ACTUAL
+</option>
+
+<option>
+PENDIENTE
+</option>
+
+<option>
+CANCELADO
+</option>
+
+</select>
+
+</label>
+
+
+
+<label>
+Regalo
+<input name="regalo">
+</label>
+
+
+
+<label>
+Vendedor
+<input name="vendedor">
+</label>
+
+
+
+</div>
+
+</div>
+
+
+
+
+
+
+
+<div class="form-section pago-section">
+
+
+<h4>
+3. Condiciones de pago (solo si no es contado)
+</h4>
+
+
+<div class="three-columns">
+
+
+<label>
+Inicial (opcional)
+
+<input 
+name="inicial"
+type="number"
+placeholder="0">
+</label>
+
+
+
+<label>
+Número de cuotas
+
+<input 
+name="cantidad_cuotas"
+type="number"
+placeholder="12">
+</label>
+
+
+
+<label>
+Monto cuota
+
+<input 
+name="monto_cuota"
+type="number"
+placeholder="0">
+</label>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="form-section">
+
+
+<h4>
+4. Archivos y observaciones
+</h4>
+
+
+
+<div class="two-columns">
+
+
+
+<label>
+Adjuntar documentos
+
+<input 
+type="file"
+name="archivos"
+multiple
+accept=".pdf,.jpg,.png,.doc,.docx,.xlsx">
+
+</label>
+
+
+
+<label>
+Observaciones
+
+<textarea 
+name="observaciones"
+rows="4">
+</textarea>
+
+</label>
+
+
+
+</div>
+
+
+</div>
+
 
 
 
 
 <button 
-type="submit"
 class="btn primary"
-id="clienteBtn">
+type="submit">
 
-Guardar cliente
+Guardar cliente y venta
 
 </button>
 
 
 </form>
 
-
-
-
+<!-- ================= TABLA CLIENTES ================= -->
 
 
 <section class="admin-panel">
@@ -443,8 +666,10 @@ Clientes registrados
 
 
 <input 
-id="clienteSearch"
-placeholder="Buscar cliente">
+id="buscarCliente"
+placeholder="Buscar nombre, DNI o teléfono">
+
+
 
 
 
@@ -471,6 +696,11 @@ Teléfono
 
 
 <th>
+Compras
+</th>
+
+
+<th>
 Acciones
 </th>
 
@@ -481,7 +711,8 @@ Acciones
 </thead>
 
 
-<tbody id="clientesBody">
+
+<tbody id="clientesTabla">
 
 </tbody>
 
@@ -498,182 +729,19 @@ Acciones
 </section>
 
 
-<!-- VENTAS -->
 
 
-<section id="ventas" class="view">
 
 
-<div class="admin-grid">
 
 
 
-<form id="ventaForm" class="admin-panel form-grid">
+<!-- ================= VENTAS ================= -->
 
 
-<h3>
-Nueva venta
-</h3>
-
-
-
-<input 
-type="hidden"
-id="ventaClienteId"
-name="cliente_id">
-
-
-
-<label>
-
-Buscar cliente *
-
-<input 
-id="buscarClienteVenta"
-placeholder="Nombre o DNI">
-
-</label>
-
-
-
-<div id="resultadoClientes">
-
-</div>
-
-
-
-<label>
-
-Cliente seleccionado
-
-<input 
-id="ventaClienteNombre"
-disabled>
-
-</label>
-
-
-
-
-<label>
-
-Producto *
-
-<input 
-name="producto"
-required>
-
-</label>
-
-
-
-
-<label>
-
-Modelo
-
-<input 
-name="modelo">
-
-</label>
-
-
-
-
-<label>
-
-Monto total *
-
-<input 
-name="monto_total"
-type="number"
-required>
-
-</label>
-
-
-
-
-<label>
-
-Tipo contrato *
-
-<select name="tipo_contrato">
-
-
-<option>
-AL CONTADO
-</option>
-
-
-<option>
-FINANCIADO
-</option>
-
-
-<option>
-SIN INTERESES
-</option>
-
-
-</select>
-
-</label>
-
-
-
-
-<label>
-
-Número de orden
-
-<input 
-name="numero_orden">
-
-</label>
-
-
-
-
-<label>
-
-Vendedor
-
-<input 
-name="vendedor">
-
-</label>
-
-
-
-
-<label>
-
-Observaciones
-
-<textarea name="observaciones"></textarea>
-
-</label>
-
-
-
-
-<button 
-type="submit"
-class="btn primary">
-
-Guardar venta
-
-</button>
-
-
-
-</form>
-
-
-
-
-
+<section 
+id="ventas"
+class="view">
 
 
 
@@ -681,8 +749,16 @@ Guardar venta
 
 
 <h3>
-Ventas registradas
+Registro general de ventas
 </h3>
+
+
+
+<input 
+id="buscarVenta"
+placeholder="Buscar cliente, DNI, orden">
+
+
 
 
 
@@ -691,26 +767,36 @@ Ventas registradas
 
 <thead>
 
+
 <tr>
 
 <th>
 Cliente
 </th>
 
+
 <th>
 Producto
 </th>
+
 
 <th>
 Monto
 </th>
 
+
 <th>
 Contrato
 </th>
 
+
 <th>
-Acciones
+Vendedor
+</th>
+
+
+<th>
+Acción
 </th>
 
 
@@ -720,7 +806,8 @@ Acciones
 </thead>
 
 
-<tbody id="ventasBody">
+
+<tbody id="ventasTabla">
 
 </tbody>
 
@@ -731,10 +818,6 @@ Acciones
 </section>
 
 
-
-</div>
-
-
 </section>
 
 
@@ -745,10 +828,13 @@ Acciones
 
 
 
-<!-- CUOTAS -->
+<!-- ================= CUOTAS ================= -->
 
 
-<section id="cuotas" class="view">
+<section 
+id="cuotas"
+class="view">
+
 
 
 <section class="admin-panel">
@@ -760,10 +846,12 @@ Cuotas
 
 
 
+
 <table>
 
 
 <thead>
+
 
 <tr>
 
@@ -771,21 +859,26 @@ Cuotas
 Cliente
 </th>
 
+
 <th>
 Venta
 </th>
+
 
 <th>
 Monto
 </th>
 
-<th>
-Estado
-</th>
 
 <th>
 Fecha
 </th>
+
+
+<th>
+Estado
+</th>
+
 
 </tr>
 
@@ -794,7 +887,7 @@ Fecha
 
 
 
-<tbody id="cuotasBody">
+<tbody id="cuotasTabla">
 
 </tbody>
 
@@ -802,12 +895,11 @@ Fecha
 </table>
 
 
-</section>
-
 
 </section>
 
 
+</section>
 
 
 
@@ -815,10 +907,15 @@ Fecha
 
 
 
-<!-- EXPORTAR -->
 
 
-<section id="excel" class="view">
+<!-- ================= EXPORTAR ================= -->
+
+
+<section 
+id="exportar"
+class="view">
+
 
 
 <section class="admin-panel">
@@ -829,15 +926,15 @@ Exportar información
 </h3>
 
 
-
 <p>
-Descarga clientes, ventas y cuotas.
+Descarga la base actual del sistema.
 </p>
 
 
 
+
 <button 
-id="exportExcelBtn"
+id="exportarExcelBtn"
 class="btn secondary">
 
 Exportar Excel
@@ -845,11 +942,12 @@ Exportar Excel
 </button>
 
 
-</section>
-
 
 </section>
 
+
+
+</section>
 
 
 
@@ -865,7 +963,13 @@ Exportar Excel
 
 
 
-<div id="toast" class="toast hidden"></div>
+
+<div 
+id="toast"
+class="toast hidden">
+
+</div>
+
 
 
 
@@ -874,11 +978,14 @@ Exportar Excel
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
+
 <script src="./js/storage.js"></script>
+
 
 <script src="./js/admin.js"></script>
 
 
 </body>
+
 
 </html>
