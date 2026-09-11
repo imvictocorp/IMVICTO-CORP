@@ -1,23 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
-    <title>IMVICTO CORP</title>
-    <script>
-        const usuario = localStorage.getItem("usuario");
 
-        if(usuario){
-            const data = JSON.parse(usuario);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            if(data.rol === "admin"){
-                window.location.href = "admin.html";
-            } else {
-                window.location.href = "vendedor.html";
-            }
-        } else {
-            window.location.href = "login.html";
-        }
-    </script>
+<title>IMVICTO CORP</title>
+
+<link rel="icon" href="./img/logo-imvicto.jpg">
+
 </head>
+
+
 <body>
+
+
+<script>
+
+
+const usuario =
+localStorage.getItem("usuario");
+
+
+
+if(!usuario){
+
+
+window.location.href =
+"login.html";
+
+
+}else{
+
+
+try{
+
+
+const data =
+JSON.parse(usuario);
+
+
+
+if(data.rol === "ADMIN"){
+
+
+window.location.href =
+"admin.html";
+
+
+}else if(data.rol === "VENDEDOR"){
+
+
+window.location.href =
+"vendedor.html";
+
+
+}else{
+
+
+localStorage.removeItem("usuario");
+
+window.location.href =
+"login.html";
+
+
+}
+
+
+
+}catch(error){
+
+
+localStorage.removeItem("usuario");
+
+window.location.href =
+"login.html";
+
+
+}
+
+
+
+}
+
+
+</script>
+
+
 </body>
+
 </html>

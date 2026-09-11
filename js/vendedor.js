@@ -79,12 +79,21 @@
     setDefaultDate();
     renderAll();
 
-  const nombreVendedor =
-localStorage.getItem("usuario");
+const usuario = getUser();
 
+
+const sessionLabel =
+document.getElementById(
+"sessionLabel"
+);
+
+
+if(sessionLabel && usuario){
 
 sessionLabel.textContent =
-"Sesión: " + nombreVendedor;
+"Sesión: " + usuario.nombre;
+
+}
   }
 
   function bindEvents() {
@@ -435,11 +444,15 @@ sessionLabel.textContent =
           "Vendedor"
         ]));
 
-        const pertenece = sellerNames.some((name) => {
-          return encargado.includes(name) || vendedores.includes(name);
-        });
+        const pertenece =
+          sellerNames.some(name => {
 
-        if (!pertenece) return;
+            return (
+              vendedores.includes(name) ||
+              encargado.includes(name)
+            );
+
+          });
 
         coinciden++;
 
@@ -717,31 +730,58 @@ sessionLabel.textContent =
   }
 
   function getSellerNames() {
-    const sessionName = normalizeText(state.user?.nombre || "");
-    const sessionEmail = normalizeText(state.user?.correo || state.user?.email || "");
 
-    let names = [];
 
-    if (typeof IMVICTO_USERS !== "undefined") {
-      const configUser = IMVICTO_USERS.find((user) => {
-        return (
-          normalizeText(user.correo || "") === sessionEmail ||
-          normalizeText(user.nombre || "") === sessionName
-        );
-      });
+    const usuario =
+      state.user;
 
-      if (configUser) {
-        names.push(configUser.nombre);
 
-        if (Array.isArray(configUser.alias)) {
-          names.push(...configUser.alias);
-        }
-      }
+
+    let nombres = [];
+
+
+
+    if (!usuario)
+      return nombres;
+
+
+
+    nombres.push(
+      usuario.nombre || ""
+    );
+
+
+
+    if (usuario.aliasForms) {
+
+      nombres.push(
+        usuario.aliasForms
+      );
+
     }
 
-    names.push(state.user?.nombre || "");
 
-    return [...new Set(names.map(normalizeText).filter(Boolean))];
+
+    if (Array.isArray(usuario.alias)) {
+
+      nombres.push(
+        ...usuario.alias
+      );
+
+    }
+
+
+
+    return [
+      ...new Set(
+        nombres
+          .flat()
+          .map(normalizeText)
+          .filter(Boolean)
+      )
+    ];
+
+
   }
 
   function belongsToUser(item) {
@@ -955,13 +995,21 @@ sessionLabel.textContent =
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function getUser() {
-    try {
-      return JSON.parse(sessionStorage.getItem("imvicto_user") || "null") || {};
-    } catch {
-      return {};
+function getUser(){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem("usuario")
+        ) || {};
+
+    }catch{
+
+        return {};
+
     }
-  }
+
+}
 
   function setValue(name, value) {
     const input = els.form?.querySelector(`[name="${name}"]`);

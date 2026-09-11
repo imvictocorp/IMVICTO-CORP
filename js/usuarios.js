@@ -1,49 +1,110 @@
-function obtenerUsuarios(){
+// ==========================================
+// IMVICTO CORP - USUARIOS
+// ==========================================
 
-return JSON.parse(
-localStorage.getItem("imvicto_users")
-) || [
+
+function getUsuarios(){
+
+
+let data =
+localStorage.getItem("usuarios");
+
+
+
+if(!data){
+
+
+const usuarios=[
 
 {
 id:1,
-nombre:"Mathias",
-correo:"mathias@imvicto.com",
-clave:"123456",
-rol:"vendedor",
-activo:true
+nombre:"Administrador",
+usuario:"admin",
+clave:"1234",
+rol:"ADMIN",
+aliasForms:[]
+},
+
+
+{
+id:2,
+nombre:"Micaela",
+usuario:"mica",
+clave:"1234",
+rol:"VENDEDOR",
+aliasForms:[
+"MICA"
+]
+},
+
+
+{
+id:3,
+nombre:"Miguel",
+usuario:"miguel",
+clave:"1234",
+rol:"VENDEDOR",
+aliasForms:[
+"MIGUEL"
+]
 }
+
 
 ];
 
-}
 
-
-
-function guardarUsuarios(lista){
 
 localStorage.setItem(
-"imvicto_users",
-JSON.stringify(lista)
+"usuarios",
+JSON.stringify(usuarios)
+);
+
+
+
+return usuarios;
+
+
+}
+
+
+
+return JSON.parse(data);
+
+
+}
+
+
+
+
+function buscarUsuario(usuario,clave){
+
+
+return getUsuarios()
+.find(
+u =>
+u.usuario===usuario &&
+u.clave===clave
+);
+
+
+}
+
+
+
+
+function guardarUsuarios(data){
+
+localStorage.setItem(
+"usuarios",
+JSON.stringify(data)
 );
 
 }
 
 
 
-function validarUsuario(correo,clave){
+window.getUsuarios=getUsuarios;
 
+window.buscarUsuario=buscarUsuario;
 
-const usuarios =
-obtenerUsuarios();
-
-
-return usuarios.find(usuario=>
-
-usuario.correo===correo &&
-usuario.clave===clave &&
-usuario.activo!==false
-
-);
-
-
-}
+window.guardarUsuarios=guardarUsuarios;
