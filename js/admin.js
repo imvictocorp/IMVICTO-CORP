@@ -1,73 +1,122 @@
-console.log("Admin iniciado");
+console.log("Admin funcionando");
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+
+// =========================
+// NAVEGACION
+// =========================
+
+
+const botones =
+document.querySelectorAll(".nav-btn, .nav-link");
+
+
+botones.forEach(btn=>{
+
+
+btn.addEventListener("click",()=>{
+
+
+const vista =
+btn.dataset.view ||
+btn.getAttribute("href")?.replace(".html","");
 
 
 
-document.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-
-cargarClientes();
+mostrarVista(vista);
 
 
 
+});
 
-const formulario =
+
+});
+
+
+
+// cargar inicial
+
+mostrarVista("inicio");
+
+
+
+// clientes
+
+const form =
 document.querySelector("#clienteForm");
 
 
+if(form){
 
-if(formulario){
-
-
-formulario.addEventListener(
+form.addEventListener(
 "submit",
 guardarCliente
 );
 
-
 }
 
 
 
+// ventas
 
-const buscar =
-document.querySelector("#clienteSearch");
+const ventaForm =
+document.querySelector("#ventaForm");
 
 
-if(buscar){
+if(ventaForm){
 
-buscar.addEventListener(
-"input",
-cargarClientes
+ventaForm.addEventListener(
+"submit",
+guardarVenta
 );
 
 }
 
 
 
-const exportar =
-document.querySelector("#exportExcelBtn");
+cargarTodo();
 
 
-if(exportar){
+});
 
-exportar.onclick =
-exportarExcel;
+
+
+
+
+// =========================
+// CAMBIO DE VISTA
+// =========================
+
+
+function mostrarVista(nombre){
+
+
+document.querySelectorAll(".view")
+.forEach(v=>v.classList.remove("active"));
+
+
+
+const vista =
+document.querySelector("#"+nombre);
+
+
+
+if(vista)
+vista.classList.add("active");
+
+
 
 }
 
 
 
-}
-);
 
 
-
-
-// ========================
+// =========================
 // CLIENTES
-// ========================
+// =========================
 
 
 
@@ -78,7 +127,7 @@ e.preventDefault();
 
 
 
-const datos =
+const cliente =
 Object.fromEntries(
 new FormData(e.target)
 );
@@ -87,13 +136,13 @@ new FormData(e.target)
 
 STORAGE.agregar(
 "imvicto_clientes",
-datos
+cliente
 );
 
 
 
-mostrarToast(
-"Cliente guardado correctamente"
+alert(
+"Cliente guardado"
 );
 
 
@@ -110,6 +159,7 @@ cargarClientes();
 
 
 
+
 function cargarClientes(){
 
 
@@ -121,29 +171,10 @@ if(!tabla)return;
 
 
 
-let clientes =
+const clientes =
 STORAGE.leer(
 "imvicto_clientes"
 );
-
-
-
-const busqueda =
-document.querySelector("#clienteSearch")?.value
-.toLowerCase() || "";
-
-
-
-
-clientes =
-clientes.filter(c=>
-
-JSON.stringify(c)
-.toLowerCase()
-.includes(busqueda)
-
-);
-
 
 
 
@@ -158,34 +189,19 @@ tabla.innerHTML += `
 
 <tr>
 
-<td>
-${c.nombres || ""}
-${c.apellidos || ""}
-</td>
+<td>${c.nombres || ""} ${c.apellidos || ""}</td>
 
+<td>${c.dni || ""}</td>
 
-<td>
-${c.dni || ""}
-</td>
-
-
-<td>
-${c.telefono || ""}
-</td>
-
-
+<td>${c.telefono || ""}</td>
 
 <td>
 
-<button onclick="eliminarCliente(${c.id})">
-
-Eliminar
-
+<button onclick="verCliente(${c.id})">
+Ver
 </button>
 
-
 </td>
-
 
 </tr>
 
@@ -195,8 +211,50 @@ Eliminar
 });
 
 
+}
 
-actualizarContadores();
+
+
+
+
+// =========================
+// VENTAS
+// =========================
+
+
+
+function guardarVenta(e){
+
+
+e.preventDefault();
+
+
+
+const venta =
+Object.fromEntries(
+new FormData(e.target)
+);
+
+
+
+STORAGE.agregar(
+"imvicto_ventas",
+venta
+);
+
+
+
+alert(
+"Venta registrada"
+);
+
+
+
+e.target.reset();
+
+
+
+cargarVentas();
 
 
 }
@@ -204,54 +262,17 @@ actualizarContadores();
 
 
 
-function eliminarCliente(id){
 
 
 
-let clientes =
-STORAGE.leer(
-"imvicto_clientes"
-);
+function cargarVentas(){
 
 
-
-clientes =
-clientes.filter(
-c=>c.id!==id
-);
+const tabla =
+document.querySelector("#ventasBody");
 
 
-
-STORAGE.guardar(
-"imvicto_clientes",
-clientes
-);
-
-
-
-cargarClientes();
-
-
-
-}
-
-
-
-
-
-
-// ========================
-// INICIO
-// ========================
-
-
-function actualizarContadores(){
-
-
-const clientes =
-STORAGE.leer(
-"imvicto_clientes"
-);
+if(!tabla)return;
 
 
 
@@ -262,23 +283,37 @@ STORAGE.leer(
 
 
 
-let c =
-document.querySelector("#statClientes");
-
-
-let v =
-document.querySelector("#statVentas");
+tabla.innerHTML="";
 
 
 
-if(c)
-c.textContent=clientes.length;
+ventas.forEach(v=>{
 
 
+tabla.innerHTML+=`
 
-if(v)
-v.textContent=ventas.length;
+<tr>
 
+<td>${v.cliente}</td>
+
+<td>${v.producto}</td>
+
+<td>S/${v.monto}</td>
+
+<td>${v.estado}</td>
+
+<td>
+
+${v.fecha}
+
+</td>
+
+</tr>
+
+`;
+
+
+});
 
 
 }
@@ -287,10 +322,66 @@ v.textContent=ventas.length;
 
 
 
-// ========================
-// EXPORTAR EXCEL
-// ========================
+// =========================
+// CUOTAS
+// =========================
 
+
+
+function cargarCuotas(){
+
+
+const tabla =
+document.querySelector("#cuotasBody");
+
+
+if(!tabla)return;
+
+
+
+const cuotas =
+STORAGE.leer(
+"imvicto_cuotas"
+);
+
+
+
+tabla.innerHTML="";
+
+
+
+cuotas.forEach(c=>{
+
+
+tabla.innerHTML+=`
+
+<tr>
+
+<td>${c.cliente}</td>
+
+<td>${c.numero}</td>
+
+<td>S/${c.monto}</td>
+
+<td>${c.estado}</td>
+
+</tr>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+// =========================
+// EXPORTAR
+// =========================
 
 
 function exportarExcel(){
@@ -301,18 +392,6 @@ const clientes =
 STORAGE.leer(
 "imvicto_clientes"
 );
-
-
-
-if(!clientes.length){
-
-alert(
-"No hay clientes para exportar"
-);
-
-return;
-
-}
 
 
 
@@ -338,7 +417,7 @@ hoja,
 
 XLSX.writeFile(
 libro,
-"clientes_imvicto.xlsx"
+"IMVICTO_CLIENTES.xlsx"
 );
 
 
@@ -348,37 +427,69 @@ libro,
 
 
 
-
-function mostrarToast(texto){
-
-
-const toast =
-document.querySelector("#toast");
+// =========================
 
 
-if(!toast){
+function cargarTodo(){
 
-alert(texto);
-return;
+
+cargarClientes();
+
+cargarVentas();
+
+cargarCuotas();
+
+
+actualizarInicio();
+
+
+}
+
+
+
+
+
+
+function actualizarInicio(){
+
+
+const clientes =
+STORAGE.leer(
+"imvicto_clientes"
+);
+
+
+const ventas =
+STORAGE.leer(
+"imvicto_ventas"
+);
+
+
+
+if(
+document.querySelector("#statClientes")
+)
+
+document.querySelector("#statClientes")
+.textContent=clientes.length;
+
+
+
+if(
+document.querySelector("#statVentas")
+)
+
+document.querySelector("#statVentas")
+.textContent=ventas.length;
+
+
 
 }
 
 
 
-toast.textContent=texto;
 
 
-toast.classList.remove(
-"hidden"
-);
+window.exportarExcel =
+exportarExcel;
 
-
-
-setTimeout(
-()=>toast.classList.add("hidden"),
-2500
-);
-
-
-
-}

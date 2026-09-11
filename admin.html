@@ -457,60 +457,100 @@ Acción
 
 <!-- VENTAS -->
 
-
 <section id="ventas" class="view">
 
 
-<section class="admin-panel">
+<div class="admin-panel">
+
+<h2>Nueva venta</h2>
 
 
-<h3>
-Ventas
-</h3>
+<form id="ventaForm">
 
+
+<label>
+Cliente *
+<input name="cliente" required>
+</label>
+
+
+<label>
+Producto *
+<input name="producto" required>
+</label>
+
+
+<label>
+Monto total *
+<input name="monto" type="number" required>
+</label>
+
+
+<label>
+Estado *
+<select name="estado">
+
+<option>ACTIVA</option>
+<option>PENDIENTE</option>
+<option>CANCELADA</option>
+
+</select>
+</label>
+
+
+
+<label>
+Número de orden
+<input name="orden">
+</label>
+
+
+
+<label>
+Vendedor
+<input name="vendedor">
+</label>
+
+
+
+<label>
+Observaciones
+<textarea name="notas"></textarea>
+</label>
+
+
+
+<button>
+Guardar venta
+</button>
+
+
+</form>
+
+
+</div>
+
+
+
+<div class="admin-panel">
+
+
+<h2>Ventas registradas</h2>
 
 
 <table>
 
-
-<thead>
-
-<tr>
-
-<th>
-Cliente
-</th>
-
-
-<th>
-Monto
-</th>
-
-
-<th>
-Contrato
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-<tbody id="ventasBody">
-
-</tbody>
+<tbody id="ventasBody"></tbody>
 
 
 </table>
 
 
+</div>
+
+
+
 </section>
-
-
-</section>
-
 
 
 
@@ -526,58 +566,24 @@ Contrato
 <section id="cuotas" class="view">
 
 
-<section class="admin-panel">
+<div class="admin-panel">
 
-
-<h3>
-Cuotas
-</h3>
+<h2>Cuotas</h2>
 
 
 <table>
 
 
-<thead>
-
-
-<tr>
-
-<th>
-Cliente
-</th>
-
-<th>
-Monto
-</th>
-
-<th>
-Fecha
-</th>
-
-<th>
-Estado
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-<tbody id="cuotasBody">
-
-</tbody>
+<tbody id="cuotasBody"></tbody>
 
 
 </table>
 
 
-</section>
+</div>
 
 
 </section>
-
 
 
 
