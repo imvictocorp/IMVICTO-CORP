@@ -533,25 +533,14 @@ pendiente.toFixed(2);
 
 function renderClientes(){
 
+const tabla = document.getElementById("clientesBody");
 
-const tabla =
-document.getElementById(
-"tablaClientes"
-);
-
-
-
-if(!tabla)
-return;
-
-
+if(!tabla) return;
 
 tabla.innerHTML="";
 
 
-
 clientes.forEach(c=>{
-
 
 tabla.innerHTML += `
 
@@ -570,20 +559,24 @@ ${c.telefono || ""}
 </td>
 
 <td>
-${c.estado_pedido || ""}
-</td>
 
+<button onclick="editarCliente('${c.id}')">
+Editar
+</button>
+
+<button onclick="eliminarCliente('${c.id}')">
+Eliminar
+</button>
+
+</td>
 
 </tr>
 
 `;
 
-
 });
 
-
 }
-
 
 
 
@@ -1162,49 +1155,58 @@ renderTodo();
 
 function exportarExcel(){
 
-
 if(typeof XLSX==="undefined"){
-
-mostrarToast(
-"Falta cargar XLSX",
-true
-);
-
+mostrarToast("Falta XLSX",true);
 return;
-
 }
 
 
-
-const hoja =
-XLSX.utils.json_to_sheet(
-clientes
-);
+const libro = XLSX.utils.book_new();
 
 
-
-const libro =
-XLSX.utils.book_new();
-
+const hojaClientes =
+XLSX.utils.json_to_sheet(clientes);
 
 
 XLSX.utils.book_append_sheet(
 libro,
-hoja,
+hojaClientes,
 "Clientes"
+);
+
+
+
+const hojaVentas =
+XLSX.utils.json_to_sheet(ventas);
+
+
+XLSX.utils.book_append_sheet(
+libro,
+hojaVentas,
+"Ventas"
+);
+
+
+
+const hojaCuotas =
+XLSX.utils.json_to_sheet(cuotas);
+
+
+XLSX.utils.book_append_sheet(
+libro,
+hojaCuotas,
+"Cuotas"
 );
 
 
 
 XLSX.writeFile(
 libro,
-"Clientes_IMVICTO.xlsx"
+"IMVICTO_CORP.xlsx"
 );
 
 
-
 }
-
 
 
 
