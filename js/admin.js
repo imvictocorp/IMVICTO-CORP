@@ -13,25 +13,11 @@ console.log("Admin funcionando");
 function renderInicio(){
 
 
-let clientes =
-JSON.parse(
-localStorage.getItem("clientes")
-||"[]"
-);
+let clientes = getClientes();
 
+let ventas = getVentas();
 
-let ventas =
-JSON.parse(
-localStorage.getItem("ventas")
-||"[]"
-);
-
-
-let cuotas =
-JSON.parse(
-localStorage.getItem("cuotas")
-||"[]"
-);
+let cuotas = getCuotas();
 
 
 

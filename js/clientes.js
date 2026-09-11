@@ -3,7 +3,7 @@
 // ==========================================
 
 
-let clienteEditando=null;
+let clienteEditando = null;
 
 
 
@@ -12,25 +12,25 @@ document.addEventListener(
 ()=>{
 
 
-const form=
+const form =
 document.getElementById("clienteForm");
 
 
-if(form){
 
+if(form){
 
 form.addEventListener(
 "submit",
 guardarCliente
 );
 
-
 }
 
 
 
-const buscar=
+const buscar =
 document.getElementById("clienteSearch");
+
 
 
 if(buscar){
@@ -47,7 +47,9 @@ renderClientes
 renderClientes();
 
 
+
 });
+
 
 
 
@@ -64,46 +66,8 @@ e.preventDefault();
 
 
 
-const data=
+const data =
 new FormData(e.target);
-
-
-
-let nombres=data.get("nombres");
-
-let apellidos=data.get("apellidos");
-
-let dni=data.get("dni");
-
-let telefono=data.get("telefono");
-
-let producto=data.get("mercaderia");
-
-let monto=
-Number(data.get("monto_total"));
-
-
-
-if(
-!nombres ||
-!apellidos ||
-!dni ||
-!telefono ||
-!producto ||
-!monto
-){
-
-
-alert(
-"Completa todos los campos obligatorios"
-);
-
-
-return;
-
-}
-
-
 
 
 
@@ -115,52 +79,46 @@ if(clienteEditando){
 
 
 
-let clientes=getClientes();
+cliente =
+actualizarCliente(
+clienteEditando,
+{
 
+nombres:data.get("nombres"),
 
-cliente=
-clientes.find(
-c=>c.id==clienteEditando
-);
+apellidos:data.get("apellidos"),
 
+dni:data.get("dni"),
 
-
-cliente.nombres=nombres;
-
-cliente.apellidos=apellidos;
-
-cliente.dni=dni;
-
-cliente.telefono=telefono;
-
-cliente.correo=data.get("correo");
-
-cliente.direccion=data.get("direccion");
-
-
-
-guardarClientes(clientes);
-
-
-
-}
-else{
-
-
-cliente=crearCliente({
-
-nombres,
-
-apellidos,
-
-dni,
-
-telefono,
+telefono:data.get("telefono"),
 
 correo:data.get("correo"),
 
 direccion:data.get("direccion")
 
+}
+
+);
+
+
+
+}else{
+
+
+cliente =
+crearCliente({
+
+nombres:data.get("nombres"),
+
+apellidos:data.get("apellidos"),
+
+dni:data.get("dni"),
+
+telefono:data.get("telefono"),
+
+correo:data.get("correo"),
+
+direccion:data.get("direccion")
 
 });
 
@@ -170,44 +128,27 @@ direccion:data.get("direccion")
 
 
 
-let venta=
+let venta =
 crearVenta({
-
 
 clienteId:cliente.id,
 
+producto:data.get("mercaderia"),
 
-producto,
+montoTotal:data.get("monto_total"),
 
+tipoContrato:data.get("tipo_contrato"),
 
-montoTotal:monto,
+estado:data.get("estado_pedido"),
 
+orden:data.get("numero_orden"),
 
-tipoContrato:
-data.get("tipo_contrato"),
+vendedor:data.get("vendedor"),
 
-
-estado:
-data.get("estado_pedido") || "ACTUAL",
-
-
-orden:
-data.get("numero_orden"),
-
-
-vendedor:
-data.get("vendedor"),
-
-
-regalo:
-data.get("regalo"),
-
-
-observaciones:
-data.get("observaciones")
-
+regalo:data.get("regalo")
 
 });
+
 
 
 
@@ -218,52 +159,33 @@ venta.tipoContrato==="FINANCIADO"
 ){
 
 
-let cantidad=
-Number(data.get("numero_cuotas"));
+let cantidad =
+Number(
+data.get("numero_cuotas")
+);
 
 
-let cuota=
-Number(data.get("monto_cuota"));
+
+let monto =
+Number(
+data.get("monto_cuota")
+);
 
 
 
 if(cantidad>0){
 
-
 crearCuotas(
 venta,
 cantidad,
-cuota
+monto
 );
 
-
 }
 
 
 }
 
-
-
-
-
-window.location.href="admin.html#clientes";
-
-
-clienteEditando=null;
-
-
-
-e.target
-.querySelector("button")
-.textContent=
-"Guardar cliente y venta";
-
-
-
-renderClientes();
-
-
-renderInicio();
 
 
 
@@ -272,22 +194,79 @@ alert(
 );
 
 
+
+
+
+clienteEditando=null;
+
+
+
+e.target.reset();
+
+
+
+
+let boton =
+e.target.querySelector("button");
+
+
+
+if(boton){
+
+boton.textContent =
+"Guardar cliente y venta";
+
+}
+
+
+
+
+renderClientes();
+
+
+if(typeof renderVentas==="function")
+renderVentas();
+
+
+if(typeof renderCuotas==="function")
+renderCuotas();
+
+
+if(typeof renderInicio==="function")
+renderInicio();
+
+
+
+
+// quedarse en clientes
+
+mostrarVista(
+"clientes"
+);
+
+
+
 }
 
 
 
 
 
+
+
 // ==========================================
-// LISTAR CLIENTES
+// LISTADO
 // ==========================================
 
 
 function renderClientes(){
 
 
-let tabla=
-document.getElementById("clientesBody");
+
+let tabla =
+document.getElementById(
+"clientesBody"
+);
 
 
 
@@ -299,21 +278,24 @@ tabla.innerHTML="";
 
 
 
-let texto=
-document
-.getElementById("clienteSearch")
-?.value
+let texto =
+document.getElementById(
+"clienteSearch"
+)?.value
 .toLowerCase()
 ||
 "";
 
 
 
+
 getClientes()
+
 .filter(c=>{
 
 
-let datos=`
+let datos =
+`
 
 ${c.nombres}
 
@@ -330,11 +312,13 @@ ${c.telefono}
 return datos.includes(texto);
 
 
+
 })
+
 .forEach(c=>{
 
 
-let ventas=
+let compras =
 getVentas()
 .filter(
 v=>v.clienteId==c.id
@@ -343,7 +327,8 @@ v=>v.clienteId==c.id
 
 
 
-tabla.innerHTML+=`
+tabla.innerHTML +=
+`
 
 <tr>
 
@@ -368,7 +353,7 @@ ${c.telefono}
 
 
 <td>
-${ventas}
+${compras}
 </td>
 
 
@@ -399,7 +384,6 @@ Eliminar
 </td>
 
 
-
 </tr>
 
 `;
@@ -409,7 +393,12 @@ Eliminar
 });
 
 
+
 }
+
+
+
+
 
 
 
@@ -422,7 +411,7 @@ Eliminar
 function editarCliente(id){
 
 
-let c=
+let c =
 buscarCliente(id);
 
 
@@ -435,37 +424,64 @@ clienteEditando=id;
 
 
 
-let form=
-document.getElementById("clienteForm");
+let form =
+document.getElementById(
+"clienteForm"
+);
 
 
 
-form.nombres.value=c.nombres;
+if(!form)return;
 
-form.apellidos.value=c.apellidos;
 
-form.dni.value=c.dni;
 
-form.telefono.value=c.telefono;
+form.nombres.value =
+c.nombres;
 
-form.correo.value=c.correo||"";
 
-form.direccion.value=c.direccion||"";
+form.apellidos.value =
+c.apellidos;
+
+
+form.dni.value =
+c.dni;
+
+
+form.telefono.value =
+c.telefono;
+
+
+form.correo.value =
+c.correo || "";
+
+
+form.direccion.value =
+c.direccion || "";
+
 
 
 
 form.querySelector("button")
-.textContent=
+.textContent =
 "Actualizar cliente";
 
 
 
-document
-.getElementById("clientes")
-.scrollIntoView();
+mostrarVista(
+"clientes"
+);
+
 
 
 }
+
+
+
+window.editarCliente =
+editarCliente;
+
+
+
 
 
 
@@ -479,28 +495,42 @@ document
 function eliminarClienteVista(id){
 
 
+
 if(
 confirm(
-"¿Eliminar cliente y toda su información?"
+"¿Eliminar cliente y ventas?"
 )
 ){
+
 
 
 eliminarCliente(id);
 
 
+
 renderClientes();
+
+
 
 renderInicio();
 
 
+
+renderVentas?.();
+
+
+
+renderCuotas?.();
+
+
+
 }
 
 
+
 }
 
 
 
-window.editarCliente=editarCliente;
-
-window.eliminarClienteVista=eliminarClienteVista;
+window.eliminarClienteVista =
+eliminarClienteVista;

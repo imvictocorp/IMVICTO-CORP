@@ -2,93 +2,69 @@
 // IMVICTO CORP - STORAGE CENTRAL
 // ==========================================
 
-
 const DB_KEY = "IMVICTO_DB";
 
 
-
-
-// Crear base si no existe
+// ===============================
+// CREAR / CARGAR BASE
+// ===============================
 
 function iniciarDB(){
 
-
-let db =
-JSON.parse(
-localStorage.getItem(DB_KEY)
-);
+    let db = JSON.parse(
+        localStorage.getItem(DB_KEY)
+    );
 
 
+    if(!db){
 
-if(!db){
-
-
-db={
-
-clientes:[],
-ventas:[],
-cuotas:[],
-usuarios:[]
-
-};
+        db = {
+            clientes: [],
+            ventas: [],
+            cuotas: [],
+            usuarios: []
+        };
 
 
+        localStorage.setItem(
+            DB_KEY,
+            JSON.stringify(db)
+        );
+    }
 
-localStorage.setItem(
-DB_KEY,
-JSON.stringify(db)
-);
 
-
+    return db;
 }
 
 
-return db;
-
-
-}
-
-
-
-
-
-// Obtener base
 
 function getDB(){
 
-return iniciarDB();
+    return iniciarDB();
 
 }
 
 
-
-// Guardar base
 
 function saveDB(db){
 
-
-localStorage.setItem(
-DB_KEY,
-JSON.stringify(db)
-);
-
+    localStorage.setItem(
+        DB_KEY,
+        JSON.stringify(db)
+    );
 
 }
 
 
 
-
-
-// ============================
+// ===============================
 // CLIENTES
-// ============================
+// ===============================
 
 
 function getClientes(){
 
-
-return getDB().clientes || [];
-
+    return getDB().clientes || [];
 
 }
 
@@ -96,68 +72,49 @@ return getDB().clientes || [];
 
 function guardarClientes(lista){
 
+    let db = getDB();
 
-let db=getDB();
+    db.clientes = lista;
 
-
-db.clientes=lista;
-
-
-saveDB(db);
-
+    saveDB(db);
 
 }
 
 
 
-
-
 function crearCliente(data){
 
-
-let db=getDB();
-
+    let db = getDB();
 
 
-let cliente={
+    let cliente = {
+
+        id: Date.now(),
+
+        nombres: data.nombres || "",
+
+        apellidos: data.apellidos || "",
+
+        dni: data.dni || "",
+
+        telefono: data.telefono || "",
+
+        correo: data.correo || "",
+
+        direccion: data.direccion || "",
+
+        fecha: new Date().toISOString()
+
+    };
 
 
-id:Date.now(),
+    db.clientes.push(cliente);
 
 
-nombres:data.nombres,
+    saveDB(db);
 
 
-apellidos:data.apellidos,
-
-
-dni:data.dni,
-
-
-telefono:data.telefono,
-
-
-correo:data.correo || "",
-
-
-direccion:data.direccion || "",
-
-
-fecha:new Date().toISOString()
-
-
-};
-
-
-
-db.clientes.push(cliente);
-
-
-saveDB(db);
-
-
-return cliente;
-
+    return cliente;
 
 }
 
@@ -165,12 +122,38 @@ return cliente;
 
 function buscarCliente(id){
 
+    return getClientes()
+    .find(c=>c.id==id);
 
-return getClientes()
-.find(
-c=>c.id==id
-);
+}
 
+
+
+function actualizarCliente(id,data){
+
+
+    let db=getDB();
+
+
+    let cliente=db.clientes.find(
+        c=>c.id==id
+    );
+
+
+    if(!cliente)return null;
+
+
+
+    Object.assign(
+        cliente,
+        data
+    );
+
+
+    saveDB(db);
+
+
+    return cliente;
 
 }
 
@@ -179,130 +162,111 @@ c=>c.id==id
 function eliminarCliente(id){
 
 
-let db=getDB();
+    let db=getDB();
 
 
-
-db.clientes =
-db.clientes.filter(
-c=>c.id!=id
-);
-
+    db.clientes =
+    db.clientes.filter(
+        c=>c.id!=id
+    );
 
 
-db.ventas =
-db.ventas.filter(
-v=>v.clienteId!=id
-);
+    db.ventas =
+    db.ventas.filter(
+        v=>v.clienteId!=id
+    );
 
 
-
-db.cuotas =
-db.cuotas.filter(
-q=>q.clienteId!=id
-);
-
+    db.cuotas =
+    db.cuotas.filter(
+        q=>q.clienteId!=id
+    );
 
 
-saveDB(db);
-
+    saveDB(db);
 
 }
 
 
 
 
-
-
-
-// ============================
+// ===============================
 // VENTAS
-// ============================
-
+// ===============================
 
 
 function getVentas(){
 
-
-return getDB().ventas || [];
-
+    return getDB().ventas || [];
 
 }
-
-
 
 
 
 function crearVenta(data){
 
 
-let db=getDB();
+    let db=getDB();
 
 
 
-let venta={
+    let venta={
 
 
-id:Date.now(),
+        id:Date.now(),
 
 
-clienteId:data.clienteId,
+        clienteId:data.clienteId,
 
 
-producto:data.producto,
+        producto:data.producto || "",
 
 
-montoTotal:Number(data.montoTotal),
+        montoTotal:Number(data.montoTotal)||0,
 
 
-tipoContrato:data.tipoContrato,
+        tipoContrato:data.tipoContrato || "AL CONTADO",
 
 
-estado:data.estado || "ACTUAL",
+        estado:data.estado || "ACTUAL",
 
 
-orden:data.orden || "",
+        orden:data.orden || "",
 
 
-vendedor:data.vendedor || "",
+        vendedor:data.vendedor || "",
 
 
-regalo:data.regalo || "",
+        regalo:data.regalo || "",
 
 
-observaciones:data.observaciones || "",
+        observaciones:data.observaciones || "",
 
 
-fecha:new Date().toISOString()
+        fecha:new Date().toISOString()
+
+    };
 
 
-};
+
+    db.ventas.push(venta);
 
 
 
-db.ventas.push(venta);
+    saveDB(db);
 
 
-saveDB(db);
 
-
-return venta;
-
+    return venta;
 
 }
-
-
 
 
 
 function buscarVenta(id){
 
-
-return getVentas()
-.find(
-v=>v.id==id
-);
-
+    return getVentas()
+    .find(v=>v.id==id);
 
 }
 
@@ -310,92 +274,78 @@ v=>v.id==id
 
 
 
-
-
-
-// ============================
+// ===============================
 // CUOTAS
-// ============================
-
+// ===============================
 
 
 function getCuotas(){
 
-
-return getDB().cuotas || [];
-
+    return getDB().cuotas || [];
 
 }
+
 
 
 
 function guardarCuotas(lista){
 
 
-let db=getDB();
+    let db=getDB();
 
 
-db.cuotas=lista;
+    db.cuotas=lista;
 
 
-saveDB(db);
-
+    saveDB(db);
 
 }
+
 
 
 
 
 function crearCuotas(
-venta,
-cantidad,
-monto
+    venta,
+    cantidad,
+    monto
 ){
 
 
-let db=getDB();
+    let db=getDB();
+
+
+    for(
+        let i=1;
+        i<=cantidad;
+        i++
+    ){
+
+
+        db.cuotas.push({
+
+            id:Date.now()+i,
+
+            ventaId:venta.id,
+
+            clienteId:venta.clienteId,
+
+            numero:i,
+
+            monto:Number(monto),
+
+            estado:"PENDIENTE",
+
+            fechaPago:null
+
+        });
+
+
+    }
 
 
 
-for(
-let i=1;
-i<=cantidad;
-i++
-){
-
-
-db.cuotas.push({
-
-
-id:Date.now()+i,
-
-
-ventaId:venta.id,
-
-
-clienteId:venta.clienteId,
-
-
-numero:i,
-
-
-monto:Number(monto),
-
-
-estado:"PENDIENTE",
-
-
-fechaPago:null
-
-
-});
-
-
-}
-
-
-
-saveDB(db);
+    saveDB(db);
 
 
 }
@@ -404,7 +354,7 @@ saveDB(db);
 
 
 
-// inicializar
+// iniciar
 
 iniciarDB();
 
