@@ -3,72 +3,243 @@
 // ==========================================
 
 
-const FORMS_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vSPfEHb-4mXxPTOKoxmTDZ7fi1n-WUsGW01oOP1b_8YBov5_d0XVEfgcu4X4iELPCbJfUklxXPZOLzC/pub?gid=1242178679&single=true&output=csv";
+let datosForms = [];
 
 
 
-let registrosForms=[];
-
+// ==========================================
+// CARGAR FORMS
+// ==========================================
 
 
 async function cargarForms(){
 
 
+try{
+
+
+if(
+!window.IMVICTO_CONFIG ||
+!window.IMVICTO_CONFIG.FORMS_URL
+){
+
+throw new Error(
+"No existe configuración"
+);
+
+}
+
+
+
 const respuesta =
-await fetch(FORMS_URL);
+await fetch(
+window.IMVICTO_CONFIG.FORMS_URL
+);
 
 
 
-const csv =
+const texto =
 await respuesta.text();
 
 
 
 const filas =
-csv
+texto
+.trim()
 .split("\n")
 .map(
-f=>f.split(",")
+fila =>
+fila.split(",")
 );
 
 
 
-const columnas =
+const encabezados =
 filas.shift();
 
 
 
-registrosForms =
-filas.map(f=>{
+datosForms =
+filas.map(fila=>{
 
 
-let registro={};
+let obj={};
 
 
-columnas.forEach(
-(col,i)=>{
+encabezados.forEach(
+(campo,index)=>{
 
 
-registro[
-col.trim()
-]=
-f[i]
+obj[campo.trim()] =
+fila[index]
 ?.trim()
-||
-"";
+||"";
 
 
 });
 
 
-return registro;
+return obj;
 
 
 });
 
 
-return registrosForms;
+
+console.log(
+"FORMS CARGADOS",
+datosForms
+);
+
+
+
+mostrarForms();
+
+
+
+}
+catch(error){
+
+
+console.error(
+"Error Forms:",
+error
+);
+
+
+
+mostrarToast(
+"No se pudo cargar IMVICTO FORMS"
+);
+
+
+}
+
+
+
+}
+
+
+
+// ==========================================
+// MOSTRAR DATOS
+// ==========================================
+
+
+function mostrarForms(){
+
+
+const select =
+document.getElementById(
+"clienteExistente"
+);
+
+
+
+if(!select)return;
+
+
+
+select.innerHTML =
+`
+<option>
+Registrar manualmente
+</option>
+`;
+
+
+
+datosForms.forEach(
+((f,index)=>{
+
+
+select.innerHTML +=
+`
+
+<option value="${index}">
+${f.CLIENTE || "Sin nombre"}
+</option>
+
+`;
+
+
+})
+);
+
+
+
+}
+
+
+
+// ==========================================
+// SELECCIONAR CLIENTE
+// ==========================================
+
+
+function cargarClienteForm(index){
+
+
+const data =
+datosForms[index];
+
+
+
+if(!data)return;
+
+
+
+const mapa={
+
+
+nombre:
+data.CLIENTE,
+
+
+telefono:
+data.TELEFONO,
+
+
+direccion:
+data.DIRECCION,
+
+
+perfil:
+data.PERFIL,
+
+
+fecha:
+data.DÍA,
+
+
+hora:
+data.HORA
+
+
+
+};
+
+
+
+Object.keys(mapa)
+.forEach(
+(id)=>{
+
+
+const campo =
+document.getElementById(id);
+
+
+
+if(campo){
+
+campo.value =
+mapa[id];
+
+}
+
+
+});
 
 
 }
@@ -76,57 +247,106 @@ return registrosForms;
 
 
 
-function obtenerMisForms(){
+// ==========================================
+// BOTON SINCRONIZAR
+// ==========================================
 
 
-const usuario =
-JSON.parse(
-localStorage.getItem("usuario")
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+
+cargarForms();
+
+
+
+const boton =
+document.getElementById(
+"sincronizarForms"
 );
 
 
 
-if(!usuario)
-return [];
+if(boton){
 
-
-
-const alias =
-(usuario.aliasForms || [])
-.map(a=>a.toLowerCase());
-
-
-
-return registrosForms.filter(
-(r)=>{
-
-
-const vendedores =
-r[
-"VENDEDORES (encargado + vendedor)"
-]
-?.toLowerCase()
-||
-"";
-
-
-
-return alias.some(
-a=>vendedores.includes(a)
-);
-
-
-
-});
-
-
-}
-
-
-
-window.cargarForms =
+boton.onclick =
 cargarForms;
 
+}
 
-window.obtenerMisForms =
-obtenerMisForms;
+
+
+const select =
+document.getElementById(
+"clienteExistente"
+);
+
+
+
+if(select){
+
+
+select.onchange =
+()=>{
+
+
+cargarClienteForm(
+select.value
+);
+
+
+};
+
+
+}
+
+
+
+});
+
+
+
+// ==========================================
+// TOAST
+// ==========================================
+
+
+function mostrarToast(texto){
+
+
+const toast =
+document.getElementById(
+"toast"
+);
+
+
+
+if(toast){
+
+
+toast.textContent =
+texto;
+
+
+toast.classList.remove(
+"hidden"
+);
+
+
+setTimeout(
+()=>toast.classList.add("hidden"),
+3000
+);
+
+
+}else{
+
+
+console.log(texto);
+
+
+}
+
+
+}
