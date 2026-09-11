@@ -1,3 +1,8 @@
+Voy a empezar con el bloque 1/2 del `admin.html` completo.
+
+No lo pegues todavía hasta recibir el bloque 2.
+
+```html
 <!doctype html>
 <html lang="es">
 
@@ -46,6 +51,11 @@ Inicio
 </button>
 
 
+<button class="nav-btn" data-view="seguimiento">
+Seguimiento
+</button>
+
+
 <button class="nav-btn" data-view="clientes">
 Clientes
 </button>
@@ -69,6 +79,7 @@ Exportar
 </nav>
 
 
+
 <div class="sidebar-footer">
 
 <span id="sessionLabel"></span>
@@ -76,7 +87,6 @@ Exportar
 <button id="logoutBtn" class="btn ghost full">
 Cerrar sesión
 </button>
-
 
 </div>
 
@@ -98,9 +108,11 @@ Cerrar sesión
 PANEL ADMINISTRATIVO
 </p>
 
+
 <h1 id="viewTitle">
 Inicio
 </h1>
+
 
 <p id="viewSubtitle">
 Control general del negocio
@@ -116,6 +128,8 @@ Actualizar
 
 
 </header>
+
+
 
 
 
@@ -153,12 +167,11 @@ Actualizar
 
 
 
-
 <div class="admin-stat danger">
 
-<span>Cuotas vencidas</span>
+<span>Cuotas pendientes</span>
 
-<strong id="statVencidas">
+<strong id="statCuotas">
 0
 </strong>
 
@@ -166,12 +179,11 @@ Actualizar
 
 
 
-
 <div class="admin-stat money">
 
-<span>Pendiente</span>
+<span>Total vendido</span>
 
-<strong id="statPendiente">
+<strong id="statMonto">
 S/0
 </strong>
 
@@ -179,6 +191,8 @@ S/0
 
 
 </div>
+
+
 
 
 
@@ -190,8 +204,8 @@ S/0
 </h3>
 
 
-<table>
 
+<table>
 
 <thead>
 
@@ -202,7 +216,7 @@ Cliente
 </th>
 
 <th>
-Cuota
+Venta
 </th>
 
 <th>
@@ -210,20 +224,79 @@ Monto
 </th>
 
 <th>
-Fecha
-</th>
-
-<th>
 Estado
 </th>
 
-</tr>
 
+</tr>
 
 </thead>
 
 
 <tbody id="homeCuotasBody">
+
+</tbody>
+
+
+</table>
+
+
+</section>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- SEGUIMIENTO -->
+
+
+<section id="seguimiento" class="view">
+
+
+<section class="admin-panel">
+
+
+<h3>
+Seguimiento vendedores
+</h3>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>
+Vendedor
+</th>
+
+<th>
+Demos
+</th>
+
+<th>
+Mantenimientos
+</th>
+
+<th>
+Ventas
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="seguimientoBody">
 
 </tbody>
 
@@ -257,126 +330,103 @@ Estado
 <form id="clienteForm" class="admin-panel form-grid">
 
 
-<h3>
+<h3 id="clienteTitulo">
 Nuevo cliente
 </h3>
 
 
 
-<label>
-Nombres
-
-<input name="nombres" required>
-
-</label>
+<input type="hidden" id="clienteId">
 
 
 
 <label>
-Apellidos
 
-<input name="apellidos" required>
-
-</label>
-
-
-
-
-<label>
-DNI
-
-<input name="dni">
-
-</label>
-
-
-
-<label>
-Teléfono
-
-<input name="telefono">
-
-</label>
-
-
-
-
-<label>
-Correo
-
-<input name="correo">
-
-</label>
-
-
-
-
-<label>
-Dirección
-
-<input name="direccion">
-
-</label>
-
-
-
-
-<label>
-Mercadería
-
-<input name="mercaderia">
-
-</label>
-
-
-
-
-<label>
-Contrato
-
-<select name="tipo_contrato">
-
-
-<option>
-AL CONTADO
-</option>
-
-
-<option>
-FINANCIADO
-</option>
-
-
-</select>
-
-
-</label>
-
-
-
-
-<label>
-Monto total
+Nombres *
 
 <input 
-name="monto_total"
-type="number">
-
+name="nombres"
+required>
 
 </label>
 
 
 
-<button class="btn primary">
+
+<label>
+
+Apellidos *
+
+<input 
+name="apellidos"
+required>
+
+</label>
+
+
+
+
+<label>
+
+DNI *
+
+<input 
+name="dni"
+required>
+
+</label>
+
+
+
+
+<label>
+
+Teléfono *
+
+<input 
+name="telefono"
+required>
+
+</label>
+
+
+
+
+<label>
+
+Correo
+
+<input 
+name="correo">
+
+</label>
+
+
+
+
+<label>
+
+Dirección
+
+<input 
+name="direccion">
+
+</label>
+
+
+
+
+<button 
+type="submit"
+class="btn primary"
+id="clienteBtn">
 
 Guardar cliente
 
 </button>
 
 
-
 </form>
-
 
 
 
@@ -421,14 +471,14 @@ Teléfono
 
 
 <th>
-Acción
+Acciones
 </th>
+
 
 </tr>
 
 
 </thead>
-
 
 
 <tbody id="clientesBody">
@@ -448,106 +498,241 @@ Acción
 </section>
 
 
-
-
-
-
-
-
-
 <!-- VENTAS -->
+
 
 <section id="ventas" class="view">
 
 
-<div class="admin-panel">
-
-<h2>Nueva venta</h2>
+<div class="admin-grid">
 
 
-<form id="ventaForm">
+
+<form id="ventaForm" class="admin-panel form-grid">
+
+
+<h3>
+Nueva venta
+</h3>
+
+
+
+<input 
+type="hidden"
+id="ventaClienteId"
+name="cliente_id">
+
 
 
 <label>
-Cliente *
-<input name="cliente" required>
+
+Buscar cliente *
+
+<input 
+id="buscarClienteVenta"
+placeholder="Nombre o DNI">
+
 </label>
 
 
+
+<div id="resultadoClientes">
+
+</div>
+
+
+
 <label>
+
+Cliente seleccionado
+
+<input 
+id="ventaClienteNombre"
+disabled>
+
+</label>
+
+
+
+
+<label>
+
 Producto *
-<input name="producto" required>
+
+<input 
+name="producto"
+required>
+
 </label>
 
 
+
+
 <label>
+
+Modelo
+
+<input 
+name="modelo">
+
+</label>
+
+
+
+
+<label>
+
 Monto total *
-<input name="monto" type="number" required>
+
+<input 
+name="monto_total"
+type="number"
+required>
+
 </label>
 
 
-<label>
-Estado *
-<select name="estado">
 
-<option>ACTIVA</option>
-<option>PENDIENTE</option>
-<option>CANCELADA</option>
+
+<label>
+
+Tipo contrato *
+
+<select name="tipo_contrato">
+
+
+<option>
+AL CONTADO
+</option>
+
+
+<option>
+FINANCIADO
+</option>
+
+
+<option>
+SIN INTERESES
+</option>
+
 
 </select>
+
 </label>
 
 
 
+
 <label>
+
 Número de orden
-<input name="orden">
+
+<input 
+name="numero_orden">
+
 </label>
 
 
 
+
 <label>
+
 Vendedor
-<input name="vendedor">
+
+<input 
+name="vendedor">
+
 </label>
+
 
 
 
 <label>
+
 Observaciones
-<textarea name="notas"></textarea>
+
+<textarea name="observaciones"></textarea>
+
 </label>
 
 
 
-<button>
+
+<button 
+type="submit"
+class="btn primary">
+
 Guardar venta
+
 </button>
+
 
 
 </form>
 
 
-</div>
 
 
 
-<div class="admin-panel">
 
 
-<h2>Ventas registradas</h2>
+
+<section class="admin-panel">
+
+
+<h3>
+Ventas registradas
+</h3>
+
 
 
 <table>
 
-<tbody id="ventasBody"></tbody>
+
+<thead>
+
+<tr>
+
+<th>
+Cliente
+</th>
+
+<th>
+Producto
+</th>
+
+<th>
+Monto
+</th>
+
+<th>
+Contrato
+</th>
+
+<th>
+Acciones
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+<tbody id="ventasBody">
+
+</tbody>
 
 
 </table>
 
 
-</div>
+</section>
 
+
+
+</div>
 
 
 </section>
@@ -566,24 +751,62 @@ Guardar venta
 <section id="cuotas" class="view">
 
 
-<div class="admin-panel">
+<section class="admin-panel">
 
-<h2>Cuotas</h2>
+
+<h3>
+Cuotas
+</h3>
+
 
 
 <table>
 
 
-<tbody id="cuotasBody"></tbody>
+<thead>
+
+<tr>
+
+<th>
+Cliente
+</th>
+
+<th>
+Venta
+</th>
+
+<th>
+Monto
+</th>
+
+<th>
+Estado
+</th>
+
+<th>
+Fecha
+</th>
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="cuotasBody">
+
+</tbody>
 
 
 </table>
 
 
-</div>
+</section>
 
 
 </section>
+
 
 
 
@@ -602,18 +825,20 @@ Guardar venta
 
 
 <h3>
-Exportar base de datos
+Exportar información
 </h3>
 
 
 
 <p>
-Exporta clientes, ventas y cuotas.
+Descarga clientes, ventas y cuotas.
 </p>
 
 
 
-<button id="exportExcelBtn" class="btn secondary">
+<button 
+id="exportExcelBtn"
+class="btn secondary">
 
 Exportar Excel
 
@@ -629,10 +854,14 @@ Exportar Excel
 
 
 
+
+
 </main>
 
 
 </div>
+
+
 
 
 
@@ -642,14 +871,12 @@ Exportar Excel
 
 
 
-<!-- LIBRERIA EXCEL -->
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script src="./js/storage.js"></script>
 
 <script src="./js/admin.js"></script>
-
 
 
 </body>
