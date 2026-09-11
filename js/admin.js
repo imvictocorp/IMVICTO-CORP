@@ -1,77 +1,117 @@
-let clienteEditando = null;
+// ==============================
+// ADMIN PANEL
+// ==============================
 
+let clientes=[];
+let ventas=[];
+let cuotas=[];
+
+let editandoCliente=null;
+
+
+// ==============================
+// INICIO
+// ==============================
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-iniciarSesion();
+cargarStorage();
 
-configurarMenu();
-
-configurarEventos();
+activarMenu();
 
 cargarTodo();
 
-});
-
-
-
-// ==========================
-// SESION
-// ==========================
-
-function iniciarSesion(){
-
-const usuario =
-localStorage.getItem("usuario") || "Administrador";
-
-
-const label =
-document.getElementById("sessionLabel");
-
-
-if(label){
-label.textContent="Sesión: "+usuario;
-}
-
+document
+.getElementById("refreshBtn")
+?.addEventListener("click",cargarTodo);
 
 
 document
-.getElementById("logoutBtn")
-?.addEventListener("click",()=>{
+.getElementById("clienteVentaForm")
+?.addEventListener("submit",guardarClienteVenta);
 
 
-localStorage.removeItem("usuario");
+document
+.getElementById("clienteSearch")
+?.addEventListener("input",renderClientes);
 
-location.href="./login.html";
+
+document
+.getElementById("ventaSearch")
+?.addEventListener("input",renderVentas);
+
+
+document
+.getElementById("exportExcelBtn")
+?.addEventListener("click",exportarExcel);
 
 
 });
 
+
+
+// ==============================
+// STORAGE
+// ==============================
+
+
+function cargarStorage(){
+
+clientes=
+JSON.parse(localStorage.getItem("clientes")) || [];
+
+ventas=
+JSON.parse(localStorage.getItem("ventas")) || [];
+
+cuotas=
+JSON.parse(localStorage.getItem("cuotas")) || [];
+
+}
+
+
+
+function guardarStorage(){
+
+localStorage.setItem(
+"clientes",
+JSON.stringify(clientes)
+);
+
+
+localStorage.setItem(
+"ventas",
+JSON.stringify(ventas)
+);
+
+
+localStorage.setItem(
+"cuotas",
+JSON.stringify(cuotas)
+);
 
 }
 
 
 
 
-// ==========================
+// ==============================
 // MENU
-// ==========================
-
-function configurarMenu(){
+// ==============================
 
 
-document
-.querySelectorAll(".nav-btn")
+function activarMenu(){
+
+
+document.querySelectorAll(".nav-btn")
 .forEach(btn=>{
 
 
-btn.onclick=()=>{
+btn.addEventListener("click",()=>{
 
 
 document
 .querySelectorAll(".nav-btn")
-.forEach(b=>b.classList.remove("active"));
-
+.forEach(x=>x.classList.remove("active"));
 
 
 btn.classList.add("active");
@@ -84,17 +124,17 @@ document
 
 
 
-document
-.getElementById(btn.dataset.view)
-?.classList.add("active");
+let vista=
+document.getElementById(btn.dataset.view);
 
 
 
-cambiarTitulo(btn.dataset.view);
+if(vista)
+vista.classList.add("active");
 
 
-};
 
+});
 
 });
 
@@ -103,191 +143,130 @@ cambiarTitulo(btn.dataset.view);
 
 
 
+// ==============================
+// CARGAR TODO
+// ==============================
 
-function cambiarTitulo(vista){
-
-
-let datos={
-
-inicio:[
-"Inicio",
-"Control general del negocio"
-],
-
-seguimiento:[
-"Seguimiento",
-"Resumen comercial de vendedores"
-],
-
-clientes:[
-"Clientes",
-"Clientes y pedidos registrados"
-],
-
-ventas:[
-"Ventas",
-"Registro general de ventas"
-],
-
-cuotas:[
-"Cuotas",
-"Seguimiento de pagos"
-],
-
-exportar:[
-"Exportar",
-"Descargar información"
-]
-
-
-};
-
-
-
-let titulo =
-document.getElementById("viewTitle");
-
-
-let subtitulo =
-document.getElementById("viewSubtitle");
-
-
-
-if(datos[vista]){
-
-
-titulo.textContent=datos[vista][0];
-
-subtitulo.textContent=datos[vista][1];
-
-
-}
-
-
-}
-
-
-
-
-
-// ==========================
-// EVENTOS
-// ==========================
-
-function configurarEventos(){
-
-
-document
-.getElementById("refreshBtn")
-?.addEventListener(
-"click",
-cargarTodo
-);
-
-
-
-document
-.getElementById("clienteVentaForm")
-?.addEventListener(
-"submit",
-guardarClienteVenta
-);
-
-
-
-document
-.getElementById("buscarCliente")
-?.addEventListener(
-"input",
-cargarClientes
-);
-
-
-
-document
-.getElementById("buscarVenta")
-?.addEventListener(
-"input",
-cargarVentas
-);
-
-
-
-document
-.getElementById("exportarExcelBtn")
-?.addEventListener(
-"click",
-exportarExcel
-);
-
-
-
-}
-
-
-
-
-
-
-// ==========================
-// CARGA GENERAL
-// ==========================
 
 function cargarTodo(){
 
+cargarStorage();
 
-cargarClientes();
 
-cargarVentas();
+actualizarDashboard();
 
-cargarCuotas();
 
-cargarInicio();
+renderClientes();
 
-cargarSeguimiento();
+
+renderVentas();
+
+
+renderCuotas();
+
+
+}
+
+
+// ==============================
+// DASHBOARD
+// ==============================
+
+
+function actualizarDashboard(){
+
+
+let clientesBox=
+document.getElementById("statClientes");
+
+
+let ventasBox=
+document.getElementById("statVentas");
+
+
+let cuotasBox=
+document.getElementById("statVencidas");
+
+
+let pendienteBox=
+document.getElementById("statPendiente");
+
+
+
+if(clientesBox)
+clientesBox.textContent=clientes.length;
+
+
+
+if(ventasBox)
+ventasBox.textContent=ventas.length;
+
+
+
+let vencidas=
+cuotas.filter(
+c=>c.estado==="VENCIDA"
+).length;
+
+
+
+if(cuotasBox)
+cuotasBox.textContent=vencidas;
+
+
+
+let pendiente=
+cuotas
+.filter(c=>c.estado!=="PAGADA")
+.reduce(
+(a,b)=>a+Number(b.monto),
+0
+);
+
+
+
+if(pendienteBox)
+pendienteBox.textContent=
+"S/"+pendiente;
 
 
 }
 
 
 
-
-
-
-
-
-// ==========================
-// CLIENTE + VENTA
-// ==========================
+// ==============================
+// GUARDAR CLIENTE + VENTA
+// ==============================
 
 
 function guardarClienteVenta(e){
-
 
 e.preventDefault();
 
 
 
-let datos =
-Object.fromEntries(
-new FormData(e.target)
-);
+let f=
+new FormData(e.target);
 
 
 
 let cliente={
 
-nombres:datos.nombres,
 
-apellidos:datos.apellidos,
+id:Date.now(),
 
-dni:datos.dni,
 
-telefono:datos.telefono,
+nombres:f.get("nombres"),
 
-correo:datos.correo,
+apellidos:f.get("apellidos"),
 
-direccion:datos.direccion
+dni:f.get("dni"),
+
+telefono:f.get("telefono"),
+
+correo:f.get("correo"),
+
+direccion:f.get("direccion")
 
 
 };
@@ -296,61 +275,115 @@ direccion:datos.direccion
 
 let venta={
 
-mercaderia:datos.mercaderia,
 
-monto_total:Number(datos.monto_total),
+id:Date.now()+1,
 
-tipo_contrato:datos.tipo_contrato,
 
-estado_pedido:datos.estado_pedido,
+clienteId:cliente.id,
 
-numero_orden:datos.numero_orden,
 
-regalo:datos.regalo,
+producto:f.get("mercaderia"),
 
-vendedor:datos.vendedor
+
+monto:Number(
+f.get("monto_total")
+),
+
+
+contrato:f.get("tipo_contrato"),
+
+
+estado:f.get("estado_pedido") || "ACTUAL",
+
+
+orden:f.get("orden"),
+
+
+regalo:f.get("regalo"),
+
+
+vendedor:f.get("vendedor"),
+
+
+fecha:new Date().toLocaleDateString()
 
 
 };
 
 
 
+clientes.push(cliente);
 
-// guardar cliente
 
-let nuevoCliente =
-STORAGE.crear(
-STORAGE.clientes,
-cliente
-);
+ventas.push(venta);
 
 
 
-// guardar venta ligada
-
-venta.cliente_id=
-nuevoCliente.id;
+// CREAR CUOTAS
 
 
-venta.cliente_nombre=
-cliente.nombres+" "+cliente.apellidos;
+if(
+venta.contrato==="FINANCIADO"
+){
+
+
+let cantidad=
+Number(f.get("cantidad_cuotas"));
+
+
+let monto=
+Number(f.get("monto_cuota"));
 
 
 
-STORAGE.crear(
-STORAGE.ventas,
-venta
-);
+for(
+let i=1;
+i<=cantidad;
+i++
+){
 
+
+cuotas.push({
+
+
+id:Date.now()+i,
+
+
+ventaId:venta.id,
+
+
+clienteId:cliente.id,
+
+
+numero:i,
+
+
+monto:monto,
+
+
+estado:"PENDIENTE",
+
+
+fecha:null
+
+
+});
+
+
+}
+
+
+}
+
+
+
+guardarStorage();
+
+
+alert("Cliente y venta guardados");
 
 
 e.target.reset();
-
-
-alert(
-"Cliente y venta registrados"
-);
-
 
 
 cargarTodo();
@@ -362,41 +395,26 @@ cargarTodo();
 
 
 
-
-
-
-
-// ==========================
+// ==============================
 // CLIENTES
-// ==========================
+// ==============================
 
 
-function cargarClientes(){
+function renderClientes(){
 
 
 let tabla=
-document.getElementById(
-"clientesTabla"
-);
-
+document.getElementById("clientesBody");
 
 
 if(!tabla)return;
 
 
 
-let texto=
-document.getElementById(
-"buscarCliente"
-)?.value || "";
-
-
-
-let clientes=
-STORAGE.buscar(
-STORAGE.clientes,
-texto
-);
+let buscar=
+document.getElementById("clienteSearch")
+?.value
+.toLowerCase() || "";
 
 
 
@@ -404,20 +422,32 @@ tabla.innerHTML="";
 
 
 
-clientes.forEach(c=>{
+clientes
+.filter(c=>
 
+(
+c.nombres+
+c.apellidos+
+c.dni+
+c.telefono
 
-let ventas =
-STORAGE.get(
-STORAGE.ventas
 )
-.filter(
-v=>v.cliente_id==c.id
-);
+.toLowerCase()
+.includes(buscar)
+
+)
+.forEach(c=>{
+
+
+let compras=
+ventas.filter(
+v=>v.clienteId===c.id
+).length;
 
 
 
 tabla.innerHTML+=`
+
 
 <tr>
 
@@ -437,7 +467,7 @@ ${c.telefono}
 
 
 <td>
-${ventas.length}
+${compras}
 </td>
 
 
@@ -445,23 +475,17 @@ ${ventas.length}
 
 
 <button 
-class="btn small"
+class="btn-edit"
 onclick="editarCliente(${c.id})">
-
 Editar
-
 </button>
 
 
-
-<button 
-class="btn danger small"
+<button
+class="btn-delete"
 onclick="eliminarCliente(${c.id})">
-
 Eliminar
-
 </button>
-
 
 
 </td>
@@ -469,7 +493,9 @@ Eliminar
 
 </tr>
 
+
 `;
+
 
 });
 
@@ -479,56 +505,40 @@ Eliminar
 
 
 
-
-
-
-
 function editarCliente(id){
 
 
-let cliente =
-STORAGE.get(STORAGE.clientes)
-.find(
-c=>c.id==id
-);
+let c=
+clientes.find(x=>x.id===id);
+
+
+if(!c)return;
 
 
 
-if(!cliente)return;
+let form=
+document.getElementById("clienteVentaForm");
 
 
+for(
+let campo in c
+){
 
-let nombres =
-prompt(
-"Nombres",
-cliente.nombres
-);
-
-
-
-if(nombres){
+let input=
+form.elements[campo];
 
 
-STORAGE.actualizar(
-STORAGE.clientes,
-id,
-{
-nombres:nombres
-}
-);
-
-
-
-cargarClientes();
+if(input)
+input.value=c[campo];
 
 
 }
 
 
+editandoCliente=id;
+
+
 }
-
-
-
 
 
 
@@ -536,34 +546,31 @@ cargarClientes();
 function eliminarCliente(id){
 
 
-if(!confirm("Eliminar cliente y sus ventas?"))
+if(!confirm("Eliminar cliente?"))
 return;
 
 
 
-STORAGE.eliminar(
-STORAGE.clientes,
-id
+clientes=
+clientes.filter(
+c=>c.id!==id
+);
+
+
+ventas=
+ventas.filter(
+v=>v.clienteId!==id
+);
+
+
+cuotas=
+cuotas.filter(
+c=>c.clienteId!==id
 );
 
 
 
-let ventas =
-STORAGE.get(
-STORAGE.ventas
-)
-.filter(
-v=>v.cliente_id!=id
-);
-
-
-
-STORAGE.set(
-STORAGE.ventas,
-ventas
-);
-
-
+guardarStorage();
 
 cargarTodo();
 
@@ -574,41 +581,19 @@ cargarTodo();
 
 
 
-
-
-
-
-// ==========================
+// ==============================
 // VENTAS
-// ==========================
+// ==============================
 
 
-function cargarVentas(){
+function renderVentas(){
 
 
 let tabla=
-document.getElementById(
-"ventasTabla"
-);
-
+document.getElementById("ventasBody");
 
 
 if(!tabla)return;
-
-
-
-let texto =
-document.getElementById(
-"buscarVenta"
-)?.value || "";
-
-
-
-let ventas =
-STORAGE.buscar(
-STORAGE.ventas,
-texto
-);
 
 
 
@@ -619,39 +604,50 @@ tabla.innerHTML="";
 ventas.forEach(v=>{
 
 
+let c=
+clientes.find(
+x=>x.id===v.clienteId
+);
+
+
+
 tabla.innerHTML+=`
+
 
 <tr>
 
 
 <td>
-${v.cliente_nombre}
+${c?.nombres || ""}
+${c?.apellidos || ""}
 </td>
 
 
 <td>
-${v.mercaderia}
+${v.producto}
 </td>
 
 
 <td>
-S/${v.monto_total}
+S/${v.monto}
 </td>
 
 
 <td>
-${v.tipo_contrato}
+${v.contrato}
 </td>
 
 
 <td>
-${v.vendedor || ""}
+${v.vendedor || "-"}
 </td>
 
 
 <td>
 
-<button class="btn small">
+<button
+class="btn-view"
+onclick="verVenta(${v.id})">
 Ver
 </button>
 
@@ -660,7 +656,9 @@ Ver
 
 </tr>
 
+
 `;
+
 
 });
 
@@ -670,24 +668,65 @@ Ver
 
 
 
+function verVenta(id){
+
+
+let v=
+ventas.find(
+x=>x.id===id
+);
 
 
 
+let c=
+clientes.find(
+x=>x.id===v.clienteId
+);
 
 
-// ==========================
+
+alert(`
+
+CLIENTE:
+
+${c.nombres} ${c.apellidos}
+
+
+PRODUCTO:
+
+${v.producto}
+
+
+MONTO:
+
+S/${v.monto}
+
+
+CONTRATO:
+
+${v.contrato}
+
+
+VENDEDOR:
+
+${v.vendedor || "-"}
+
+`);
+
+}
+
+
+
+// ==============================
 // CUOTAS
-// ==========================
+// ==============================
 
 
-function cargarCuotas(){
+function renderCuotas(){
 
 
 let tabla=
-document.getElementById(
-"cuotasTabla"
-);
-
+document.getElementById("cuotasBody");
 
 
 if(!tabla)return;
@@ -698,187 +737,52 @@ tabla.innerHTML="";
 
 
 
-STORAGE.get(
-STORAGE.cuotas
-)
-.forEach(c=>{
+cuotas.forEach(q=>{
+
+
+let c=
+clientes.find(
+x=>x.id===q.clienteId
+);
+
 
 
 tabla.innerHTML+=`
 
+
 <tr>
 
 <td>
-${c.cliente_nombre}
+${c?.nombres}
+${c?.apellidos}
 </td>
 
-<td>
-${c.venta || ""}
-</td>
 
 <td>
-S/${c.monto}
+Cuota ${q.numero}
 </td>
 
-<td>
-${c.fecha}
-</td>
 
 <td>
-${c.estado}
+S/${q.monto}
 </td>
+
+
+<td>
+${q.fecha || "-"}
+</td>
+
+
+<td>
+${q.estado}
+</td>
+
 
 </tr>
 
 
 `;
 
-});
-
-
-}
-
-
-
-
-
-
-
-
-
-// ==========================
-// DASHBOARD
-// ==========================
-
-
-function cargarInicio(){
-
-
-let clientes =
-STORAGE.get(
-STORAGE.clientes
-);
-
-
-
-let ventas =
-STORAGE.get(
-STORAGE.ventas
-);
-
-
-
-let cuotas =
-STORAGE.get(
-STORAGE.cuotas
-);
-
-
-
-document.getElementById("statClientes").textContent=
-clientes.length;
-
-
-document.getElementById("statVentas").textContent=
-ventas.length;
-
-
-document.getElementById("statCuotas").textContent=
-cuotas.length;
-
-
-
-let total =
-ventas.reduce(
-(a,b)=>a+Number(b.monto_total||0),
-0
-);
-
-
-
-document.getElementById("statMonto").textContent=
-"S/"+total;
-
-
-}
-
-
-
-
-
-
-// ==========================
-// SEGUIMIENTO
-// ==========================
-
-
-function cargarSeguimiento(){
-
-
-let tabla=
-document.getElementById(
-"seguimientoTabla"
-);
-
-
-
-if(!tabla)return;
-
-
-
-tabla.innerHTML="";
-
-
-
-let vendedores={};
-
-
-
-STORAGE.get(
-STORAGE.ventas
-)
-.forEach(v=>{
-
-
-let nombre=
-v.vendedor || "Sin asignar";
-
-
-if(!vendedores[nombre]){
-
-vendedores[nombre]=0;
-
-}
-
-
-vendedores[nombre]++;
-
-
-});
-
-
-
-Object.keys(vendedores)
-.forEach(nombre=>{
-
-
-tabla.innerHTML+=`
-
-<tr>
-
-<td>${nombre}</td>
-
-<td>${vendedores[nombre]}</td>
-
-<td>-</td>
-
-<td>-</td>
-
-<td>-</td>
-
-</tr>
-
-`;
 
 
 });
@@ -890,53 +794,48 @@ tabla.innerHTML+=`
 
 
 
-
-
-
-// ==========================
+// ==============================
 // EXPORTAR
-// ==========================
+// ==============================
 
 
 function exportarExcel(){
 
 
-let libro =
+let data={
+
+clientes,
+
+ventas,
+
+cuotas
+
+};
+
+
+
+let hoja=
+XLSX.utils.json_to_sheet(clientes);
+
+
+let libro=
 XLSX.utils.book_new();
-
-
-
-[
-["Clientes",STORAGE.clientes],
-["Ventas",STORAGE.ventas],
-["Cuotas",STORAGE.cuotas]
-
-]
-.forEach(x=>{
-
-
-let hoja =
-XLSX.utils.json_to_sheet(
-STORAGE.get(x[1])
-);
 
 
 
 XLSX.utils.book_append_sheet(
 libro,
 hoja,
-x[0]
+"Clientes"
 );
-
-
-});
 
 
 
 XLSX.writeFile(
 libro,
-"IMVICTO_CORP.xlsx"
+"IMVICTO_BASE.xlsx"
 );
+
 
 
 }

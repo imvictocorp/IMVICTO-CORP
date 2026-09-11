@@ -340,52 +340,172 @@
     grid-template-columns: 1fr;
   }
 }
+/* CLIENTES */
 
-.form-section{
-margin-bottom:22px;
-padding:15px;
-background:#f7f9fc;
-border-radius:12px;
+#clienteVentaForm{
+display:flex;
+flex-direction:column;
+gap:20px;
 }
 
+.form-section{
+background:#f8fafc;
+border-radius:16px;
+padding:20px;
+border:1px solid #e5eaf1;
+}
 
 .form-section h4{
-margin:0 0 15px;
-font-size:15px;
-color:#123;
+margin-bottom:18px;
+font-size:14px;
+color:#12304a;
 }
 
 
 .two-columns{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:14px;
+gap:18px;
 }
 
 
 .three-columns{
 display:grid;
 grid-template-columns:repeat(3,1fr);
-gap:14px;
+gap:18px;
 }
 
 
-.full{
-grid-column:1/-1;
+.form-section label{
+display:flex;
+flex-direction:column;
+gap:7px;
+font-size:13px;
+font-weight:700;
+color:#26384c;
 }
 
 
-textarea{
+.form-section input,
+.form-section select,
+.form-section textarea{
+
 width:100%;
+height:42px;
+padding:10px 12px;
+
+border-radius:10px;
+border:1px solid #d6dfeb;
+
+background:white;
+
+font-size:14px;
+
+box-sizing:border-box;
+
+}
+
+
+.form-section textarea{
+height:90px;
 resize:none;
 }
 
 
-@media(max-width:900px){
-
-.two-columns,
-.three-columns{
-grid-template-columns:1fr;
+.form-actions{
+display:flex;
+align-items:center;
+justify-content:center;
 }
+
+
+#clienteVentaForm button{
+
+height:55px;
+border-radius:12px;
+
+background:#c89b3c;
+color:white;
+
+font-weight:800;
+
+border:none;
+
+cursor:pointer;
+
+font-size:15px;
+
+}
+
+
+/* TABLAS */
+
+.admin-panel table{
+
+width:100%;
+border-collapse:collapse;
+
+}
+
+
+.admin-panel th{
+
+text-align:left;
+
+padding:14px;
+
+font-size:13px;
+
+color:#17324d;
+
+background:#f4f7fb;
+
+}
+
+
+.admin-panel td{
+
+padding:14px;
+
+border-bottom:1px solid #e6edf5;
+
+font-size:14px;
+
+}
+
+
+.btn-edit{
+
+background:#eef2f7;
+border:none;
+padding:8px 14px;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+
+.btn-delete{
+
+background:#ffe7e7;
+color:#c62828;
+
+border:none;
+padding:8px 14px;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+
+.btn-view{
+
+background:#dbeafe;
+color:#123;
+
+border:none;
+padding:8px 14px;
+border-radius:8px;
+cursor:pointer;
 
 }
