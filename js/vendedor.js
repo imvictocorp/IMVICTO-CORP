@@ -90,8 +90,19 @@ document.getElementById(
 
 if(sessionLabel && usuario){
 
-sessionLabel.textContent =
+const usuario =
+JSON.parse(
+localStorage.getItem("usuario")
+);
+
+
+if(usuario){
+
+document.getElementById("sessionLabel")
+.textContent =
 "Sesión: " + usuario.nombre;
+
+}
 
 }
   }
@@ -1104,3 +1115,20 @@ function getUser(){
     }, 4500);
   }
 })();
+
+function cerrarSesion(){
+
+localStorage.removeItem("usuario");
+
+window.location.href =
+"login.html";
+
+}
+
+
+document
+.getElementById("logoutBtn")
+?.addEventListener(
+"click",
+cerrarSesion
+);
