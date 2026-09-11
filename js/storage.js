@@ -1,71 +1,89 @@
-console.log("Storage local cargado");
-
-
 const STORAGE = {
 
+clientes: "imvicto_clientes",
+ventas: "imvicto_ventas",
+cuotas: "imvicto_cuotas",
 
-clientes:"imvicto_clientes",
-ventas:"imvicto_ventas",
-cuotas:"imvicto_cuotas",
+get(clave){
+    return JSON.parse(localStorage.getItem(clave) || "[]");
+},
 
+set(clave, datos){
+    localStorage.setItem(clave, JSON.stringify(datos));
+},
 
+crear(clave, dato){
 
-guardar(clave,datos){
+    let lista = this.get(clave);
 
-localStorage.setItem(
-clave,
-JSON.stringify(datos)
-);
+    dato.id = Date.now();
+    dato.fecha_creacion = new Date().toISOString();
+
+    lista.unshift(dato);
+
+    this.set(clave, lista);
+
+    return dato;
+},
+
+actualizar(clave,id,cambios){
+
+    let lista = this.get(clave);
+
+    lista = lista.map(item=>{
+
+        if(item.id == id){
+            return {
+                ...item,
+                ...cambios,
+                fecha_actualizacion:new Date().toISOString()
+            };
+        }
+
+        return item;
+
+    });
+
+    this.set(clave,lista);
 
 },
 
 
+eliminar(clave,id){
 
-leer(clave){
+    let lista=this.get(clave);
 
-return JSON.parse(
-localStorage.getItem(clave) || "[]"
-);
+    lista=lista.filter(
+        item=>item.id!=id
+    );
+
+    this.set(clave,lista);
 
 },
 
 
+buscar(clave,texto){
 
-agregar(clave,dato){
+    let lista=this.get(clave);
 
-
-let lista=this.leer(clave);
-
-
-dato.id =
-Date.now();
+    if(!texto) return lista;
 
 
-dato.fecha =
-new Date().toISOString();
+    texto=texto.toLowerCase();
 
 
+    return lista.filter(item=>
 
-lista.unshift(dato);
+        JSON.stringify(item)
+        .toLowerCase()
+        .includes(texto)
 
-
-this.guardar(
-clave,
-lista
-);
-
-
-return dato;
-
+    );
 
 }
 
 
-
 };
-
-
-
 
 
 window.STORAGE = STORAGE;

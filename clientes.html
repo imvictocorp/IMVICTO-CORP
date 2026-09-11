@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Clientes | IMVICTO</title>
+
+<link rel="stylesheet" href="./css/styles.css">
+<link rel="stylesheet" href="./css/admin.css">
+
+</head>
+
+<body>
+
+<div class="app-shell">
+
+
+<aside class="sidebar">
+
+<h2>IMVICTO CORP</h2>
+
+<nav>
+
+<a href="./admin.html">Inicio</a>
+<a class="active" href="./clientes.html">Clientes</a>
+<a href="./ventas.html">Ventas</a>
+<a href="./cuotas.html">Cuotas</a>
+<a href="./exportar.html">Exportar</a>
+
+</nav>
+
+
+</aside>
+
+
+
+<main class="main">
+
+
+<header class="admin-topbar">
+
+<div>
+
+<p class="eyebrow">
+PANEL ADMINISTRATIVO
+</p>
+
+<h1>Clientes</h1>
+
+<p>
+Registro e historial de clientes
+</p>
+
+</div>
+
+</header>
+
+
+
+<section class="admin-grid">
+
+
+<div class="admin-panel">
+
+
+<h2>Nuevo cliente</h2>
+
+
+<form id="clienteForm">
+
+
+<label>
+Nombres *
+<input name="nombres" required>
+</label>
+
+
+<label>
+Apellidos *
+<input name="apellidos" required>
+</label>
+
+
+<label>
+DNI *
+<input name="dni" required>
+</label>
+
+
+<label>
+Teléfono *
+<input name="telefono" required>
+</label>
+
+
+<label>
+Correo
+<input name="correo">
+</label>
+
+
+<label>
+Dirección
+<input name="direccion">
+</label>
+
+
+<button class="btn primary">
+Guardar cliente
+</button>
+
+
+</form>
+
+
+</div>
+
+
+
+
+<div class="admin-panel">
+
+
+<h2>Clientes registrados</h2>
+
+
+<input id="buscarCliente" placeholder="Buscar cliente">
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Cliente</th>
+<th>DNI</th>
+<th>Teléfono</th>
+<th>Acciones</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="clientesTabla"></tbody>
+
+
+</table>
+
+
+</div>
+
+
+</section>
+
+
+
+</main>
+
+
+</div>
+
+
+
+<script src="./js/storage.js"></script>
+<script src="./js/clientes.js"></script>
+
+</body>
+
+</html>

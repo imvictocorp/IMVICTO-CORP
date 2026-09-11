@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Ventas | IMVICTO</title>
+
+<link rel="stylesheet" href="./css/styles.css">
+<link rel="stylesheet" href="./css/admin.css">
+
+</head>
+
+<body>
+
+<div class="app-shell">
+
+<aside class="sidebar">
+
+<h2>IMVICTO CORP</h2>
+
+<nav>
+
+<a href="./admin.html">Inicio</a>
+<a href="./clientes.html">Clientes</a>
+<a class="active" href="./ventas.html">Ventas</a>
+<a href="./cuotas.html">Cuotas</a>
+<a href="./exportar.html">Exportar</a>
+
+</nav>
+
+</aside>
+
+
+<main class="main">
+
+
+<header class="admin-topbar">
+
+<div>
+
+<p class="eyebrow">
+PANEL ADMINISTRATIVO
+</p>
+
+<h1>Ventas</h1>
+
+<p>
+Registro de pedidos y contratos
+</p>
+
+</div>
+
+</header>
+
+
+
+
+<section class="admin-panel">
+
+
+<h2>Seleccionar cliente</h2>
+
+
+<input 
+id="buscarClienteVenta"
+placeholder="Buscar cliente por nombre o DNI">
+
+
+<div id="resultadoClientes"></div>
+
+
+</section>
+
+
+
+
+
+<section 
+id="formVentaBox"
+class="admin-panel"
+style="display:none;">
+
+
+<h2>Nueva venta</h2>
+
+
+<form id="ventaForm">
+
+
+<input type="hidden" id="cliente_id" name="cliente_id">
+
+
+
+<label>
+Cliente
+<input id="clienteNombre" disabled>
+</label>
+
+
+
+<label>
+Producto *
+<input name="producto" required>
+</label>
+
+
+
+<label>
+Modelo
+<input name="modelo">
+</label>
+
+
+
+<label>
+Monto total *
+<input 
+type="number"
+name="monto_total"
+required>
+</label>
+
+
+
+<label>
+Tipo contrato *
+<select name="tipo_contrato">
+
+<option>
+AL CONTADO
+</option>
+
+<option>
+FINANCIADO
+</option>
+
+<option>
+SIN INTERESES
+</option>
+
+</select>
+
+</label>
+
+
+
+
+<label>
+Número de orden
+<input name="numero_orden">
+</label>
+
+
+
+<label>
+Vendedor
+<input name="vendedor">
+</label>
+
+
+
+<label>
+Regalo
+<input name="regalo">
+</label>
+
+
+
+<label>
+Observaciones
+<textarea name="observaciones"></textarea>
+</label>
+
+
+
+<button class="btn primary">
+Guardar venta
+</button>
+
+
+
+</form>
+
+
+</section>
+
+
+
+
+
+
+<section class="admin-panel">
+
+
+<h2>Ventas registradas</h2>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>Cliente</th>
+<th>Producto</th>
+<th>Monto</th>
+<th>Contrato</th>
+<th>Fecha</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="ventasTabla"></tbody>
+
+
+</table>
+
+
+</section>
+
+
+
+
+
+</main>
+
+
+</div>
+
+
+
+
+<script src="./js/storage.js"></script>
+<script src="./js/ventas.js"></script>
+
+
+</body>
+
+</html>
