@@ -27,14 +27,12 @@ aliasForms:[]
 
 
 {
-id:2,
-nombre:"Micaela",
-usuario:"mica",
-clave:"1234",
-rol:"VENDEDOR",
-aliasForms:[
-"MICA"
-]
+ id:2,
+ nombre:"Miguel",
+ usuario:"miguel",
+ clave:"1234",
+ rol:"VENDEDOR",
+ aliasForms:"MIGUEL"
 },
 
 

@@ -3,13 +3,14 @@
 // ==========================================
 
 
-let datosForms = [];
+let IMVICTO_FORMS = [];
 
 
 
-// ==========================================
+
+// ===============================
 // CARGAR FORMS
-// ==========================================
+// ===============================
 
 
 async function cargarForms(){
@@ -19,13 +20,14 @@ try{
 
 
 const url =
-window.IMVICTO_CONFIG?.FORMS_URL;
+window.IMVICTO_CONFIG.FORMS_URL;
+
 
 
 if(!url){
 
 throw new Error(
-"No existe configuración"
+"No existe FORMS_URL"
 );
 
 }
@@ -33,9 +35,7 @@ throw new Error(
 
 
 const respuesta =
-await fetch(
-fetch(url)
-);
+await fetch(url);
 
 
 
@@ -48,33 +48,39 @@ const filas =
 texto
 .trim()
 .split("\n")
+.map(linea=>linea.split(","));
+
+
+
+const headers =
+filas[0]
 .map(
-fila =>
-fila.split(",")
+h=>h
+.replace(/"/g,"")
+.trim()
 );
 
 
 
-const encabezados =
-filas.shift();
-
-
-
-datosForms =
-filas.map(fila=>{
+IMVICTO_FORMS =
+filas
+.slice(1)
+.map(fila=>{
 
 
 let obj={};
 
 
-encabezados.forEach(
-(campo,index)=>{
+
+headers.forEach(
+(header,i)=>{
 
 
-obj[campo.trim()] =
-fila[index]
-?.trim()
-||"";
+obj[header]=
+(fila[i]||"")
+.replace(/"/g,"")
+.trim();
+
 
 
 });
@@ -83,23 +89,23 @@ fila[index]
 return obj;
 
 
+
 });
 
 
 
 console.log(
 "FORMS CARGADOS",
-datosForms
+IMVICTO_FORMS
 );
 
 
 
-mostrarForms();
+return IMVICTO_FORMS;
 
 
 
-}
-catch(error){
+}catch(error){
 
 
 console.error(
@@ -108,63 +114,113 @@ error
 );
 
 
-
 mostrarToast(
 "No se pudo cargar IMVICTO FORMS"
 );
 
 
+
+return [];
+
+}
+
+
 }
 
 
 
-}
 
 
-
-// ==========================================
-// MOSTRAR DATOS
-// ==========================================
-
-
-function mostrarForms(){
+// ===============================
+// DATOS DEL VENDEDOR
+// ===============================
 
 
-const select =
-document.getElementById(
-"clienteExistente"
+function obtenerUsuarioActual(){
+
+
+const usuario =
+localStorage.getItem(
+"usuario"
 );
 
 
 
-if(!select)return;
+if(!usuario)
+return null;
 
 
 
-select.innerHTML =
-`
-<option>
-Registrar manualmente
-</option>
-`;
+return JSON.parse(usuario);
+
+
+}
 
 
 
-datosForms.forEach(
-((f,index)=>{
 
 
-select.innerHTML +=
-`
-
-<option value="${index}">
-${f.CLIENTE || "Sin nombre"}
-</option>
-
-`;
+// ===============================
+// FILTRAR POR VENDEDOR
+// ===============================
 
 
-})
+function obtenerMisForms(){
+
+
+
+const usuario =
+obtenerUsuarioActual();
+
+
+
+if(!usuario)
+return [];
+
+
+
+
+if(usuario.rol==="admin"){
+
+return IMVICTO_FORMS;
+
+}
+
+
+
+const nombre =
+usuario.aliasForms
+||
+usuario.nombre
+||
+usuario.usuario
+||
+"";
+
+
+
+return IMVICTO_FORMS.filter(
+(item)=>{
+
+
+const vendedores =
+(
+item["VENDEDORES (encargado + vendedor)"]
+||
+""
+)
+.toUpperCase();
+
+
+
+return vendedores.includes(
+nombre.toUpperCase()
+);
+
+
+
+}
+
 );
 
 
@@ -173,84 +229,11 @@ ${f.CLIENTE || "Sin nombre"}
 
 
 
-// ==========================================
-// SELECCIONAR CLIENTE
-// ==========================================
 
 
-function cargarClienteForm(index){
-
-
-const data =
-datosForms[index];
-
-
-
-if(!data)return;
-
-
-
-const mapa={
-
-
-nombre:
-data.CLIENTE,
-
-
-telefono:
-data.TELEFONO,
-
-
-direccion:
-data.DIRECCION,
-
-
-perfil:
-data.PERFIL,
-
-
-fecha:
-data.DÍA,
-
-
-hora:
-data.HORA
-
-
-
-};
-
-
-
-Object.keys(mapa)
-.forEach(
-(id)=>{
-
-
-const campo =
-document.getElementById(id);
-
-
-
-if(campo){
-
-campo.value =
-mapa[id];
-
-}
-
-
-});
-
-
-}
-
-
-
-
-// ==========================================
-// BOTON SINCRONIZAR
-// ==========================================
+// ===============================
+// INICIO
+// ===============================
 
 
 document.addEventListener(
@@ -262,92 +245,4 @@ cargarForms();
 
 
 
-const boton =
-document.getElementById(
-"sincronizarForms"
-);
-
-
-
-if(boton){
-
-boton.onclick =
-cargarForms;
-
-}
-
-
-
-const select =
-document.getElementById(
-"clienteExistente"
-);
-
-
-
-if(select){
-
-
-select.onchange =
-()=>{
-
-
-cargarClienteForm(
-select.value
-);
-
-
-};
-
-
-}
-
-
-
 });
-
-
-
-// ==========================================
-// TOAST
-// ==========================================
-
-
-function mostrarToast(texto){
-
-
-const toast =
-document.getElementById(
-"toast"
-);
-
-
-
-if(toast){
-
-
-toast.textContent =
-texto;
-
-
-toast.classList.remove(
-"hidden"
-);
-
-
-setTimeout(
-()=>toast.classList.add("hidden"),
-3000
-);
-
-
-}else{
-
-
-console.log(texto);
-
-
-}
-
-
-}

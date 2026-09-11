@@ -1,5 +1,5 @@
 // ==========================================
-// IMVICTO CONFIG
+// IMVICTO CORP - CONFIG
 // ==========================================
 
 
@@ -14,6 +14,6 @@ window.IMVICTO_CONFIG = {
 
 
 console.log(
-    "CONFIG OK",
-    window.IMVICTO_CONFIG.FORMS_URL
+"CONFIG OK",
+window.IMVICTO_CONFIG
 );
