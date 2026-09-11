@@ -2,505 +2,450 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>IMVICTO CORP | Admin</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="icon" href="./img/logo-imvicto.jpg">
+<title>IMVICTO CORP | Admin</title>
 
-  <link rel="stylesheet" href="./css/styles.css">
-  <link rel="stylesheet" href="./css/admin.css">
+<link rel="icon" href="./img/logo-imvicto.jpg">
+
+<link rel="stylesheet" href="./css/styles.css">
+<link rel="stylesheet" href="./css/admin.css">
 
 </head>
 
 
-<body data-roles="admin">
+<body data-role="admin">
 
 
-  <div class="app-shell">
+<div class="app-shell">
 
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
 
-      <div class="sidebar-brand">
+<div class="sidebar-brand">
 
-        <img src="./img/logo-imvicto.jpg">
+<img src="./img/logo-imvicto.jpg">
 
-        <div>
-          <strong>IMVICTO CORP</strong>
-          <span>Vista administrador</span>
-        </div>
+<div>
+<strong>IMVICTO CORP</strong>
+<span>Administrador</span>
+</div>
 
-      </div>
+</div>
 
 
-      <nav class="nav">
 
-        <button class="nav-btn active" data-view="inicio">
-          Inicio
-        </button>
+<nav class="nav">
 
 
-        <a class="nav-link" href="./seguimiento.html">
-          Seguimiento
-        </a>
+<button class="nav-btn active" data-view="inicio">
+Inicio
+</button>
 
 
-        <button class="nav-btn" data-view="ventas">
-          Ventas
-        </button>
+<button class="nav-btn" data-view="clientes">
+Clientes
+</button>
 
 
-        <button class="nav-btn" data-view="cuotas">
-          Cuotas
-        </button>
+<button class="nav-btn" data-view="ventas">
+Ventas
+</button>
 
 
-        <button class="nav-btn" data-view="clientes">
-          Ingresar Clientes
-        </button>
+<button class="nav-btn" data-view="cuotas">
+Cuotas
+</button>
 
 
-        <button class="nav-btn" data-view="usuarios">
-          Usuarios
-        </button>
+<button class="nav-btn" data-view="excel">
+Exportar
+</button>
 
 
-        <button class="nav-btn" data-view="excel">
-          Importar
-        </button>
+</nav>
 
 
-      </nav>
+<div class="sidebar-footer">
 
+<span id="sessionLabel"></span>
 
+<button id="logoutBtn" class="btn ghost full">
+Cerrar sesión
+</button>
 
-      <div class="sidebar-footer">
 
-        <span id="sessionLabel"></span>
+</div>
 
-        <button id="logoutBtn" class="btn ghost full">
-          Cerrar sesión
-        </button>
 
-      </div>
+</aside>
 
 
-    </aside>
 
 
 
+<main class="main">
 
 
-    <main class="main">
+<header class="admin-topbar">
 
+<div>
 
-      <header class="admin-topbar">
+<p class="eyebrow">
+PANEL ADMINISTRATIVO
+</p>
 
-        <div>
+<h1 id="viewTitle">
+Inicio
+</h1>
 
-          <p class="eyebrow">
-            PANEL ADMINISTRATIVO
-          </p>
+<p id="viewSubtitle">
+Control general del negocio
+</p>
 
 
-          <h1 id="viewTitle">
-            Inicio
-          </h1>
+</div>
 
 
-          <p id="viewSubtitle">
-            Control general del negocio
-          </p>
+<button id="refreshBtn" class="btn secondary">
+Actualizar
+</button>
 
 
-        </div>
+</header>
 
 
 
-        <button id="refreshBtn" class="btn secondary">
-          Actualizar
-        </button>
 
 
-      </header>
+<!-- INICIO -->
 
+<section id="inicio" class="view active">
 
 
+<div class="admin-stats">
 
 
+<div class="admin-stat">
 
+<span>Clientes</span>
 
-      <section id="inicio" class="view active">
+<strong id="statClientes">
+0
+</strong>
 
+</div>
 
-        <div class="admin-stats">
 
 
-          <div class="admin-stat">
-            <span>Clientes</span>
-            <strong id="statClientes">0</strong>
-          </div>
+<div class="admin-stat">
 
+<span>Ventas</span>
 
-          <div class="admin-stat">
-            <span>Ventas</span>
-            <strong id="statVentas">0</strong>
-          </div>
+<strong id="statVentas">
+0
+</strong>
 
+</div>
 
-          <div class="admin-stat danger">
-            <span>Cuotas vencidas</span>
-            <strong id="statVencidas">0</strong>
-          </div>
 
 
-          <div class="admin-stat money">
-            <span>Pendiente</span>
-            <strong id="statPendiente">S/0</strong>
-          </div>
 
+<div class="admin-stat danger">
 
+<span>Cuotas vencidas</span>
 
-        </div>
+<strong id="statVencidas">
+0
+</strong>
 
+</div>
 
 
 
 
-        <section class="admin-panel">
+<div class="admin-stat money">
 
-          <h3>
-            Últimas cuotas
-          </h3>
+<span>Pendiente</span>
 
+<strong id="statPendiente">
+S/0
+</strong>
 
-          <table>
+</div>
 
-            <thead>
 
-              <tr>
-                <th>Cliente</th>
-                <th>Cuota</th>
-                <th>Monto</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-              </tr>
+</div>
 
-            </thead>
 
 
-            <tbody id="homeCuotasBody">
+<section class="admin-panel">
 
-            </tbody>
 
+<h3>
+Últimas cuotas
+</h3>
 
-          </table>
 
+<table>
 
-        </section>
 
+<thead>
 
+<tr>
 
-      </section>
+<th>
+Cliente
+</th>
 
+<th>
+Cuota
+</th>
 
+<th>
+Monto
+</th>
 
+<th>
+Fecha
+</th>
 
+<th>
+Estado
+</th>
 
+</tr>
 
 
+</thead>
 
 
+<tbody id="homeCuotasBody">
 
-      <section id="clientes" class="view">
+</tbody>
 
 
-        <div class="admin-grid">
+</table>
 
 
-          <form id="clienteForm" class="admin-panel form-grid">
+</section>
 
 
-            <h3 id="clienteFormTitle">
-              Nuevo registro
-            </h3>
+</section>
 
 
 
-            <label>
-              Nombres *
-              <input name="nombres" required>
-            </label>
 
 
-            <label>
-              Apellidos *
-              <input name="apellidos" required>
-            </label>
 
 
-            <label>
-              N° orden
-              <input name="numero_orden">
-            </label>
 
 
-            <label>
-              N° cliente
-              <input name="numero_cliente">
-            </label>
+<!-- CLIENTES -->
 
 
-            <label>
-              Fecha orden
-              <input name="fecha_orden" type="date">
-            </label>
+<section id="clientes" class="view">
 
 
-            <label>
-              Estado pedido *
-              <select name="estado_pedido" required>
+<div class="admin-grid">
 
-                <option value="">
-                  Seleccionar
-                </option>
 
-                <option>
-                  ACTUAL
-                </option>
 
-                <option>
-                  CANCELACIÓN TOTAL
-                </option>
+<form id="clienteForm" class="admin-panel form-grid">
 
 
-              </select>
+<h3>
+Nuevo cliente
+</h3>
 
-            </label>
 
 
-            <label>
-              Correo
-              <input name="correo">
-            </label>
+<label>
+Nombres
 
+<input name="nombres" required>
 
-            <label>
-              Teléfono *
-              <input name="telefono" required>
-            </label>
+</label>
 
 
-            <label>
-              DNI *
-              <input name="dni" required>
-            </label>
 
+<label>
+Apellidos
 
+<input name="apellidos" required>
 
-            <label>
-              Dirección *
-              <input name="direccion" required>
-            </label>
+</label>
 
 
-            <label>
-              Mercadería *
-              <input name="mercaderia" required>
-            </label>
 
 
+<label>
+DNI
 
-            <label>
-              Regalo
-              <input name="regalo">
-            </label>
+<input name="dni">
 
+</label>
 
-            <label>
-              Nivel
-              <select name="nivel_cliente">
 
-                <option></option>
 
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
+<label>
+Teléfono
 
+<input name="telefono">
 
-              </select>
-            </label>
+</label>
 
 
-            <label>
-              Tipo contrato *
 
-              <select name="tipo_contrato" required>
 
-                <option>
-                  AL CONTADO
-                </option>
+<label>
+Correo
 
-                <option>
-                  FINANCIADO
-                </option>
+<input name="correo">
 
-                <option>
-                  DFP
-                </option>
+</label>
 
-                <option>
-                  SIN INTERESES
-                </option>
 
-              </select>
 
 
-            </label>
+<label>
+Dirección
 
+<input name="direccion">
 
+</label>
 
-            <label>
-              Monto total *
-              <input name="monto_total" type="number">
-            </label>
 
 
-            <label>
-              Monto cuota
-              <input name="monto_cuota" type="number">
-            </label>
 
+<label>
+Mercadería
 
+<input name="mercaderia">
 
-            <label>
-              Cantidad cuotas
-              <input name="cantidad_cuotas" type="number">
-            </label>
+</label>
 
 
 
-            <label>
-              Fecha pago
-              <input name="fecha_pago" type="date">
-            </label>
 
+<label>
+Contrato
 
+<select name="tipo_contrato">
 
-            <button class="btn primary" type="submit">
-              Guardar
-            </button>
 
+<option>
+AL CONTADO
+</option>
 
-          </form>
 
+<option>
+FINANCIADO
+</option>
 
 
+</select>
 
 
-          <section class="admin-panel">
+</label>
 
 
-            <h3>
-              Clientes registrados
-            </h3>
 
 
-            <input id="clienteSearch" placeholder="Buscar cliente">
+<label>
+Monto total
 
+<input 
+name="monto_total"
+type="number">
 
-            <table>
 
+</label>
 
-              <thead>
 
-                <tr>
-                  <th>Cliente</th>
-                  <th>DNI</th>
-                  <th>Teléfono</th>
-                  <th>Acciones</th>
-                </tr>
 
+<button class="btn primary">
 
-              </thead>
+Guardar cliente
 
+</button>
 
-              <tbody id="clientesBody">
 
-              </tbody>
 
+</form>
 
-            </table>
 
 
 
-          </section>
 
 
 
+<section class="admin-panel">
 
-        </div>
 
+<h3>
+Clientes registrados
+</h3>
 
-      </section>
 
 
+<input 
+id="clienteSearch"
+placeholder="Buscar cliente">
 
 
 
+<table>
 
 
+<thead>
 
+<tr>
 
-      <section id="ventas" class="view">
+<th>
+Cliente
+</th>
 
 
-        <section class="admin-panel">
+<th>
+DNI
+</th>
 
 
-          <h3>
-            Ventas
-          </h3>
+<th>
+Teléfono
+</th>
 
 
-          <table>
+<th>
+Acción
+</th>
 
-            <thead>
+</tr>
 
-              <tr>
 
-                <th>Cliente</th>
-                <th>Orden</th>
-                <th>Contrato</th>
-                <th>Monto</th>
+</thead>
 
-              </tr>
 
-            </thead>
 
+<tbody id="clientesBody">
 
-            <tbody id="ventasBody">
+</tbody>
 
-            </tbody>
 
+</table>
 
-          </table>
 
+</section>
 
 
-        </section>
+</div>
 
 
-      </section>
+</section>
 
 
 
@@ -509,127 +454,197 @@
 
 
 
-      <section id="cuotas" class="view">
 
+<!-- VENTAS -->
 
-        <section class="admin-panel">
 
+<section id="ventas" class="view">
 
-          <h3>
-            Cuotas
-          </h3>
 
+<section class="admin-panel">
 
-          <table>
 
-            <thead>
+<h3>
+Ventas
+</h3>
 
-              <tr>
-                <th>Cliente</th>
-                <th>Cuota</th>
-                <th>Monto</th>
-                <th>Estado</th>
-              </tr>
 
 
-            </thead>
+<table>
 
 
-            <tbody id="ultimasCuotas">
+<thead>
 
-            </tbody>
+<tr>
 
+<th>
+Cliente
+</th>
 
-          </table>
 
+<th>
+Monto
+</th>
 
-        </section>
 
+<th>
+Contrato
+</th>
 
-      </section>
 
+</tr>
 
 
+</thead>
 
 
+<tbody id="ventasBody">
 
+</tbody>
 
-      <section id="excel" class="view">
 
+</table>
 
-        <section class="admin-panel">
 
+</section>
 
-          <h3>
-            Importar / Exportar
-          </h3>
 
+</section>
 
-          <input id="importExcelInput" type="file" accept=".xlsx,.xls" />
 
 
-          <button id="importClientesBtn" class="btn" type="button">
-            Importar clientes
-          </button>
 
 
-          <button id="exportExcelBtn" class="btn secondary" type="button">
-            Exportar Excel
-          </button>
 
 
 
-          <button id="exportExcelBtn" class="btn secondary">
 
-            Exportar Excel
 
-          </button>
+<!-- CUOTAS -->
 
 
-        </section>
+<section id="cuotas" class="view">
 
 
-      </section>
+<section class="admin-panel">
 
 
+<h3>
+Cuotas
+</h3>
 
 
+<table>
 
 
-      <section id="usuarios" class="view">
+<thead>
 
 
-        <section class="admin-panel">
+<tr>
 
-          <h3>
-            Usuarios
-          </h3>
+<th>
+Cliente
+</th>
 
+<th>
+Monto
+</th>
 
-          <tbody id="usuariosBody"></tbody>
+<th>
+Fecha
+</th>
 
+<th>
+Estado
+</th>
 
-        </section>
 
+</tr>
 
-      </section>
 
+</thead>
 
 
+<tbody id="cuotasBody">
 
+</tbody>
 
-    </main>
 
-  </div>
+</table>
 
 
+</section>
 
-  <div id="toast" class="toast hidden"></div>
 
+</section>
+
+
+
+
+
+
+
+
+
+<!-- EXPORTAR -->
+
+
+<section id="excel" class="view">
+
+
+<section class="admin-panel">
+
+
+<h3>
+Exportar base de datos
+</h3>
+
+
+
+<p>
+Exporta clientes, ventas y cuotas.
+</p>
+
+
+
+<button id="exportExcelBtn" class="btn secondary">
+
+Exportar Excel
+
+</button>
+
+
+</section>
+
+
+</section>
+
+
+
+
+
+</main>
+
+
+</div>
+
+
+
+<div id="toast" class="toast hidden"></div>
+
+
+
+
+
+<!-- LIBRERIA EXCEL -->
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="./js/admin.js"></script>
+<script src="./js/supabase.js"></script>
+<script src="./js/admin.js"></script>
+
+
 
 </body>
 

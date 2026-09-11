@@ -1,40 +1,7 @@
-// =======================================
-// IMVICTO CORP - ADMIN PANEL
-// Supabase + Excel + CRUD CLIENTES
-// =======================================
+let clientes=[];
+let ventas=[];
+let cuotas=[];
 
-
-let clientes = [];
-let ventas = [];
-let cuotas = [];
-
-let editandoCliente = null;
-
-
-// =======================================
-// SUPABASE
-// =======================================
-
-
-function getDB(){
-
-    if(window.imvictoSupabase){
-
-        return window.imvictoSupabase;
-
-    }
-
-
-    throw new Error(
-        "Supabase no cargado"
-    );
-
-}
-
-
-// =======================================
-// INICIO
-// =======================================
 
 
 document.addEventListener(
@@ -42,507 +9,159 @@ document.addEventListener(
 ()=>{
 
 
-    iniciarEventos();
-
-
-    cargarDatos()
-    .then(()=>{
-
-
-        renderTodo();
-
-
-    })
-    .catch(error=>{
-
-
-        console.error(error);
-
-
-        mostrarToast(
-            error.message,
-            true
-        );
-
-
-    });
+iniciar();
 
 
 });
 
 
 
+async function iniciar(){
 
-// =======================================
-// EVENTOS
-// =======================================
 
+navegacion();
 
-function iniciarEventos(){
 
-
-
-document
-.querySelectorAll(".nav-btn")
-.forEach(btn=>{
-
-
-btn.onclick=()=>{
-
-
-    cambiarVista(
-        btn.dataset.view
-    );
-
-
-};
-
-
-});
-
-
-
-
-
-const refresh =
-document.getElementById(
-"refreshBtn"
-);
-
-
-
-if(refresh){
-
-
-refresh.onclick=async()=>{
-
-
-try{
-
-
-await cargarDatos();
-
-if(typeof renderTodo === "function"){
-    renderTodo();
-}
-
-
-mostrarToast(
-"Datos actualizados"
-);
-
-
-
-}
-catch(error){
-
-
-mostrarToast(
-error.message,
-true
-);
-
-
-}
-
-
-
-};
-
-
-
-}
-
-
-
-
-
-const logout =
-document.getElementById(
-"logoutBtn"
-);
-
-
-
-if(logout){
-
-
-logout.onclick=()=>{
-
-
-localStorage.removeItem(
-"usuario"
-);
-
-
-
-location.href=
-"./login.html";
-
-
-};
-
-
-}
-
-
-
-
-
-
-
-const form =
-document.getElementById(
-"clienteForm"
-);
-
+const form=document.getElementById("clienteForm");
 
 
 if(form){
-
 
 form.addEventListener(
 "submit",
 guardarCliente
 );
 
-
 }
 
 
 
-
-
-const buscar =
-document.getElementById(
-"clienteSearch"
-);
-
-
-
-if(buscar){
-
-
-buscar.addEventListener(
-"input",
-renderClientes
-);
+await cargarDatos();
 
 
 }
 
 
 
-
-
-const importar =
-document.getElementById(
-"importClientesBtn"
-);
-
-
-
-if(importar){
-
-
-importar.onclick =
-importarExcelClientes;
-
-
-}
-
-
-
-
-
-
-const exportar =
-document.getElementById(
-"exportExcelBtn"
-);
-
-
-
-if(exportar){
-
-
-exportar.onclick =
-exportarExcel;
-
-
-}
-
-
-
-}
-
-
-
-// =======================================
-// VISTAS
-// =======================================
-
-
-function cambiarVista(nombre){
-
-
-
-document
-.querySelectorAll(".view")
-.forEach(v=>{
-
-
-v.classList.remove(
-"active"
-);
-
-
-});
-
-
-
-const vista =
-document.getElementById(
-nombre
-);
-
-
-
-if(vista){
-
-
-vista.classList.add(
-"active"
-);
-
-
-}
-
-
-
-document
-.querySelectorAll(".nav-btn")
-.forEach(btn=>{
-
-
-btn.classList.toggle(
-"active",
-btn.dataset.view===nombre
-);
-
-
-});
-
-
-}
-
-
-
-// =======================================
-// CARGAR DATOS SUPABASE
-// =======================================
 
 
 async function cargarDatos(){
 
 
-
-const db =
-getDB();
+try{
 
 
-// CLIENTES
+clientes=await DB.getClientes();
 
-const clientesResp =
-await db
-.from("clientes")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
+ventas=await DB.getVentas();
+
+cuotas=await DB.getCuotas();
+
+
+mostrarClientes();
+
+mostrarVentas();
+
+mostrarCuotas();
+
+estadisticas();
+
+
 }
+catch(e){
+
+console.error(e);
+
+toast("Error cargando datos");
+
+}
+
+
+
+}
+
+
+
+
+
+async function guardarCliente(e){
+
+
+e.preventDefault();
+
+
+
+const datos=
+Object.fromEntries(
+new FormData(e.target)
 );
 
 
 
-if(clientesResp.error)
-throw clientesResp.error;
+try{
+
+
+await DB.crearCliente(datos);
 
 
 
-clientes =
-clientesResp.data || [];
-
-
-
-// VENTAS
-
-const ventasResp =
-await db
-.from("ventas")
-.select("*")
-.order(
-"created_at",
-{
-ascending:false
-}
+toast(
+"Cliente guardado"
 );
 
 
 
-if(!ventasResp.error){
+e.target.reset();
 
-ventas =
-ventasResp.data || [];
+
+await cargarDatos();
+
 
 }
+catch(error){
 
 
+console.error(error);
 
-// CUOTAS
-
-const cuotasResp =
-await db
-.from("cuotas")
-.select("*")
-.order(
-"fecha_vencimiento"
+toast(
+"No se pudo guardar cliente"
 );
 
 
-
-if(!cuotasResp.error){
-
-cuotas =
-cuotasResp.data || [];
-
 }
 
 
 
 }
 
-// =======================================
-// RENDER GENERAL
-// =======================================
 
 
-function renderStats(){
 
 
-const clientesEl =
+
+
+function mostrarClientes(){
+
+
+const tabla=
 document.getElementById(
-"statClientes"
+"clientesBody"
 );
 
 
 
-if(clientesEl){
-
-clientesEl.textContent =
-clientes.length;
-
-}
+if(!tabla)return;
 
 
-
-
-
-const ventasEl =
-document.getElementById(
-"statVentas"
-);
-
-
-
-if(ventasEl){
-
-ventasEl.textContent =
-ventas.length;
-
-}
-
-
-
-
-
-const vencidas =
-cuotas.filter(
-c=>
-c.estado==="VENCIDA"
-).length;
-
-
-
-const vencidasEl =
-document.getElementById(
-"statVencidas"
-);
-
-
-
-if(vencidasEl){
-
-vencidasEl.textContent =
-vencidas;
-
-}
-
-
-
-const pendiente =
-cuotas
-.filter(
-c=>
-c.estado!=="PAGADA"
-)
-.reduce(
-(a,b)=>
-a+Number(b.monto||0),
-0
-);
-
-
-
-const pendienteEl =
-document.getElementById(
-"statPendiente"
-);
-
-
-
-if(pendienteEl){
-
-pendienteEl.textContent =
-"S/ "+
-pendiente.toFixed(2);
-
-}
-
-
-}
-
-
-
-
-// =======================================
-// RENDER CLIENTES
-// =======================================
-
-
-function renderClientes(){
-
-const tabla = document.getElementById("clientesBody");
-
-if(!tabla) return;
 
 tabla.innerHTML="";
 
 
+
 clientes.forEach(c=>{
 
-tabla.innerHTML += `
+
+tabla.innerHTML+=`
 
 <tr>
 
@@ -559,16 +178,51 @@ ${c.telefono || ""}
 </td>
 
 <td>
-
-<button onclick="editarCliente('${c.id}')">
-Editar
-</button>
-
-<button onclick="eliminarCliente('${c.id}')">
-Eliminar
-</button>
-
+-
 </td>
+
+</tr>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+function mostrarVentas(){
+
+
+const tabla=
+document.getElementById(
+"ventasBody"
+);
+
+
+if(!tabla)return;
+
+
+tabla.innerHTML="";
+
+
+ventas.forEach(v=>{
+
+
+tabla.innerHTML+=`
+
+<tr>
+
+<td>${v.cliente || ""}</td>
+
+<td>${v.monto || ""}</td>
+
+<td>${v.tipo_contrato || ""}</td>
+
 
 </tr>
 
@@ -576,203 +230,6 @@ Eliminar
 
 });
 
-}
-
-
-
-// =======================================
-// GUARDAR CLIENTE
-// =======================================
-
-
-async function guardarCliente(e){
-
-
-e.preventDefault();
-
-
-
-const form =
-e.target;
-
-
-
-const datos =
-Object.fromEntries(
-new FormData(form)
-);
-
-
-
-const cliente = {
-
-
-nombres:
-datos.nombres?.toUpperCase(),
-
-
-
-apellidos:
-datos.apellidos?.toUpperCase(),
-
-
-
-numero_orden:
-datos.numero_orden,
-
-
-
-numero_cliente:
-datos.numero_cliente,
-
-
-
-fecha_orden:
-datos.fecha_orden || null,
-
-
-
-estado_pedido:
-datos.estado_pedido,
-
-
-
-correo:
-datos.correo,
-
-
-
-telefono:
-datos.telefono,
-
-
-
-dni:
-datos.dni,
-
-
-
-direccion:
-datos.direccion?.toUpperCase(),
-
-
-
-mercaderia:
-datos.mercaderia?.toUpperCase(),
-
-
-
-regalo:
-datos.regalo,
-
-
-
-nivel_cliente:
-datos.nivel_cliente,
-
-
-
-tipo_contrato:
-datos.tipo_contrato,
-
-
-
-monto_total:
-Number(
-datos.monto_total || 0
-),
-
-
-
-monto_cuota:
-Number(
-datos.monto_cuota || 0
-),
-
-
-
-cantidad_cuotas:
-Number(
-datos.cantidad_cuotas || 0
-),
-
-
-
-fecha_pago:
-datos.fecha_pago || null
-
-
-};
-
-
-
-
-const db =
-getDB();
-
-
-
-
-let respuesta;
-
-
-
-if(editandoCliente){
-
-
-respuesta =
-await db
-.from("clientes")
-.update(cliente)
-.eq(
-"id",
-editandoCliente
-);
-
-
-
-}
-else{
-
-
-respuesta =
-await db
-.from("clientes")
-.insert(cliente);
-
-
-
-}
-
-
-
-
-if(respuesta.error)
-throw respuesta.error;
-
-
-
-
-mostrarToast(
-"Cliente guardado correctamente"
-);
-
-
-
-form.reset();
-
-
-
-editandoCliente=null;
-
-
-
-await cargarDatos();
-
-
-renderTodo();
-
-
 
 }
 
@@ -781,485 +238,16 @@ renderTodo();
 
 
 
-// =======================================
-// EDITAR CLIENTE
-// =======================================
+function mostrarCuotas(){
 
 
-window.editarCliente =
-function(id){
-
-
-const cliente =
-clientes.find(
-c=>c.id===id
-);
-
-
-
-if(!cliente)
-return;
-
-
-
-editandoCliente=id;
-
-
-
-const form =
+const tabla=
 document.getElementById(
-"clienteForm"
+"cuotasBody"
 );
 
 
-
-Object.keys(cliente)
-.forEach(key=>{
-
-
-const input =
-form.querySelector(
-`[name="${key}"]`
-);
-
-
-
-if(input){
-
-input.value =
-cliente[key] || "";
-
-}
-
-
-
-});
-
-
-
-};
-
-
-
-
-
-// =======================================
-// ELIMINAR CLIENTE
-// =======================================
-
-
-window.eliminarCliente =
-async function(id){
-
-
-
-if(!confirm(
-"¿Eliminar cliente?"
-))
-return;
-
-
-
-const db =
-getDB();
-
-
-
-const respuesta =
-await db
-.from("clientes")
-.delete()
-.eq(
-"id",
-id
-);
-
-
-
-
-if(respuesta.error)
-throw respuesta.error;
-
-
-
-mostrarToast(
-"Cliente eliminado"
-);
-
-
-
-await cargarDatos();
-
-
-renderTodo();
-
-
-
-};
-
-
-// =======================================
-// IMPORTAR EXCEL
-// =======================================
-
-
-async function importarExcelClientes(){
-
-
-const input =
-document.getElementById(
-"importExcelInput"
-);
-
-
-
-const archivo =
-input?.files[0];
-
-
-
-if(!archivo){
-
-mostrarToast(
-"Selecciona un Excel",
-true
-);
-
-return;
-
-}
-
-
-
-if(typeof XLSX==="undefined"){
-
-mostrarToast(
-"Falta cargar XLSX",
-true
-);
-
-return;
-
-}
-
-
-
-
-const buffer =
-await archivo.arrayBuffer();
-
-
-
-const workbook =
-XLSX.read(
-buffer
-);
-
-
-
-const hoja =
-workbook.Sheets[
-workbook.SheetNames[0]
-];
-
-
-
-const filas =
-XLSX.utils.sheet_to_json(
-hoja
-);
-
-
-
-const db =
-getDB();
-
-
-
-let cantidad = 0;
-
-
-
-for(const fila of filas){
-
-
-
-const cliente = {
-
-
-nombres:
-fila.NOMBRES || "",
-
-
-apellidos:
-fila.APELLIDOS || "",
-
-
-numero_orden:
-fila["Nº ORDEN"] || "",
-
-
-numero_cliente:
-fila["Nº CLIENTE"] || "",
-
-
-fecha_orden:
-fila["FECHA DE LA ORDEN"] || null,
-
-
-estado_pedido:
-fila["ESTADO DEL PEDIDO"] || "ACTUAL",
-
-
-correo:
-fila.CORREO || "",
-
-
-telefono:
-fila["TEL PERSONAL"] || "",
-
-
-dni:
-fila.DNI || "",
-
-
-direccion:
-fila.DIRECCIÓN || "",
-
-
-mercaderia:
-fila.MERCADERIA || "",
-
-
-regalo:
-fila.REGALO || "",
-
-
-nivel_cliente:
-fila["NIVEL DE CLIENTE"] || "",
-
-
-tipo_contrato:
-fila["TIPO DE CONTRATO"] || "",
-
-
-monto_total:
-Number(
-fila["MONTO TOTAL"] || 0
-),
-
-
-monto_cuota:
-Number(
-fila["MONTO DE CUOTA"] || 0
-),
-
-
-cantidad_cuotas:
-Number(
-fila["CANTIDAD DE CUOTAS"] || 0
-),
-
-
-fecha_pago:
-fila["FECHA DE PAGO"] || null
-
-
-};
-
-
-
-
-
-const existente =
-clientes.find(
-c=>
-c.dni &&
-c.dni===cliente.dni
-);
-
-
-
-if(existente){
-
-
-const respuesta =
-await db
-.from("clientes")
-.update(cliente)
-.eq(
-"id",
-existente.id
-);
-
-
-
-if(respuesta.error)
-throw respuesta.error;
-
-
-
-}
-else{
-
-
-const respuesta =
-await db
-.from("clientes")
-.insert(cliente);
-
-
-
-if(respuesta.error)
-throw respuesta.error;
-
-
-}
-
-
-
-cantidad++;
-
-
-}
-
-
-
-
-mostrarToast(
-`${cantidad} clientes actualizados/importados`
-);
-
-
-
-await cargarDatos();
-
-
-renderTodo();
-
-
-
-}
-
-
-
-
-
-
-
-
-// =======================================
-// EXPORTAR EXCEL
-// =======================================
-
-
-function exportarExcel(){
-
-if(typeof XLSX==="undefined"){
-mostrarToast("Falta XLSX",true);
-return;
-}
-
-
-const libro = XLSX.utils.book_new();
-
-
-const hojaClientes =
-XLSX.utils.json_to_sheet(clientes);
-
-
-XLSX.utils.book_append_sheet(
-libro,
-hojaClientes,
-"Clientes"
-);
-
-
-
-const hojaVentas =
-XLSX.utils.json_to_sheet(ventas);
-
-
-XLSX.utils.book_append_sheet(
-libro,
-hojaVentas,
-"Ventas"
-);
-
-
-
-const hojaCuotas =
-XLSX.utils.json_to_sheet(cuotas);
-
-
-XLSX.utils.book_append_sheet(
-libro,
-hojaCuotas,
-"Cuotas"
-);
-
-
-
-XLSX.writeFile(
-libro,
-"IMVICTO_CORP.xlsx"
-);
-
-
-}
-
-
-
-
-
-
-// =======================================
-// RENDER TODO
-// =======================================
-
-
-function renderTodo(){
-
-    renderStats();
-
-
-    if(typeof renderClientes==="function"){
-
-        renderClientes();
-
-    }
-
-
-    if(typeof renderUltimasCuotas==="function"){
-
-        renderUltimasCuotas();
-
-    }
-
-
-}
-
-
-
-
-
-// =======================================
-// ULTIMAS CUOTAS
-// =======================================
-
-
-function renderUltimasCuotas(){
-
-
-const tabla =
-document.getElementById(
-"ultimasCuotas"
-);
-
-
-
-if(!tabla)
-return;
+if(!tabla)return;
 
 
 
@@ -1267,50 +255,82 @@ tabla.innerHTML="";
 
 
 
-cuotas
-.slice(0,5)
-.forEach(c=>{
+cuotas.forEach(c=>{
 
 
-tabla.innerHTML += `
+tabla.innerHTML+=`
 
 <tr>
 
-<td>
-${c.cliente || ""}
-</td>
+<td>${c.cliente || ""}</td>
 
+<td>${c.monto || ""}</td>
 
-<td>
-${c.cuota || ""}
-</td>
+<td>${c.fecha || ""}</td>
 
-
-<td>
-S/ ${Number(c.monto || 0).toFixed(2)}
-</td>
-
-
-<td>
-${c.fecha_vencimiento || c.fecha || ""}
-</td>
-
-
-<td>
-${c.estado || ""}
-</td>
-
+<td>${c.estado || ""}</td>
 
 </tr>
 
+
 `;
 
+});
+
+
+}
+
+
+
+
+
+function estadisticas(){
+
+
+document.getElementById("statClientes").textContent=
+clientes.length;
+
+
+document.getElementById("statVentas").textContent=
+ventas.length;
+
+
+
+}
+
+
+
+
+
+function navegacion(){
+
+
+document
+.querySelectorAll(".nav-btn")
+.forEach(btn=>{
+
+
+btn.onclick=()=>{
+
+
+document
+.querySelectorAll(".view")
+.forEach(v=>v.classList.remove("active"));
+
+
+
+document
+.getElementById(btn.dataset.view)
+.classList.add("active");
+
+
+
+};
 
 
 });
 
 
-
 }
 
 
@@ -1318,93 +338,31 @@ ${c.estado || ""}
 
 
 
-
-// =======================================
-// TOAST
-// =======================================
+function toast(texto){
 
 
-function mostrarToast(
-mensaje,
-error=false
-){
+const t=document.getElementById("toast");
 
 
+if(t){
 
-const toast =
-document.getElementById(
-"toast"
-);
+t.textContent=texto;
 
-
-
-if(!toast){
-
-alert(mensaje);
-
-return;
-
-}
-
-
-
-toast.textContent =
-mensaje;
-
-
-
-toast.classList.remove(
-"hidden"
-);
-
+t.classList.remove("hidden");
 
 
 setTimeout(()=>{
 
-
-toast.classList.add(
-"hidden"
-);
-
+t.classList.add("hidden");
 
 },3000);
 
 
-}
+}else{
 
-document.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-
-const btnImportar =
-document.getElementById(
-"importClientesBtn"
-);
-
-
-if(btnImportar){
-
-btnImportar.onclick =
-importarExcelClientes;
+alert(texto);
 
 }
 
 
-
-const btnExportar =
-document.getElementById(
-"exportExcelBtn"
-);
-
-
-if(btnExportar){
-
-btnExportar.onclick =
-exportarExcel;
-
 }
-
-
-
-});
